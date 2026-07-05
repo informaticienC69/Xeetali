@@ -1,38 +1,21 @@
-"""Route de consultation des stocks (regroupés par hôpital)."""
+"""Route de consultation des stocks (comptage en direct des poches DISPONIBLE)."""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 
+from app.core.deps import get_current_user
 from app.db.session import get_db
-from app.models.hospital import Hospital
-from app.schemas.enums import BloodGroup
-from app.schemas.inventory import InventoryByHospital, StockLine
+from app.models.user import User
+from app.schemas.inventory import InventoryByHospital
+from app.services import inventory_service
 
 router = APIRouter(prefix="/api/inventory", tags=["inventaire"])
 
 
 @router.get("", response_model=list[InventoryByHospital])
-def list_inventory(db: Session = Depends(get_db)) -> list[InventoryByHospital]:
-    """Retourne l'état des stocks de tous les hôpitaux, agrégé par groupe sanguin."""
-    hospitals = db.scalars(
-        select(Hospital).options(selectinload(Hospital.inventories)).order_by(Hospital.id)
-    ).all()
-
-    result: list[InventoryByHospital] = []
-    for hospital in hospitals:
-        stocks = [
-            StockLine(groupe_sanguin=BloodGroup(inv.groupe_sanguin), quantite=inv.quantite)
-            for inv in sorted(hospital.inventories, key=lambda i: i.groupe_sanguin)
-        ]
-        result.append(
-            InventoryByHospital(
-                hospital_id=hospital.id,
-                nom=hospital.nom,
-                localisation=hospital.localisation,
-                type=hospital.type,
-                stocks=stocks,
-            )
-        )
-    return result
+def list_inventory(
+    db: Session = Depends(get_db), _: User = Depends(get_current_user)
+) -> list[InventoryByHospital]:
+    """État des stocks de tous les hôpitaux, agrégé en direct par groupe."""
+    return inventory_service.inventory_by_hospital(db)

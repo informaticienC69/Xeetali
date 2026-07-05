@@ -1,67 +1,123 @@
-"""Logique métier UC-17 — mock d'alerte donneurs USSD/SMS.
+"""Logique métier UC-17 — alertes donneurs (mock SMS/Push).
 
-Confidentialité stricte : **aucun envoi réel**, et **aucun numéro de téléphone en
-clair** n'est journalisé ni renvoyé. Les numéros sont masqués (ex. ``77****89``).
+Confidentialité stricte : aucun envoi réel, aucun numéro en clair renvoyé ni
+journalisé (masquage ``77****89``). Ciblage par compatibilité ABO/Rh + localité.
 """
 from __future__ import annotations
 
 import logging
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.schemas.alert import AlertResponse
-from app.schemas.enums import BloodGroup
+from app.core.constants import compatible_donor_groups
+from app.models.alert import Alert, AlertResponse
+from app.models.donor_profile import DonorProfile
+from app.schemas.alert import (
+    AlertCreate,
+    AlertDispatchResult,
+    AlertRespondResult,
+)
+from app.schemas.enums import AlertScope, AlertStatus, BloodGroup
+from app.services.donor_service import get_profile
+from app.services.exceptions import NotFoundError
 
 logger = logging.getLogger("xeetali.alert")
 
-# Répertoire de donneurs simulé (aucune source réelle). Sert uniquement à produire
-# une réponse structurée réaliste pour la démo. En clair ici pour le mock, mais
-# JAMAIS exposé ni journalisé sans masquage.
-_MOCK_DONORS: dict[BloodGroup, list[str]] = {
-    BloodGroup.O_NEG: ["771234589", "770001199", "776543210"],
-    BloodGroup.O_POS: ["771112233", "770998877"],
-    BloodGroup.A_POS: ["775554433", "778889900", "771010101", "772020202"],
-    BloodGroup.A_NEG: ["773334455"],
-    BloodGroup.B_POS: ["776667788", "774443322"],
-    BloodGroup.B_NEG: ["779990011"],
-    BloodGroup.AB_POS: ["770707070"],
-    BloodGroup.AB_NEG: [],
-}
-
 
 def _mask_number(number: str) -> str:
-    """Masque un numéro : conserve 2 chiffres de tête et 2 de fin (``77****89``)."""
+    """Masque un numéro : 2 chiffres de tête, 2 de fin (``77****89``)."""
     digits = "".join(ch for ch in number if ch.isdigit())
     if len(digits) <= 4:
         return "*" * len(digits)
     return f"{digits[:2]}{'*' * (len(digits) - 4)}{digits[-2:]}"
 
 
-def build_ussd_alert(db: Session, groupe: BloodGroup) -> AlertResponse:
-    """Construit la réponse simulée d'une alerte USSD/SMS pour un groupe sanguin.
+def _select_target_donors(
+    db: Session, receiver: BloodGroup, localisation: str | None
+) -> list[DonorProfile]:
+    """Donneurs compatibles (matrice ABO/Rh) et, si fournie, de la même localité."""
+    compatibles = [g.value for g in compatible_donor_groups(receiver)]
+    stmt = select(DonorProfile).where(DonorProfile.groupe_sanguin.in_(compatibles))
+    if localisation is not None:
+        stmt = stmt.where(DonorProfile.localisation == localisation)
+    return list(db.scalars(stmt).all())
 
-    Ne réalise **aucun** envoi. Journalise uniquement des numéros masqués.
-    Le paramètre ``db`` est accepté pour homogénéité de la couche services et
-    évolutivité (répertoire donneurs en base ultérieurement).
-    """
-    donors = _MOCK_DONORS.get(groupe, [])
-    numeros_masques = [_mask_number(n) for n in donors]
-    message = (
-        f"CNTS Xéétali : besoin urgent de sang {groupe.value}. "
+
+def dispatch_alert(db: Session, payload: AlertCreate, user_id: int) -> AlertDispatchResult:
+    """Crée l'alerte, cible les donneurs compatibles, simule l'envoi (atomique)."""
+    receiver = payload.groupe_sanguin
+    portee = AlertScope.NATIONALE if payload.localisation is None else AlertScope.LOCALE
+    message = payload.message or (
+        f"CNTS Xéétali : besoin urgent de sang {receiver.value}. "
         f"Si vous êtes éligible, présentez-vous au centre de don le plus proche. Merci."
     )
+    try:
+        donors = _select_target_donors(db, receiver, payload.localisation)
+        alert = Alert(
+            groupe_sanguin=receiver.value,
+            message=message,
+            canal=payload.canal.value,
+            portee=portee.value,
+            statut=AlertStatus.ACTIVE.value,
+            created_by=user_id,
+        )
+        db.add(alert)
+        db.commit()
+        db.refresh(alert)
+    except Exception:
+        db.rollback()
+        raise
 
+    numeros_masques = [_mask_number(d.telephone) for d in donors]
     logger.info(
-        "Alerte USSD/SMS simulée pour groupe %s : %d donneur(s) notifié(s) %s "
-        "(aucun envoi réel).",
-        groupe.value, len(donors), numeros_masques,
+        "Alerte #%s %s : %d donneur(s) compatibles notifiés %s (aucun envoi réel).",
+        alert.id, receiver.value, len(donors), numeros_masques,
     )
-
-    return AlertResponse(
-        groupe_sanguin=groupe,
+    return AlertDispatchResult(
+        alert_id=alert.id,
+        groupe_sanguin=receiver,
+        groupes_donneurs_compatibles=sorted(compatible_donor_groups(receiver), key=lambda g: g.value),
         donneurs_notifies=len(donors),
         numeros_masques=numeros_masques,
         message=message,
-        canal="USSD/SMS (simulé)",
+        canal=payload.canal,
+        portee=portee,
         envoi_reel=False,
+    )
+
+
+def respond_to_alert(
+    db: Session, alert_id: int, user_id: int, disponible: bool
+) -> AlertRespondResult:
+    """Enregistre la réponse d'un donneur à une alerte (atomique)."""
+    profile = get_profile(db, user_id)
+    alert = db.get(Alert, alert_id)
+    if alert is None:
+        raise NotFoundError(f"Alerte {alert_id} introuvable.")
+    try:
+        response = AlertResponse(alert_id=alert_id, donor_id=profile.id, disponible=disponible)
+        db.add(response)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+    instructions = (
+        "Merci ! Présentez-vous au centre de collecte le plus proche muni d'une pièce "
+        "d'identité. Un agent CNTS vous contactera pour confirmer le créneau."
+        if disponible
+        else "Réponse enregistrée. Merci de votre retour, à une prochaine fois."
+    )
+    return AlertRespondResult(alert_id=alert_id, disponible=disponible, instructions=instructions)
+
+
+def list_active_alerts(db: Session) -> list[Alert]:
+    """Alertes actives (pour l'espace donneur)."""
+    return list(
+        db.scalars(
+            select(Alert)
+            .where(Alert.statut == AlertStatus.ACTIVE.value)
+            .order_by(Alert.created_at.desc())
+        ).all()
     )

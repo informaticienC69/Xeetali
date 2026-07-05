@@ -2,36 +2,43 @@
 
 ## Identité
 **Xéétali** — gestion critique des stocks de sang, Sénégal (contexte CNTS).
-Des vies humaines sont en jeu → **zéro perte de données**. Chaque décision de code
-privilégie la sûreté, l'intégrité des stocks et la traçabilité avant la vitesse.
+Des vies humaines sont en jeu → **zéro perte de données**. La sûreté, l'intégrité des
+stocks et la traçabilité priment sur la vitesse.
+
+## Source de vérité
+**La poche (`BloodPouch`) est l'unique source de vérité du stock.** Aucune colonne
+quantité à synchroniser : le stock = **comptage en direct des poches `DISPONIBLE`**.
+UC-08 crée une poche (stock +1) ; UC-04 réaffecte N poches ; « maj stock » = changement
+de statut.
 
 ## Non négociables
-- **Transferts atomiques et testés** : toute opération modifiant un stock s'exécute dans
-  une seule transaction (validation → décrément source → incrément cible → création de
-  l'ordre). Toute erreur → `rollback` complet. Aucune modification partielle ne persiste.
-- **Validation stricte des entrées** : Pydantic v2 sur toutes les routes (enum groupe
-  sanguin, quantité entière strictement positive, source ≠ cible, hôpitaux existants).
-- **Traçabilité de tout mouvement de stock** : chaque transfert est journalisé (horodatage
-  + détails de l'ordre persisté) à des fins d'audit médical.
-- **Aucune PII donneur en clair** dans les logs (UC-17) : numéros masqués type `77****89`,
-  aucun envoi réel.
-- **Zéro fuite d'info** : les erreurs renvoyées au client ne contiennent ni stack trace ni
-  détail interne. **Zéro injection** : ORM exclusivement, jamais de SQL concaténé.
+- **Opérations de stock atomiques et testées** : toute modif (UC-04, UC-08, changement de
+  statut) dans une seule transaction ; toute erreur → `rollback` complet.
+- **Validation stricte** (Pydantic v2) : enum groupe sanguin, quantités entières > 0,
+  source ≠ cible, entités existantes, dates cohérentes.
+- **Compatibilité ABO/Rh** respectée via `core/constants.DONOR_COMPATIBILITY` (ciblage
+  des alertes, éligibilité).
+- **Traçabilité** de tout mouvement (ordres + changements de statut journalisés).
+- **Aucune PII donneur en clair** dans les logs (numéros masqués `77****89`, aucun envoi réel).
+- **Zéro fuite** (pas de stack trace au client) · **zéro injection** (ORM only) · **secrets
+  via env** (dont clé JWT).
+
+## Sécurité
+JWT (`PyJWT`) + hash bcrypt (`passlib`, `bcrypt==4.0.1` épinglé). 3 rôles :
+`ADMIN_CNTS`, `PERSONNEL_MEDICAL`, `DONNEUR`. Accès contrôlé par `core/deps.require_role`.
 
 ## Architecture
-Modulaire : `models / schemas / routers / services / db`.
-La **logique métier** (transferts, alertes) vit dans la couche `services`, **pas** dans les
-routes. Les routers restent minces et délèguent.
+Modulaire : `models / schemas / routers / services / core (config, security, deps, constants)`.
+La **logique métier** vit dans `services`, **pas** dans les routes (routers minces).
 
 ## Conventions
-- Type hints partout ; Pydantic v2 ; SQLAlchemy 2.0 (mapping déclaratif `Mapped[...]`).
-- Commits conventionnels (`feat:`, `fix:`, `test:`, …).
-- **Un test obligatoire pour toute règle métier.**
-- Secrets via variables d'environnement (`pydantic-settings`) — aucun secret en dur.
+- Type hints partout ; Pydantic v2 ; SQLAlchemy 2.0 (`Mapped[...]`).
+- Commits conventionnels. **Un test obligatoire pour toute règle métier.**
 
 ## Périmètre MVP
-Node Central : **UC-04** (transferts inter-hôpitaux), **UC-17** (mock alerte USSD/SMS).
-**Hors scope** : IA/LSTM, Blockchain, IoT, authentification réelle, envoi SMS réel.
+3 acteurs · UC-04 (transferts), UC-08 (poches+QR), UC-14/15/16/17/18 (donneurs) +
+administration (dashboard, CRUD comptes/établissements, campagne).
+**Hors scope** : IA/LSTM, Blockchain, IoT, USSD, envoi SMS/Push réel.
 
 ## Règle d'or
-> Toute opération touchant un stock est **transactionnelle** et **couverte par un test**.
+> Toute opération touchant une poche est **transactionnelle** et **couverte par un test**.

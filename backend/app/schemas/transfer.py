@@ -9,13 +9,7 @@ from app.schemas.enums import BloodGroup, TransferStatus
 
 
 class TransferCreate(BaseModel):
-    """Requête d'ordre de transfert.
-
-    Validations statiques (avant toute logique métier) :
-    - ``groupe_sanguin`` restreint à l'enum ``BloodGroup`` ;
-    - ``quantite`` entier strictement positif (``PositiveInt``) ;
-    - hôpital source différent de la cible.
-    """
+    """Requête d'ordre de transfert de N poches d'un groupe donné."""
 
     source_hospital_id: int
     target_hospital_id: int
@@ -40,4 +34,5 @@ class TransferRead(BaseModel):
     groupe_sanguin: BloodGroup
     quantite: int
     statut: TransferStatus
+    created_by: int
     created_at: datetime

@@ -1,19 +1,14 @@
-"""Modèle Hôpital."""
+"""Modèle Hôpital / établissement de santé."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
 
-if TYPE_CHECKING:
-    from app.models.inventory import BloodInventory
-
 
 class Hospital(Base):
-    """Établissement de santé participant au réseau (hôpital, CHR, centre CNTS)."""
+    """Établissement participant au réseau (hôpital, CHR, centre CNTS)."""
 
     __tablename__ = "hospitals"
 
@@ -21,7 +16,3 @@ class Hospital(Base):
     nom: Mapped[str] = mapped_column(String(200), nullable=False)
     localisation: Mapped[str] = mapped_column(String(200), nullable=False)
     type: Mapped[str] = mapped_column(String(100), nullable=False)
-
-    inventories: Mapped[list["BloodInventory"]] = relationship(
-        back_populates="hospital", cascade="all, delete-orphan"
-    )

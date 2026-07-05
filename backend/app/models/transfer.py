@@ -1,4 +1,4 @@
-"""Modèle Ordre de transfert (trace d'audit d'un mouvement de stock UC-04)."""
+"""Modèle TransferOrder — trace d'audit d'un transfert de poches (UC-04)."""
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -15,11 +15,7 @@ def _utcnow() -> datetime:
 
 
 class TransferOrder(Base):
-    """Ordre de transfert de poches entre deux hôpitaux.
-
-    Persisté comme trace d'audit médical : tout mouvement de stock validé
-    correspond à un enregistrement horodaté ``COMPLETED``.
-    """
+    """Ordre de transfert de N poches entre deux hôpitaux (audit horodaté)."""
 
     __tablename__ = "transfer_orders"
 
@@ -29,4 +25,5 @@ class TransferOrder(Base):
     groupe_sanguin: Mapped[str] = mapped_column(String(3), nullable=False)
     quantite: Mapped[int] = mapped_column(nullable=False)
     statut: Mapped[str] = mapped_column(String(20), nullable=False, default=TransferStatus.PENDING.value)
+    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
