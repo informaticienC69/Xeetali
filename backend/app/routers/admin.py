@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.deps import require_role
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.admin import DashboardStats
+from app.schemas.admin import AnalyticsResponse, DashboardStats
 from app.schemas.alert import AlertCreate, AlertDispatchResult
 from app.schemas.enums import UserRole
 from app.schemas.hospital import HospitalCreate, HospitalRead, HospitalUpdate
@@ -23,6 +23,12 @@ router = APIRouter(
 def dashboard(db: Session = Depends(get_db)) -> DashboardStats:
     """Agrégats nationaux du tableau de bord CNTS."""
     return admin_service.dashboard(db)
+
+
+@router.get("/analytics", response_model=AnalyticsResponse)
+def analytics(db: Session = Depends(get_db)) -> AnalyticsResponse:
+    """Agrégations complètes pour le dashboard graphique (100 % issues de la BD)."""
+    return admin_service.analytics(db)
 
 
 # --- Utilisateurs ---------------------------------------------------------- #

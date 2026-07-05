@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+/* Bascule de thème par classe .dark (au lieu de prefers-color-scheme seul). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+}
+:root.dark {
+  color-scheme: dark;
+}
+
+/* Transitions douces lors du changement de thème (désactivées si réduit). */
+@media (prefers-reduced-motion: no-preference) {
+  body,
+  .theme-transition,
+  [class*="bg-"],
+  [class*="border-"],
+  [class*="text-"] {
+    transition-property: background-color, border-color, color, fill;
+    transition-duration: 180ms;
+    transition-timing-function: ease;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -9,4 +32,10 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Anneau de focus clavier cohérent et accessible. */
+:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
 }

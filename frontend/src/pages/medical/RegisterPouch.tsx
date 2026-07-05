@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Download } from "lucide-react";
 import { api, ApiError, BLOOD_GROUPS, type BloodGroup, type Pouch } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useAuth } from "../../lib/auth";
@@ -51,7 +52,7 @@ export default function RegisterPouch() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-slate-800">Enregistrer une poche (UC-08)</h1>
+      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Enregistrer une poche (UC-08)</h1>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card title="Nouvelle poche" subtitle="UID et QR Code générés automatiquement.">
@@ -78,17 +79,19 @@ export default function RegisterPouch() {
         <Card title="Dernière poche enregistrée">
           {last ? (
             <div className="flex flex-col items-center gap-3 text-center">
-              <img src={last.qr_code_b64} alt={`QR ${last.uid}`} className="h-40 w-40 rounded-lg border border-slate-200" />
-              <div className="font-mono text-sm font-semibold text-slate-800">{last.uid}</div>
+              <img src={last.qr_code_b64} alt={`QR ${last.uid}`} className="h-40 w-40 rounded-lg border border-slate-200 dark:border-slate-800" />
+              <div className="font-mono text-sm font-semibold text-slate-800 dark:text-slate-100">{last.uid}</div>
               <div className="flex items-center gap-2">
                 <GroupBadge groupe={last.groupe_sanguin} />
                 <StatusBadge statut={last.statut} />
               </div>
-              <div className="text-xs text-slate-400">Péremption : {last.date_peremption}</div>
-              <Button variant="secondary" onClick={() => downloadQr(last)}>⬇ Télécharger le QR</Button>
+              <div className="text-xs text-slate-400 dark:text-slate-500">Péremption : {last.date_peremption}</div>
+              <Button variant="secondary" onClick={() => downloadQr(last)}>
+                <Download size={16} /> Télécharger le QR
+              </Button>
             </div>
           ) : (
-            <p className="py-10 text-center text-sm text-slate-400">
+            <p className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
               Enregistrez une poche pour afficher son UID et son QR Code ici.
             </p>
           )}

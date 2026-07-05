@@ -112,3 +112,45 @@ def test_donations_history_empty_then_listed(
     resp = client.get("/api/donors/me/donations", headers=auth("donor@cnts.sn"))
     assert resp.status_code == 200
     assert isinstance(resp.json(), list)
+
+
+def test_donor_stats_zero_then_gamified(
+    client: TestClient, db_session, seeded: dict[str, int],
+    auth: Callable[[str], dict[str, str]],
+) -> None:
+    from datetime import date, timedelta
+    from app.models.donation import Donation
+
+    # Sans don : niveau initial, éligible, badges non obtenus.
+    s0 = client.get("/api/donors/me/stats", headers=auth("donor@cnts.sn")).json()
+    assert s0["nb_dons"] == 0
+    assert s0["niveau"] == "Nouveau donneur"
+    assert s0["eligible_maintenant"] is True
+    assert all(b["obtenu"] is False for b in s0["badges"])
+
+    # Ajout de 3 dons → niveau Argent, badges premier_don + regulier obtenus.
+    for i in range(3):
+        db_session.add(Donation(
+            donor_id=seeded["donor_id"], collection_point_id=seeded["collection_point_id"],
+            groupe_sanguin="O-", volume=450, date=date.today() - timedelta(days=100 + i * 100),
+        ))
+    db_session.commit()
+
+    s1 = client.get("/api/donors/me/stats", headers=auth("donor@cnts.sn")).json()
+    assert s1["nb_dons"] == 3
+    assert s1["niveau"] == "Argent"
+    assert s1["vies_potentielles"] == 9
+    assert s1["points"] == 300
+    obtained = {b["code"] for b in s1["badges"] if b["obtenu"]}
+    assert {"premier_don", "regulier"} <= obtained
+    assert "or" not in obtained
+
+
+def test_leaderboard_includes_me(
+    client: TestClient, seeded: dict[str, int], auth: Callable[[str], dict[str, str]]
+) -> None:
+    board = client.get("/api/donors/leaderboard", headers=auth("donor@cnts.sn")).json()
+    assert len(board) >= 1
+    assert any(e["is_me"] for e in board)
+    # Nom abrégé (confidentialité) : pas de nom complet en clair.
+    assert all("." in e["nom_affiche"] or " " not in e["nom_affiche"] for e in board)

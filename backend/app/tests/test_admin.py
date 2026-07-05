@@ -65,6 +65,31 @@ def test_admin_hospital_crud_and_role_gate(
     assert client.delete(f"/api/admin/hospitals/{hid}", headers=h).status_code == 204
 
 
+def test_analytics_shapes_and_db_derived(
+    client: TestClient, seeded: dict[str, int], auth: Callable[[str], dict[str, str]]
+) -> None:
+    resp = client.get("/api/admin/analytics", headers=auth("admin@cnts.sn"))
+    assert resp.status_code == 200
+    body = resp.json()
+    # Stock dérivé des poches : 5 O+ + 3 A+ = 8 disponibles.
+    assert body["total_poches_disponibles"] == 8
+    op = next(x for x in body["stock_par_groupe"] if x["label"] == "O+")
+    assert op["value"] == 5
+    # Séries temporelles de longueur fixe (30 jours, 6 mois).
+    assert len(body["transferts_par_jour"]) == 30
+    assert len(body["dons_par_mois"]) == 6
+    # Les 4 statuts de poche sont présents.
+    assert {x["label"] for x in body["poches_par_statut"]} == {
+        "DISPONIBLE", "RESERVEE", "UTILISEE", "PERIMEE"
+    }
+
+
+def test_analytics_forbidden_for_non_admin(
+    client: TestClient, seeded: dict[str, int], auth: Callable[[str], dict[str, str]]
+) -> None:
+    assert client.get("/api/admin/analytics", headers=auth("donor@cnts.sn")).status_code == 403
+
+
 def test_national_campaign(
     client: TestClient, seeded: dict[str, int], auth: Callable[[str], dict[str, str]]
 ) -> None:

@@ -57,7 +57,7 @@ export default function Profile() {
 
   return (
     <div className="mx-auto max-w-md space-y-6">
-      <h1 className="text-xl font-bold text-slate-800">Mon profil donneur</h1>
+      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Mon profil donneur</h1>
       <Card title={exists ? "Mettre à jour mes informations" : "Compléter mon profil (UC-14)"}>
         <form onSubmit={submit} className="space-y-4">
           <Field label="Groupe sanguin">

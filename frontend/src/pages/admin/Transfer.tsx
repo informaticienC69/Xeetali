@@ -40,7 +40,7 @@ export default function Transfer() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-slate-800">Coordonner un transfert (UC-04)</h1>
+      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Coordonner un transfert (UC-04)</h1>
 
       <Card title="Nouvel ordre de transfert" subtitle="Réaffecte N poches disponibles d'un hôpital à un autre (atomique).">
         <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">

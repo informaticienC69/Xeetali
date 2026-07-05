@@ -1,10 +1,14 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./lib/auth";
 import type { Role } from "./lib/api";
 import Layout from "./components/Layout";
+import DonorLayout from "./components/DonorLayout";
+import { Spinner } from "./components/ui";
 import Login from "./pages/Login";
 
-import Dashboard from "./pages/admin/Dashboard";
+// Dashboard isolé (recharts lourd) → chargé à la demande.
+const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 import Transfer from "./pages/admin/Transfer";
 import Campaign from "./pages/admin/Campaign";
 import Users from "./pages/admin/Users";
@@ -15,6 +19,7 @@ import Stock from "./pages/medical/Stock";
 import Validity from "./pages/medical/Validity";
 import Request from "./pages/medical/Request";
 
+import Home from "./pages/donor/Home";
 import Profile from "./pages/donor/Profile";
 import CollectionPoints from "./pages/donor/CollectionPoints";
 import Appointments from "./pages/donor/Appointments";
@@ -31,7 +36,14 @@ function Protected({ roles, children }: { roles: Role[]; children: React.ReactNo
   const { role, isAuthenticated } = useAuth();
   if (!isAuthenticated || !role) return <Navigate to="/login" replace />;
   if (!roles.includes(role)) return <Navigate to={HOME[role]} replace />;
-  return <Layout>{children}</Layout>;
+  const Shell = role === "DONNEUR" ? DonorLayout : Layout;
+  return (
+    <Shell>
+      <Suspense fallback={<div className="flex justify-center py-20 text-slate-400"><Spinner size={28} /></div>}>
+        {children}
+      </Suspense>
+    </Shell>
+  );
 }
 
 export default function App() {
@@ -58,7 +70,8 @@ export default function App() {
       <Route path="/medical/request" element={<Protected roles={["PERSONNEL_MEDICAL"]}><Request /></Protected>} />
 
       {/* Donneur */}
-      <Route path="/donor" element={<Protected roles={["DONNEUR"]}><Profile /></Protected>} />
+      <Route path="/donor" element={<Protected roles={["DONNEUR"]}><Home /></Protected>} />
+      <Route path="/donor/profile" element={<Protected roles={["DONNEUR"]}><Profile /></Protected>} />
       <Route path="/donor/points" element={<Protected roles={["DONNEUR"]}><CollectionPoints /></Protected>} />
       <Route path="/donor/appointments" element={<Protected roles={["DONNEUR"]}><Appointments /></Protected>} />
       <Route path="/donor/alerts" element={<Protected roles={["DONNEUR"]}><Alerts /></Protected>} />

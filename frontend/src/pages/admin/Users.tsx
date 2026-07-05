@@ -1,8 +1,21 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
 import { api, ApiError, type Role } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useToast } from "../../lib/toast";
-import { Button, Card, EmptyState, Field, Input, Modal, Select, Skeleton } from "../../components/ui";
+import {
+  Button,
+  Card,
+  EmptyState,
+  Field,
+  FilterSelect,
+  Input,
+  Modal,
+  SearchInput,
+  Select,
+  Skeleton,
+  Toolbar,
+} from "../../components/ui";
 
 const ROLES: Role[] = ["ADMIN_CNTS", "PERSONNEL_MEDICAL", "DONNEUR"];
 
@@ -13,6 +26,17 @@ export default function Users() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ nom: "", email: "", password: "", role: "PERSONNEL_MEDICAL" as Role, hospital_id: "" as number | "" });
   const [saving, setSaving] = useState(false);
+  const [q, setQ] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+
+  const filtered = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return (users.data ?? []).filter(
+      (u) =>
+        (!term || u.nom.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)) &&
+        (!roleFilter || u.role === roleFilter),
+    );
+  }, [users.data, q, roleFilter]);
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
@@ -48,21 +72,32 @@ export default function Users() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-slate-800">Utilisateurs</h1>
-        <Button onClick={() => setOpen(true)}>+ Nouvel utilisateur</Button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Utilisateurs</h1>
+        <Button onClick={() => setOpen(true)}>
+          <Plus size={16} /> Nouvel utilisateur
+        </Button>
       </div>
 
-      <Card title="Comptes">
+      <Card title="Comptes" subtitle={users.data ? `${filtered.length} / ${users.data.length}` : undefined}>
+        <Toolbar>
+          <SearchInput value={q} onChange={setQ} placeholder="Nom ou email…" className="min-w-52 grow sm:grow-0" />
+          <FilterSelect value={roleFilter} onChange={setRoleFilter}>
+            <option value="">Tous les rôles</option>
+            <option value="ADMIN_CNTS">ADMIN_CNTS</option>
+            <option value="PERSONNEL_MEDICAL">PERSONNEL_MEDICAL</option>
+            <option value="DONNEUR">DONNEUR</option>
+          </FilterSelect>
+        </Toolbar>
         {users.loading ? (
           <Skeleton className="h-40" />
-        ) : !users.data?.length ? (
-          <EmptyState message="Aucun utilisateur." />
+        ) : !filtered.length ? (
+          <EmptyState message="Aucun utilisateur ne correspond." />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 text-left text-slate-600">
+                <tr className="bg-slate-50 dark:bg-slate-800/60 text-left text-slate-600 dark:text-slate-300">
                   <th className="px-4 py-3 font-semibold">Nom</th>
                   <th className="px-4 py-3 font-semibold">Email</th>
                   <th className="px-4 py-3 font-semibold">Rôle</th>
@@ -70,13 +105,15 @@ export default function Users() {
                 </tr>
               </thead>
               <tbody>
-                {users.data.map((u) => (
-                  <tr key={u.id} className="border-t border-slate-100">
-                    <td className="px-4 py-3 font-medium text-slate-800">{u.nom}</td>
-                    <td className="px-4 py-3 text-slate-500">{u.email}</td>
-                    <td className="px-4 py-3 text-slate-600">{u.role}</td>
+                {filtered.map((u) => (
+                  <tr key={u.id} className="border-t border-slate-100 dark:border-slate-800">
+                    <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{u.nom}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{u.email}</td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{u.role}</td>
                     <td className="px-4 py-3 text-right">
-                      <Button variant="danger" onClick={() => remove(u.id)}>Supprimer</Button>
+                      <Button variant="danger" onClick={() => remove(u.id)}>
+                        <Trash2 size={15} /> Supprimer
+                      </Button>
                     </td>
                   </tr>
                 ))}

@@ -8,7 +8,12 @@ from app.core.deps import require_role
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.donation import DonationRead
-from app.schemas.donor import DonorProfileRead, DonorProfileUpsert
+from app.schemas.donor import (
+    DonorProfileRead,
+    DonorProfileUpsert,
+    DonorStats,
+    LeaderboardEntry,
+)
 from app.schemas.enums import UserRole
 from app.services import donor_service
 
@@ -43,3 +48,17 @@ def my_donations(
 ) -> list[DonationRead]:
     """Historique des dons du donneur courant (UC-18)."""
     return [DonationRead.model_validate(d) for d in donor_service.list_donations(db, current.id)]
+
+
+@router.get("/me/stats", response_model=DonorStats)
+def my_stats(db: Session = Depends(get_db), current: User = Depends(_donor)) -> DonorStats:
+    """Statistiques gamifiées (niveau, badges, rang, éligibilité) du donneur."""
+    return donor_service.get_stats(db, current.id)
+
+
+@router.get("/leaderboard", response_model=list[LeaderboardEntry])
+def leaderboard(
+    db: Session = Depends(get_db), current: User = Depends(_donor)
+) -> list[LeaderboardEntry]:
+    """Classement des meilleurs donneurs (noms abrégés)."""
+    return donor_service.leaderboard(db, current.id)

@@ -28,3 +28,45 @@ class DonorProfileRead(BaseModel):
     telephone: str
     localisation: str
     date_dernier_don: date | None
+
+
+class BadgeStatus(BaseModel):
+    """État d'un badge pour un donneur."""
+
+    code: str
+    label: str
+    description: str
+    seuil: int
+    obtenu: bool
+
+
+class DonorStats(BaseModel):
+    """Statistiques gamifiées du donneur (100 % dérivées de la base)."""
+
+    nb_dons: int
+    total_volume_ml: int
+    vies_potentielles: int
+    points: int
+    niveau: str
+    niveau_index: int
+    progression: float
+    dons_avant_niveau_suivant: int
+    rang: int
+    nb_donneurs: int
+    dernier_don: date | None
+    prochain_don_eligible: date | None
+    eligible_maintenant: bool
+    jours_avant_eligibilite: int
+    nb_reponses_alertes: int
+    badges: list[BadgeStatus]
+
+
+class LeaderboardEntry(BaseModel):
+    """Une ligne du classement des donneurs (nom abrégé pour la confidentialité)."""
+
+    rang: int
+    nom_affiche: str
+    groupe_sanguin: BloodGroup
+    nb_dons: int
+    points: int
+    is_me: bool

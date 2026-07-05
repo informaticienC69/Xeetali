@@ -1,5 +1,5 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { api, tokenStore, type Role, type TokenResponse } from "./api";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { api, setUnauthorizedHandler, tokenStore, type Role, type TokenResponse } from "./api";
 
 interface AuthState {
   token: string | null;
@@ -66,6 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(SESSION_KEY);
     setState({ token: null, role: null, nom: null, userId: null, hospitalId: null });
   }, []);
+
+  // Un 401 sur une route protégée (token expiré) déconnecte automatiquement.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      if (tokenStore.get()) logout();
+    });
+    return () => setUnauthorizedHandler(null);
+  }, [logout]);
 
   const value = useMemo<AuthContextValue>(
     () => ({ ...state, login, logout, isAuthenticated: !!state.token }),

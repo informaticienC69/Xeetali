@@ -18,19 +18,25 @@ from app.core.security import hash_password
 from app.db.base import Base
 from app.db.session import SessionLocal, engine
 import app.models  # noqa: F401
+from app.models.alert import Alert, AlertResponse
 from app.models.appointment import Appointment
 from app.models.collection_point import CollectionPoint
 from app.models.donation import Donation
 from app.models.donor_profile import DonorProfile
 from app.models.hospital import Hospital
 from app.models.pouch import BloodPouch
+from app.models.request import BloodRequest
+from app.models.transfer import TransferOrder
 from app.models.user import User
 from app.services.pouch_service import _generate_uid, _qr_data_uri  # réutilise la génération réelle
 from app.schemas.enums import (
     AppointmentStatus,
     BloodGroup,
     PouchStatus,
+    RequestStatus,
+    TransferStatus,
     UserRole,
+    Urgence,
 )
 
 PASSWORD = "Password123!"
@@ -66,8 +72,8 @@ def seed() -> None:
     db = SessionLocal()
     try:
         # Réinitialisation idempotente (ordre respectant les FK).
-        for model in (Donation, Appointment, BloodPouch, CollectionPoint,
-                      DonorProfile, User, Hospital):
+        for model in (AlertResponse, Alert, TransferOrder, BloodRequest, Donation,
+                      Appointment, BloodPouch, CollectionPoint, DonorProfile, User, Hospital):
             db.query(model).delete()
         db.commit()
 
@@ -81,28 +87,39 @@ def seed() -> None:
         cnts = hospitals["CNTS Dakar"]
 
         # Utilisateurs de démonstration.
-        db.add(User(nom="Admin CNTS", email="admin@cnts.sn",
-                    password_hash=hash_password(PASSWORD), role=UserRole.ADMIN_CNTS.value))
-        db.add(User(nom="Dr Diop", email="medecin@cnts.sn",
-                    password_hash=hash_password(PASSWORD),
-                    role=UserRole.PERSONNEL_MEDICAL.value, hospital_id=cnts.id))
+        admin_user = User(nom="Admin CNTS", email="admin@cnts.sn",
+                          password_hash=hash_password(PASSWORD), role=UserRole.ADMIN_CNTS.value)
+        medic_user = User(nom="Dr Diop", email="medecin@cnts.sn",
+                          password_hash=hash_password(PASSWORD),
+                          role=UserRole.PERSONNEL_MEDICAL.value, hospital_id=cnts.id)
         demo_donor_user = User(nom="Donneur Démo", email="donneur@cnts.sn",
                                password_hash=hash_password(PASSWORD), role=UserRole.DONNEUR.value)
-        db.add(demo_donor_user)
+        db.add_all([admin_user, medic_user, demo_donor_user])
         db.flush()
 
-        # Poches (source de vérité du stock), péremptions échelonnées.
+        # Poches (source de vérité du stock), avec un mix réaliste de statuts.
+        # ~78% DISPONIBLE, 10% RESERVEE, 8% UTILISEE, 4% PERIMEE (péremption passée).
         today = date.today()
+        _status_pool = (
+            [PouchStatus.DISPONIBLE] * 78 + [PouchStatus.RESERVEE] * 10
+            + [PouchStatus.UTILISEE] * 8 + [PouchStatus.PERIMEE] * 4
+        )
+        pouch_rng = random.Random(7)
         for nom, stocks in STOCKS.items():
             hid = hospitals[nom].id
             for groupe, count in stocks.items():
                 for _ in range(count):
                     uid = _generate_uid()
+                    statut = pouch_rng.choice(_status_pool)
+                    if statut is PouchStatus.PERIMEE:
+                        peremption = today - timedelta(days=pouch_rng.randint(1, 15))
+                    else:
+                        peremption = today + timedelta(days=pouch_rng.randint(5, 42))
                     db.add(BloodPouch(
                         uid=uid, groupe_sanguin=groupe.value, hospital_id=hid,
-                        statut=PouchStatus.DISPONIBLE.value,
-                        date_prelevement=today - timedelta(days=random.randint(0, 20)),
-                        date_peremption=today + timedelta(days=random.randint(7, 42)),
+                        statut=statut.value,
+                        date_prelevement=today - timedelta(days=pouch_rng.randint(0, 20)),
+                        date_peremption=peremption,
                         qr_code_b64=_qr_data_uri(uid),
                     ))
 
@@ -128,22 +145,77 @@ def seed() -> None:
                                 telephone=tel, localisation=loc))
         db.flush()
 
-        # Un rendez-vous et un don de démonstration pour le donneur démo.
+        # Un rendez-vous de démonstration pour le donneur démo.
         demo_profile = db.query(DonorProfile).filter(
             DonorProfile.user_id == demo_donor_user.id).one()
         db.add(Appointment(donor_id=demo_profile.id, collection_point_id=points[0].id,
                            date=datetime.now(timezone.utc) + timedelta(days=5),
                            statut=AppointmentStatus.PLANIFIE.value))
-        db.add(Donation(donor_id=demo_profile.id, collection_point_id=points[0].id,
-                        groupe_sanguin=BloodGroup.O_NEG.value, volume=450,
-                        date=today - timedelta(days=90)))
+
+        hospital_ids = [h.id for h in hospitals.values()]
+        rng = random.Random(42)  # déterministe
+
+        # --- Historiques de dons par donneur (classement + gamification) ---------
+        # (email → (nombre de dons, jours depuis le dernier don))
+        DONATION_PLAN = {
+            "donneur@cnts.sn": (7, 100),   # démo : éligible (100 j > 90 j)
+            "awa@donneur.sn": (12, 30),
+            "modou@donneur.sn": (9, 55),
+            "fatou@donneur.sn": (6, 150),
+            "ibrahima@donneur.sn": (3, 210),
+        }
+        profiles_by_email = {
+            u.email: p
+            for u, p in db.query(User, DonorProfile)
+            .join(DonorProfile, DonorProfile.user_id == User.id).all()
+        }
+        for email, (count, days_since_last) in DONATION_PLAN.items():
+            profile = profiles_by_email[email]
+            offset = days_since_last
+            for _ in range(count):
+                db.add(Donation(
+                    donor_id=profile.id, collection_point_id=rng.choice(points).id,
+                    groupe_sanguin=profile.groupe_sanguin, volume=rng.choice([400, 450, 500]),
+                    date=today - timedelta(days=offset),
+                ))
+                offset += rng.randint(90, 130)  # dons espacés, remontant dans le temps
+
+        # --- Historique de transferts réparti sur 30 jours (courbe journalière) ---
+        groups = [g.value for g in BloodGroup]
+        for _ in range(45):
+            src, tgt = rng.sample(hospital_ids, 2)
+            created = datetime.now(timezone.utc) - timedelta(
+                days=rng.randint(0, 29), hours=rng.randint(0, 23))
+            db.add(TransferOrder(
+                source_hospital_id=src, target_hospital_id=tgt,
+                groupe_sanguin=rng.choice(groups), quantite=rng.randint(1, 6),
+                statut=TransferStatus.COMPLETED.value, created_by=admin_user.id,
+                created_at=created,
+            ))
+
+        # --- Demandes de sang (répartition par urgence et statut) ---
+        urgences = [Urgence.NORMALE, Urgence.NORMALE, Urgence.URGENTE,
+                    Urgence.URGENTE, Urgence.CRITIQUE]
+        statuts = [RequestStatus.OUVERTE, RequestStatus.OUVERTE,
+                   RequestStatus.SATISFAITE, RequestStatus.ANNULEE]
+        for _ in range(24):
+            db.add(BloodRequest(
+                hospital_id=rng.choice(hospital_ids), groupe_sanguin=rng.choice(groups),
+                quantite=rng.randint(1, 8), urgence=rng.choice(urgences).value,
+                statut=rng.choice(statuts).value, created_by=medic_user.id,
+                created_at=datetime.now(timezone.utc) - timedelta(days=rng.randint(0, 20)),
+            ))
 
         db.commit()
 
         nb_pouches = db.query(BloodPouch).count()
         nb_donors = db.query(DonorProfile).count()
+        nb_transfers = db.query(TransferOrder).count()
+        nb_requests = db.query(BloodRequest).count()
+        nb_dons = db.query(Donation).count()
         print(f"Seed terminé : {len(HOSPITALS)} hôpitaux, {nb_pouches} poches, "
-              f"{nb_donors} donneurs, 3 comptes démo (mdp: {PASSWORD}).")
+              f"{nb_donors} donneurs, {nb_transfers} transferts, {nb_requests} demandes, "
+              f"{nb_dons} dons, 3 comptes démo (mdp: {PASSWORD}).")
     except Exception:
         db.rollback()
         raise

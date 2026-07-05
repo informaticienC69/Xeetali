@@ -34,15 +34,15 @@ export default function InventoryTable({ inventory }: Props) {
         />
         <button
           onClick={() => setSortAsc((s) => !s)}
-          className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+          className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           Tri par stock total {sortAsc ? "▼" : "▲"}
         </button>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-slate-50 text-left text-slate-600">
+            <tr className="bg-slate-50 text-left text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
               <th className="px-4 py-3 font-semibold">Hôpital</th>
               <th className="px-4 py-3 font-semibold">Localité</th>
               {BLOOD_GROUPS.map((g) => (
@@ -53,20 +53,20 @@ export default function InventoryTable({ inventory }: Props) {
           </thead>
           <tbody>
             {rows.map((h) => (
-              <tr key={h.hospital_id} className="border-t border-slate-100 hover:bg-slate-50">
-                <td className="px-4 py-3 font-medium text-slate-800">{h.nom}</td>
-                <td className="px-4 py-3 text-slate-500">{h.localisation}</td>
+              <tr key={h.hospital_id} className="border-t border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50">
+                <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{h.nom}</td>
+                <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{h.localisation}</td>
                 {BLOOD_GROUPS.map((g) => {
                   const q = quantiteFor(h, g);
                   return (
                     <td key={g} className="px-3 py-3 text-center">
-                      <span className={q === 0 ? "text-slate-300" : q < 5 ? "font-semibold text-amber-600" : "text-slate-700"}>
+                      <span className={q === 0 ? "text-slate-300 dark:text-slate-600" : q < 5 ? "font-semibold text-amber-600 dark:text-amber-400" : "text-slate-700 dark:text-slate-200"}>
                         {q}
                       </span>
                     </td>
                   );
                 })}
-                <td className="px-3 py-3 text-center font-semibold text-slate-800">{total(h)}</td>
+                <td className="px-3 py-3 text-center font-semibold text-slate-800 dark:text-slate-100">{total(h)}</td>
               </tr>
             ))}
           </tbody>

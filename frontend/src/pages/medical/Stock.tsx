@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api, ApiError, BLOOD_GROUPS, type BloodGroup, type Pouch, type PouchStatus } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useToast } from "../../lib/toast";
-import { Button, Card, EmptyState, Field, GroupBadge, Select, Skeleton, StatusBadge } from "../../components/ui";
+import { Button, Card, EmptyState, Field, GroupBadge, SearchInput, Select, Skeleton, StatusBadge, Toolbar } from "../../components/ui";
 
 const STATUSES: PouchStatus[] = ["DISPONIBLE", "RESERVEE", "UTILISEE", "PERIMEE"];
 
@@ -14,6 +14,12 @@ export default function Stock() {
   const [statut, setStatut] = useState<PouchStatus | "">("DISPONIBLE");
   const [results, setResults] = useState<Pouch[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [uidQuery, setUidQuery] = useState("");
+
+  const shown = useMemo(() => {
+    const term = uidQuery.trim().toUpperCase();
+    return (results ?? []).filter((p) => !term || p.uid.toUpperCase().includes(term));
+  }, [results, uidQuery]);
 
   async function search() {
     setLoading(true);
@@ -43,7 +49,7 @@ export default function Stock() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-slate-800">Stock & recherche d'urgence</h1>
+      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Stock & recherche d'urgence</h1>
 
       <Card title="Rechercher des poches">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
@@ -71,18 +77,23 @@ export default function Stock() {
         </div>
       </Card>
 
-      <Card title="Résultats" subtitle={results ? `${results.length} poche(s)` : undefined}>
+      <Card title="Résultats" subtitle={results ? `${shown.length} / ${results.length} poche(s)` : undefined}>
+        {results && results.length > 0 && (
+          <Toolbar>
+            <SearchInput value={uidQuery} onChange={setUidQuery} placeholder="Filtrer par UID…" className="min-w-52 grow sm:grow-0" />
+          </Toolbar>
+        )}
         {loading ? (
           <Skeleton className="h-40" />
         ) : !results ? (
           <EmptyState message="Lancez une recherche pour afficher les poches." />
-        ) : results.length === 0 ? (
+        ) : shown.length === 0 ? (
           <EmptyState message="Aucune poche ne correspond." />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 text-left text-slate-600">
+                <tr className="bg-slate-50 dark:bg-slate-800/60 text-left text-slate-600 dark:text-slate-300">
                   <th className="px-4 py-3 font-semibold">UID</th>
                   <th className="px-4 py-3 font-semibold">Groupe</th>
                   <th className="px-4 py-3 font-semibold">Statut</th>
@@ -91,12 +102,12 @@ export default function Stock() {
                 </tr>
               </thead>
               <tbody>
-                {results.map((p) => (
-                  <tr key={p.id} className="border-t border-slate-100">
-                    <td className="px-4 py-3 font-mono text-xs text-slate-700">{p.uid}</td>
+                {shown.map((p) => (
+                  <tr key={p.id} className="border-t border-slate-100 dark:border-slate-800">
+                    <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-200">{p.uid}</td>
                     <td className="px-4 py-3"><GroupBadge groupe={p.groupe_sanguin} /></td>
                     <td className="px-4 py-3"><StatusBadge statut={p.statut} /></td>
-                    <td className="px-4 py-3 text-slate-500">{p.date_peremption}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{p.date_peremption}</td>
                     <td className="px-4 py-3">
                       <Select value={p.statut} onChange={(e) => changeStatus(p.uid, e.target.value as PouchStatus)} className="max-w-40">
                         {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}

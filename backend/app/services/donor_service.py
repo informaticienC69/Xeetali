@@ -1,13 +1,33 @@
-"""Logique métier du donneur : profil (UC-14) et historique de dons (UC-18)."""
+"""Logique métier du donneur : profil (UC-14), historique (UC-18), gamification."""
 from __future__ import annotations
 
-from sqlalchemy import select
+from datetime import date, timedelta
+
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.gamification import (
+    DELAI_ELIGIBILITE_JOURS,
+    VIES_PAR_DON,
+    evaluate_badges,
+    level_for,
+    points_for,
+)
+from app.models.alert import AlertResponse
 from app.models.donation import Donation
 from app.models.donor_profile import DonorProfile
-from app.schemas.donor import DonorProfileUpsert
+from app.models.user import User
+from app.schemas.donor import BadgeStatus, DonorProfileUpsert, DonorStats, LeaderboardEntry
+from app.schemas.enums import BloodGroup
 from app.services.exceptions import NotFoundError
+
+
+def _display_name(nom: str) -> str:
+    """Nom abrégé pour le classement (confidentialité) : « Awa N. »."""
+    parts = nom.split()
+    if len(parts) >= 2:
+        return f"{parts[0]} {parts[1][0].upper()}."
+    return parts[0] if parts else "Donneur"
 
 
 def get_profile(db: Session, user_id: int) -> DonorProfile:
@@ -51,3 +71,88 @@ def list_donations(db: Session, user_id: int) -> list[Donation]:
             select(Donation).where(Donation.donor_id == profile.id).order_by(Donation.date.desc())
         ).all()
     )
+
+
+def get_stats(db: Session, user_id: int) -> DonorStats:
+    """Statistiques gamifiées du donneur, entièrement dérivées de la base."""
+    profile = get_profile(db, user_id)
+
+    donations = db.scalars(
+        select(Donation).where(Donation.donor_id == profile.id)
+    ).all()
+    nb_dons = len(donations)
+    total_volume = sum(d.volume for d in donations)
+    dernier_don = max((d.date for d in donations), default=None)
+    nb_reponses = int(
+        db.scalar(select(func.count(AlertResponse.id)).where(AlertResponse.donor_id == profile.id))
+        or 0
+    )
+
+    # Classement : nombre de dons par donneur (donneurs sans don inclus, à 0).
+    counts = dict(
+        db.execute(select(Donation.donor_id, func.count(Donation.id)).group_by(Donation.donor_id)).all()
+    )
+    all_ids = list(db.scalars(select(DonorProfile.id)).all())
+    ranking = sorted(all_ids, key=lambda pid: counts.get(pid, 0), reverse=True)
+    rang = ranking.index(profile.id) + 1
+
+    # Éligibilité au prochain don.
+    today = date.today()
+    if dernier_don is None:
+        prochain, eligible, jours = None, True, 0
+    else:
+        prochain = dernier_don + timedelta(days=DELAI_ELIGIBILITE_JOURS)
+        jours = max(0, (prochain - today).days)
+        eligible = jours == 0
+
+    lvl = level_for(nb_dons)
+    badges = [BadgeStatus(**b) for b in evaluate_badges(nb_dons, nb_reponses)]
+
+    return DonorStats(
+        nb_dons=nb_dons,
+        total_volume_ml=total_volume,
+        vies_potentielles=nb_dons * VIES_PAR_DON,
+        points=points_for(nb_dons),
+        niveau=lvl.nom,
+        niveau_index=lvl.index,
+        progression=lvl.progression,
+        dons_avant_niveau_suivant=lvl.dons_avant_niveau_suivant,
+        rang=rang,
+        nb_donneurs=len(all_ids),
+        dernier_don=dernier_don,
+        prochain_don_eligible=prochain,
+        eligible_maintenant=eligible,
+        jours_avant_eligibilite=jours,
+        nb_reponses_alertes=nb_reponses,
+        badges=badges,
+    )
+
+
+def leaderboard(db: Session, user_id: int, limit: int = 10) -> list[LeaderboardEntry]:
+    """Classement des meilleurs donneurs (noms abrégés)."""
+    me = get_profile_or_none(db, user_id)
+    rows = db.execute(
+        select(
+            DonorProfile.id,
+            DonorProfile.groupe_sanguin,
+            User.nom,
+            func.count(Donation.id),
+        )
+        .join(User, User.id == DonorProfile.user_id)
+        .outerjoin(Donation, Donation.donor_id == DonorProfile.id)
+        .group_by(DonorProfile.id)
+        .order_by(func.count(Donation.id).desc(), DonorProfile.id)
+        .limit(limit)
+    ).all()
+
+    return [
+        LeaderboardEntry(
+            rang=i + 1,
+            nom_affiche=_display_name(nom),
+            groupe_sanguin=BloodGroup(groupe),
+            nb_dons=int(count),
+            points=points_for(int(count)),
+            is_me=(me is not None and pid == me.id),
+        )
+        for i, (pid, groupe, nom, count) in enumerate(rows)
+    ]

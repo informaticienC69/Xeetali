@@ -75,6 +75,39 @@ export interface DonorProfile {
   localisation: string;
   date_dernier_don: string | null;
 }
+export interface BadgeStatus {
+  code: string;
+  label: string;
+  description: string;
+  seuil: number;
+  obtenu: boolean;
+}
+export interface DonorStats {
+  nb_dons: number;
+  total_volume_ml: number;
+  vies_potentielles: number;
+  points: number;
+  niveau: string;
+  niveau_index: number;
+  progression: number;
+  dons_avant_niveau_suivant: number;
+  rang: number;
+  nb_donneurs: number;
+  dernier_don: string | null;
+  prochain_don_eligible: string | null;
+  eligible_maintenant: boolean;
+  jours_avant_eligibilite: number;
+  nb_reponses_alertes: number;
+  badges: BadgeStatus[];
+}
+export interface LeaderboardEntry {
+  rang: number;
+  nom_affiche: string;
+  groupe_sanguin: BloodGroup;
+  nb_dons: number;
+  points: number;
+  is_me: boolean;
+}
 export interface CollectionPoint {
   id: number;
   nom: string;
@@ -133,6 +166,32 @@ export interface DashboardStats {
   alertes_actives: number;
 }
 
+export interface LabeledCount {
+  label: string;
+  value: number;
+}
+export interface TimePoint {
+  date: string;
+  value: number;
+}
+export interface Analytics {
+  total_poches_disponibles: number;
+  nb_hopitaux: number;
+  nb_donneurs: number;
+  demandes_ouvertes: number;
+  alertes_actives: number;
+  poches_expirant_7j: number;
+  total_transferts: number;
+  dons_6_mois: number;
+  stock_par_groupe: LabeledCount[];
+  poches_par_statut: LabeledCount[];
+  stock_par_hopital: LabeledCount[];
+  donneurs_par_groupe: LabeledCount[];
+  demandes_par_urgence: LabeledCount[];
+  transferts_par_jour: TimePoint[];
+  dons_par_mois: TimePoint[];
+}
+
 const TOKEN_KEY = "xeetali_token";
 export const tokenStore = {
   get: () => localStorage.getItem(TOKEN_KEY),
@@ -146,6 +205,12 @@ export class ApiError extends Error {
     super(message);
     this.status = status;
   }
+}
+
+// Handler global déclenché sur 401 (token expiré/invalide) → déconnexion.
+let onUnauthorized: (() => void) | null = null;
+export function setUnauthorizedHandler(fn: (() => void) | null) {
+  onUnauthorized = fn;
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -162,6 +227,8 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   if (res.status === 204) return undefined as T;
   if (!res.ok) {
+    // Token expiré/invalide sur une route protégée → déconnexion globale.
+    if (res.status === 401 && !path.startsWith("/api/auth/")) onUnauthorized?.();
     let detail = `Erreur ${res.status}`;
     try {
       const data = await res.json();
@@ -225,6 +292,8 @@ export const api = {
     date_dernier_don?: string | null;
   }) => request<DonorProfile>("PUT", "/api/donors/me/profile", payload),
   myDonations: () => request<Donation[]>("GET", "/api/donors/me/donations"),
+  donorStats: () => request<DonorStats>("GET", "/api/donors/me/stats"),
+  leaderboard: () => request<LeaderboardEntry[]>("GET", "/api/donors/leaderboard"),
 
   collectionPoints: (localisation?: string) =>
     request<CollectionPoint[]>(
@@ -246,6 +315,7 @@ export const api = {
     ),
 
   dashboard: () => request<DashboardStats>("GET", "/api/admin/dashboard"),
+  analytics: () => request<Analytics>("GET", "/api/admin/analytics"),
   listUsers: () => request<User[]>("GET", "/api/admin/users"),
   createUser: (payload: { nom: string; email: string; password: string; role: Role; hospital_id?: number | null }) =>
     request<User>("POST", "/api/admin/users", payload),

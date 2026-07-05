@@ -31,7 +31,7 @@ export default function Appointments() {
 
   return (
     <div className="mx-auto max-w-md space-y-6">
-      <h1 className="text-xl font-bold text-slate-800">Prendre rendez-vous (UC-16)</h1>
+      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Prendre rendez-vous (UC-16)</h1>
 
       <Card title="Nouveau rendez-vous">
         <form onSubmit={submit} className="space-y-4">
@@ -58,8 +58,8 @@ export default function Appointments() {
             {appts.data.map((a) => (
               <li key={a.id} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm">
                 <div>
-                  <div className="font-medium text-slate-700">{pointName(a.collection_point_id)}</div>
-                  <div className="text-xs text-slate-400">{new Date(a.date).toLocaleString("fr-FR")}</div>
+                  <div className="font-medium text-slate-700 dark:text-slate-200">{pointName(a.collection_point_id)}</div>
+                  <div className="text-xs text-slate-400 dark:text-slate-500">{new Date(a.date).toLocaleString("fr-FR")}</div>
                 </div>
                 <StatusBadge statut={a.statut} />
               </li>

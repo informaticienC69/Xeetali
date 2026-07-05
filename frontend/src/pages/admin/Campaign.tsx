@@ -26,7 +26,7 @@ export default function Campaign() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-slate-800">Campagne d'alerte nationale</h1>
+      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Campagne d'alerte nationale</h1>
 
       <Card title="Nouvelle campagne" subtitle="Simulation SMS/Push — aucun envoi réel, numéros masqués.">
         <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -51,22 +51,22 @@ export default function Campaign() {
         <Card title="Résultat de la simulation">
           <div className="space-y-3 text-sm">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-slate-500">Groupe :</span> <GroupBadge groupe={result.groupe_sanguin} />
-              <span className="ml-3 text-slate-500">Portée :</span> <b>{result.portee}</b>
-              <span className="ml-3 text-slate-500">Canal :</span> <b>{result.canal}</b>
+              <span className="text-slate-500 dark:text-slate-400">Groupe :</span> <GroupBadge groupe={result.groupe_sanguin} />
+              <span className="ml-3 text-slate-500 dark:text-slate-400">Portée :</span> <b>{result.portee}</b>
+              <span className="ml-3 text-slate-500 dark:text-slate-400">Canal :</span> <b>{result.canal}</b>
             </div>
             <div>
-              <span className="text-slate-500">Donneurs compatibles ciblés :</span>{" "}
+              <span className="text-slate-500 dark:text-slate-400">Donneurs compatibles ciblés :</span>{" "}
               <b className="text-red-600">{result.donneurs_notifies}</b>
             </div>
-            <div className="text-slate-500">
+            <div className="text-slate-500 dark:text-slate-400">
               Groupes donneurs compatibles :{" "}
               {result.groupes_donneurs_compatibles.map((g) => (
                 <span key={g} className="mr-1"><GroupBadge groupe={g} /></span>
               ))}
             </div>
-            <div className="rounded-lg bg-slate-50 p-3 text-slate-600">{result.message}</div>
-            <div className="text-xs text-slate-400">
+            <div className="rounded-lg bg-slate-50 p-3 text-slate-600 dark:bg-slate-800 dark:text-slate-300">{result.message}</div>
+            <div className="text-xs text-slate-400 dark:text-slate-500">
               Numéros (masqués) : {result.numeros_masques.join(", ") || "—"}
             </div>
           </div>
