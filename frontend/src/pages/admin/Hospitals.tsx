@@ -1,20 +1,10 @@
+// Hospitals.tsx — Command Center
 import { useMemo, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Building2, Plus, Trash2 } from "lucide-react";
 import { api, ApiError } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useToast } from "../../lib/toast";
-import {
-  Button,
-  Card,
-  EmptyState,
-  Field,
-  FilterSelect,
-  Input,
-  Modal,
-  SearchInput,
-  Skeleton,
-  Toolbar,
-} from "../../components/ui";
+import { Button, Card, EmptyState, Field, FilterSelect, Input, Modal, SearchInput, Skeleton, Toolbar, PageHeader, DataTable } from "../../components/ui";
 
 export default function Hospitals() {
   const toast = useToast();
@@ -25,16 +15,12 @@ export default function Hospitals() {
   const [q, setQ] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
 
-  const types = useMemo(
-    () => Array.from(new Set((hospitals.data ?? []).map((h) => h.type))).sort(),
-    [hospitals.data],
-  );
+  const types = useMemo(() => Array.from(new Set((hospitals.data ?? []).map((h) => h.type))).sort(), [hospitals.data]);
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     return (hospitals.data ?? []).filter(
-      (h) =>
-        (!term || h.nom.toLowerCase().includes(term) || h.localisation.toLowerCase().includes(term)) &&
-        (!typeFilter || h.type === typeFilter),
+      (h) => (!term || h.nom.toLowerCase().includes(term) || h.localisation.toLowerCase().includes(term)) &&
+             (!typeFilter || h.type === typeFilter),
     );
   }, [hospitals.data, q, typeFilter]);
 
@@ -49,9 +35,7 @@ export default function Hospitals() {
       hospitals.reload();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Erreur.");
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   }
 
   async function remove(id: number) {
@@ -66,21 +50,23 @@ export default function Hospitals() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Établissements</h1>
-        <Button onClick={() => setOpen(true)}>
-          <Plus size={16} /> Nouvel établissement
-        </Button>
-      </div>
+      <PageHeader
+        title="Établissements"
+        subtitle="Réseau hospitalier"
+        icon={Building2}
+        action={
+          <Button onClick={() => setOpen(true)}>
+            <Plus size={16} /> Nouvel établissement
+          </Button>
+        }
+      />
 
-      <Card title="Réseau" subtitle={hospitals.data ? `${filtered.length} / ${hospitals.data.length}` : undefined}>
+      <Card title="Réseau" subtitle={hospitals.data ? `${filtered.length} / ${hospitals.data.length} établissements` : undefined}>
         <Toolbar>
           <SearchInput value={q} onChange={setQ} placeholder="Nom ou localité…" className="min-w-52 grow sm:grow-0" />
           <FilterSelect value={typeFilter} onChange={setTypeFilter}>
             <option value="">Tous les types</option>
-            {types.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
+            {types.map((t) => <option key={t} value={t}>{t}</option>)}
           </FilterSelect>
         </Toolbar>
         {hospitals.loading ? (
@@ -88,32 +74,28 @@ export default function Hospitals() {
         ) : !filtered.length ? (
           <EmptyState message="Aucun établissement ne correspond." />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/60 text-left text-slate-600 dark:text-slate-300">
-                  <th className="px-4 py-3 font-semibold">Nom</th>
-                  <th className="px-4 py-3 font-semibold">Localité</th>
-                  <th className="px-4 py-3 font-semibold">Type</th>
-                  <th className="px-4 py-3"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((h) => (
-                  <tr key={h.id} className="border-t border-slate-100 dark:border-slate-800">
-                    <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{h.nom}</td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{h.localisation}</td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{h.type}</td>
-                    <td className="px-4 py-3 text-right">
-                      <Button variant="danger" onClick={() => remove(h.id)}>
-                        <Trash2 size={15} /> Supprimer
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={["Nom", "Localité", "Type", ""]}
+            data={filtered}
+            keyExtractor={(h) => h.id}
+            renderRow={(h) => (
+              <>
+                <td className="px-4 py-3 syne font-semibold text-sm" style={{ color: "var(--txt)" }}>{h.nom}</td>
+                <td className="px-4 py-3 mono text-[12px]" style={{ color: "var(--txt-dim)" }}>{h.localisation}</td>
+                <td className="px-4 py-3">
+                  <span className="mono text-[10px] px-2 py-1 rounded-md border uppercase tracking-wider"
+                        style={{ background: "var(--surface-2)", borderColor: "var(--line)", color: "var(--txt-mute)" }}>
+                    {h.type}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <Button variant="danger" onClick={() => remove(h.id)}>
+                    <Trash2 size={14} /> Supprimer
+                  </Button>
+                </td>
+              </>
+            )}
+          />
         )}
       </Card>
 
@@ -122,7 +104,7 @@ export default function Hospitals() {
           <Field label="Nom"><Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} required /></Field>
           <Field label="Localité"><Input value={form.localisation} onChange={(e) => setForm({ ...form, localisation: e.target.value })} required /></Field>
           <Field label="Type"><Input value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} required /></Field>
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="secondary" onClick={() => setOpen(false)}>Annuler</Button>
             <Button type="submit" loading={saving}>Créer</Button>
           </div>

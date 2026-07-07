@@ -1,39 +1,76 @@
-import { Droplet } from "lucide-react";
+// History.tsx — Donor · Timeline Command Center
+import { Droplet, HeartPulse } from "lucide-react";
 import { api } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
-import { Card, EmptyState, GroupBadge, Skeleton } from "../../components/ui";
+import { EmptyState, GroupBadge, Skeleton, PageHeader } from "../../components/ui";
 
 export default function History() {
   const donations = useApi(() => api.myDonations(), []);
 
   return (
-    <div className="mx-auto max-w-md space-y-6">
-      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Mes dons (UC-18)</h1>
+    <div className="space-y-4">
+      <PageHeader
+        title="Mes dons"
+        subtitle="Chronologie"
+        icon={HeartPulse}
+      />
 
-      <Card title="Historique">
-        {donations.loading ? (
-          <Skeleton className="h-32" />
-        ) : !donations.data?.length ? (
+      {donations.loading ? (
+        <>
+          <Skeleton className="h-20 rounded-xl" />
+          <Skeleton className="h-20 rounded-xl" />
+          <Skeleton className="h-20 rounded-xl" />
+        </>
+      ) : !donations.data?.length ? (
+        <div className="surface rounded-xl py-12 text-center">
+          <Droplet size={32} className="mx-auto mb-3" style={{ color: "var(--txt-mute)", opacity: 0.4 }} />
           <EmptyState message="Aucun don enregistré pour l'instant." />
-        ) : (
-          <ul className="space-y-2">
-            {donations.data.map((d) => (
-              <li key={d.id} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600 dark:bg-red-950/50 dark:text-red-400">
-                    <Droplet size={16} className="fill-red-600" />
-                  </span>
-                  <div>
-                    <div className="font-medium text-slate-700 dark:text-slate-200">{new Date(d.date).toLocaleDateString("fr-FR")}</div>
-                    <div className="text-xs text-slate-400 dark:text-slate-500">{d.volume} ml</div>
+        </div>
+      ) : (
+        <div className="relative">
+          {/* Timeline line */}
+          <div className="absolute left-[22px] top-2 bottom-2 w-px" style={{ background: "var(--line)" }} />
+
+          <ul className="space-y-3">
+            {donations.data.map((d, i) => (
+              <li
+                key={d.id}
+                className="card-in relative flex items-center gap-4 rounded-xl px-4 py-3"
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--line)",
+                  animationDelay: `${i * 60}ms`,
+                  marginLeft: 0,
+                }}
+              >
+                {/* Timeline dot */}
+                <div
+                  className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl z-10"
+                  style={{ background: "rgba(230,57,70,0.12)", border: "1px solid rgba(230,57,70,0.35)" }}
+                >
+                  <Droplet size={18} style={{ color: "var(--blood)" }} />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="syne font-semibold text-sm" style={{ color: "var(--txt)" }}>
+                      {new Date(d.date).toLocaleDateString("fr-FR", {
+                        weekday: "long", day: "2-digit", month: "long", year: "numeric"
+                      })}
+                    </div>
+                    <GroupBadge groupe={d.groupe_sanguin} />
+                  </div>
+                  <div className="flex items-center gap-3 mt-0.5 mono text-[11px]" style={{ color: "var(--txt-mute)" }}>
+                    <span>{d.volume} ml</span>
+                    <span>·</span>
+                    <span style={{ color: "var(--ok)" }}>~3 vies potentielles</span>
                   </div>
                 </div>
-                <GroupBadge groupe={d.groupe_sanguin} />
               </li>
             ))}
           </ul>
-        )}
-      </Card>
+        </div>
+      )}
     </div>
   );
 }

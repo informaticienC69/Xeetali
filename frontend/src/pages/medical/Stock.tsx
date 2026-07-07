@@ -1,8 +1,10 @@
+// Stock.tsx — Command Center · StockTable style maquette
 import { useMemo, useState } from "react";
+import { ClipboardList } from "lucide-react";
 import { api, ApiError, BLOOD_GROUPS, type BloodGroup, type Pouch, type PouchStatus } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useToast } from "../../lib/toast";
-import { Button, Card, EmptyState, Field, GroupBadge, SearchInput, Select, Skeleton, StatusBadge, Toolbar } from "../../components/ui";
+import { Button, Card, EmptyState, Field, GroupBadge, SearchInput, Select, Skeleton, StatusBadge, Toolbar, PageHeader, DataTable } from "../../components/ui";
 
 const STATUSES: PouchStatus[] = ["DISPONIBLE", "RESERVEE", "UTILISEE", "PERIMEE"];
 
@@ -32,9 +34,7 @@ export default function Stock() {
       setResults(r);
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Erreur.");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }
 
   async function changeStatus(uid: string, s: PouchStatus) {
@@ -49,9 +49,13 @@ export default function Stock() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Stock & recherche d'urgence</h1>
+      <PageHeader
+        title="Stock & Recherche d'urgence"
+        subtitle="Inventaire réseau"
+        icon={ClipboardList}
+      />
 
-      <Card title="Rechercher des poches">
+      <Card title="Rechercher des poches" subtitle="Filtres combinables">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
           <Field label="Groupe">
             <Select value={groupe} onChange={(e) => setGroupe(e.target.value as BloodGroup | "")}>
@@ -77,7 +81,10 @@ export default function Stock() {
         </div>
       </Card>
 
-      <Card title="Résultats" subtitle={results ? `${shown.length} / ${results.length} poche(s)` : undefined}>
+      <Card
+        title="Résultats"
+        subtitle={results ? `${shown.length} / ${results.length} poche(s)` : "Lancez une recherche"}
+      >
         {results && results.length > 0 && (
           <Toolbar>
             <SearchInput value={uidQuery} onChange={setUidQuery} placeholder="Filtrer par UID…" className="min-w-52 grow sm:grow-0" />
@@ -90,34 +97,24 @@ export default function Stock() {
         ) : shown.length === 0 ? (
           <EmptyState message="Aucune poche ne correspond." />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/60 text-left text-slate-600 dark:text-slate-300">
-                  <th className="px-4 py-3 font-semibold">UID</th>
-                  <th className="px-4 py-3 font-semibold">Groupe</th>
-                  <th className="px-4 py-3 font-semibold">Statut</th>
-                  <th className="px-4 py-3 font-semibold">Péremption</th>
-                  <th className="px-4 py-3 font-semibold">Changer statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                {shown.map((p) => (
-                  <tr key={p.id} className="border-t border-slate-100 dark:border-slate-800">
-                    <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-200">{p.uid}</td>
-                    <td className="px-4 py-3"><GroupBadge groupe={p.groupe_sanguin} /></td>
-                    <td className="px-4 py-3"><StatusBadge statut={p.statut} /></td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{p.date_peremption}</td>
-                    <td className="px-4 py-3">
-                      <Select value={p.statut} onChange={(e) => changeStatus(p.uid, e.target.value as PouchStatus)} className="max-w-40">
-                        {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                      </Select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={["UID Hyperledger", "Groupe", "Statut", "Péremption", "Action"]}
+            data={shown}
+            keyExtractor={(p) => p.id}
+            renderRow={(p) => (
+              <>
+                <td className="px-4 py-3 mono text-[11px]" style={{ color: "var(--txt-dim)" }}>{p.uid}</td>
+                <td className="px-4 py-3"><GroupBadge groupe={p.groupe_sanguin} /></td>
+                <td className="px-4 py-3"><StatusBadge statut={p.statut} /></td>
+                <td className="px-4 py-3 mono text-[11px]" style={{ color: "var(--txt-mute)" }}>{p.date_peremption}</td>
+                <td className="px-4 py-3">
+                  <Select value={p.statut} onChange={(e) => changeStatus(p.uid, e.target.value as PouchStatus)} className="max-w-40">
+                    {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </Select>
+                </td>
+              </>
+            )}
+          />
         )}
       </Card>
     </div>

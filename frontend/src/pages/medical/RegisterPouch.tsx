@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Download } from "lucide-react";
+import { Download, Droplet } from "lucide-react";
 import { api, ApiError, BLOOD_GROUPS, type BloodGroup, type Pouch } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useAuth } from "../../lib/auth";
 import { useToast } from "../../lib/toast";
-import { Button, Card, Field, GroupBadge, Input, Select, StatusBadge } from "../../components/ui";
+import { Button, Card, Field, GroupBadge, Input, Select, StatusBadge, PageHeader } from "../../components/ui";
 
 function todayISO(offsetDays = 0): string {
   const d = new Date();
@@ -52,7 +52,11 @@ export default function RegisterPouch() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Enregistrer une poche (UC-08)</h1>
+      <PageHeader
+        title="Enregistrer une poche"
+        subtitle="Banque de sang"
+        icon={Droplet}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card title="Nouvelle poche" subtitle="UID et QR Code générés automatiquement.">

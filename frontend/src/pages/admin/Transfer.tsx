@@ -1,8 +1,10 @@
+// Transfer.tsx — Command Center
 import { useState } from "react";
+import { ArrowLeftRight } from "lucide-react";
 import { api, ApiError, BLOOD_GROUPS, type BloodGroup } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useToast } from "../../lib/toast";
-import { Button, Card, Field, Input, Select, Skeleton } from "../../components/ui";
+import { Button, Card, Field, Input, Select, Skeleton, PageHeader } from "../../components/ui";
 import InventoryTable from "../../components/InventoryTable";
 
 export default function Transfer() {
@@ -13,7 +15,6 @@ export default function Transfer() {
   const [groupe, setGroupe] = useState<BloodGroup>("O+");
   const [quantite, setQuantite] = useState(1);
   const [submitting, setSubmitting] = useState(false);
-
   const hospitals = inv.data ?? [];
 
   async function submit(e: React.FormEvent) {
@@ -40,24 +41,24 @@ export default function Transfer() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Coordonner un transfert (UC-04)</h1>
+      <PageHeader
+        title="Coordonner un transfert"
+        subtitle="Routing réseau"
+        icon={ArrowLeftRight}
+      />
 
       <Card title="Nouvel ordre de transfert" subtitle="Réaffecte N poches disponibles d'un hôpital à un autre (atomique).">
         <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Hôpital source">
             <Select value={source} onChange={(e) => setSource(e.target.value === "" ? "" : Number(e.target.value))}>
               <option value="">— choisir —</option>
-              {hospitals.map((h) => (
-                <option key={h.hospital_id} value={h.hospital_id}>{h.nom}</option>
-              ))}
+              {hospitals.map((h) => <option key={h.hospital_id} value={h.hospital_id}>{h.nom}</option>)}
             </Select>
           </Field>
           <Field label="Hôpital cible">
             <Select value={target} onChange={(e) => setTarget(e.target.value === "" ? "" : Number(e.target.value))}>
               <option value="">— choisir —</option>
-              {hospitals.map((h) => (
-                <option key={h.hospital_id} value={h.hospital_id}>{h.nom}</option>
-              ))}
+              {hospitals.map((h) => <option key={h.hospital_id} value={h.hospital_id}>{h.nom}</option>)}
             </Select>
           </Field>
           <Field label="Groupe sanguin">
@@ -69,12 +70,14 @@ export default function Transfer() {
             <Input type="number" min={1} value={quantite} onChange={(e) => setQuantite(Math.max(1, Number(e.target.value)))} />
           </Field>
           <div className="sm:col-span-2">
-            <Button type="submit" loading={submitting}>Valider le transfert</Button>
+            <Button type="submit" loading={submitting}>
+              <ArrowLeftRight size={16} /> Valider le transfert
+            </Button>
           </div>
         </form>
       </Card>
 
-      <Card title="Stocks actuels">
+      <Card title="Stocks actuels" subtitle="Réseau national">
         {inv.loading ? <Skeleton className="h-40" /> : <InventoryTable inventory={hospitals} />}
       </Card>
     </div>

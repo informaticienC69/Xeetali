@@ -1,8 +1,9 @@
-import { Bell } from "lucide-react";
+// Alerts.tsx — Donor · Command Center
+import { AlertTriangle, Bell, CheckCircle, XCircle } from "lucide-react";
 import { api, ApiError } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useToast } from "../../lib/toast";
-import { Button, Card, EmptyState, GroupBadge, Skeleton } from "../../components/ui";
+import { Button, EmptyState, GroupBadge, Skeleton, PageHeader } from "../../components/ui";
 
 export default function Alerts() {
   const toast = useToast();
@@ -18,35 +19,61 @@ export default function Alerts() {
   }
 
   return (
-    <div className="mx-auto max-w-md space-y-6">
-      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Alertes en cours (UC-17)</h1>
+    <div className="space-y-4">
+      <PageHeader
+        title="Alertes en cours"
+        subtitle="Flux temps réel"
+        icon={Bell}
+      />
 
       {alerts.loading ? (
-        <Skeleton className="h-40" />
+        <>
+          <Skeleton className="h-32 rounded-xl" />
+          <Skeleton className="h-32 rounded-xl" />
+        </>
       ) : !alerts.data?.length ? (
-        <EmptyState message="Aucune alerte active pour le moment." />
+        <div className="surface rounded-xl py-12 text-center">
+          <CheckCircle size={32} className="mx-auto mb-3" style={{ color: "var(--ok)" }} />
+          <EmptyState message="Aucune alerte active pour le moment." />
+        </div>
       ) : (
         <div className="space-y-3">
           {alerts.data.map((a) => (
-            <Card key={a.id}>
+            <div
+              key={a.id}
+              className="card-in glow-blood-strong"
+              style={{
+                background: "linear-gradient(135deg, rgba(230,57,70,0.12), rgba(230,57,70,0.04))",
+                border: "1px solid rgba(230,57,70,0.40)",
+                borderRadius: 12,
+                padding: 18,
+              }}
+            >
               <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600 dark:bg-red-950/50 dark:text-red-400">
-                  <Bell size={18} />
-                </span>
-                <div className="grow">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-800 dark:text-slate-100">Besoin de sang</span>
+                <div
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl pulse-soft"
+                  style={{ background: "rgba(230,57,70,0.15)", border: "1px solid rgba(230,57,70,0.35)" }}
+                >
+                  <AlertTriangle size={18} style={{ color: "var(--blood)" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="syne font-bold" style={{ color: "var(--txt)" }}>Besoin de sang</span>
                     <GroupBadge groupe={a.groupe_sanguin} />
-                    <span className="text-xs text-slate-400 dark:text-slate-500">· {a.portee.toLowerCase()}</span>
+                    <span className="mono text-[10px] uppercase" style={{ color: "var(--txt-mute)" }}>· {a.portee.toLowerCase()}</span>
                   </div>
-                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{a.message}</p>
-                  <div className="mt-3 flex gap-2">
-                    <Button onClick={() => respond(a.id, true)}>Je suis disponible</Button>
-                    <Button variant="secondary" onClick={() => respond(a.id, false)}>Pas disponible</Button>
+                  <p className="mono text-[12px]" style={{ color: "var(--txt-dim)" }}>{a.message}</p>
+                  <div className="flex gap-2 mt-3">
+                    <Button onClick={() => respond(a.id, true)}>
+                      <CheckCircle size={14} /> Je suis disponible
+                    </Button>
+                    <Button variant="secondary" onClick={() => respond(a.id, false)}>
+                      <XCircle size={14} /> Pas disponible
+                    </Button>
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
 import { api, ApiError, type PouchValidity } from "../../lib/api";
 import { useToast } from "../../lib/toast";
-import { Button, Card, Input, StatusBadge } from "../../components/ui";
+import { Button, Card, Input, StatusBadge, PageHeader } from "../../components/ui";
 
 export default function Validity() {
   const toast = useToast();
@@ -25,7 +25,11 @@ export default function Validity() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Vérifier la validité d'une poche</h1>
+      <PageHeader
+        title="Vérifier la validité d'une poche"
+        subtitle="Contrôle qualité"
+        icon={ShieldCheck}
+      />
 
       <Card title="Recherche par UID" subtitle="Contrôle d'existence en base et de péremption (sans Blockchain).">
         <form onSubmit={check} className="flex flex-wrap items-end gap-3">
