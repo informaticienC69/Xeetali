@@ -1,41 +1,517 @@
+/* ═══════════════════════════════════════════════════════════════
+   XÉÉTALI — Design System "Command Center"
+   Inspiré de maquette.html · Light + Dark · Syne + DM Mono
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
+
 @import "tailwindcss";
 
-/* Bascule de thème par classe .dark (au lieu de prefers-color-scheme seul). */
-@custom-variant dark (&:where(.dark, .dark *));
-
+/* ── Tokens : mode LIGHT (défaut) ─────────────────────────────── */
 :root {
-  color-scheme: light;
-}
-:root.dark {
-  color-scheme: dark;
+  --bg:           #f0f2f8;
+  --bg-2:         #e8ecf6;
+  --surface:      #ffffff;
+  --surface-2:    #e8edf8;
+  --line:         #d1d9ee;
+  --line-2:       #bcc8e8;
+  --blood:        #E63946;
+  --blood-dim:    #c1232f;
+  --blood-glow:   rgba(230, 57, 70, 0.25);
+  --ok:           #16a34a;
+  --warn:         #d97706;
+  --crit:         #E63946;
+  --txt:          #0f1629;
+  --txt-dim:      #4a5578;
+  --txt-mute:     #8a96b8;
+  --phosphor:     #39FF14;
+  --phosphor-dim: rgba(57, 255, 20, 0.35);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 4px rgba(15, 22, 41, 0.08);
+  --shadow-md: 0 4px 16px rgba(15, 22, 41, 0.10);
+  --shadow-lg: 0 8px 32px rgba(15, 22, 41, 0.12);
 }
 
-/* Transitions douces lors du changement de thème (désactivées si réduit). */
-@media (prefers-reduced-motion: no-preference) {
-  body,
-  .theme-transition,
-  [class*="bg-"],
-  [class*="border-"],
-  [class*="text-"] {
-    transition-property: background-color, border-color, color, fill;
-    transition-duration: 180ms;
-    transition-timing-function: ease;
-  }
+/* ── Tokens : mode DARK (maquette fidèle) ─────────────────────── */
+.dark {
+  --bg:           #0A0F1E;
+  --bg-2:         #0e1428;
+  --surface:      #131a31;
+  --surface-2:    #1D3557;
+  --line:         #1f2a4a;
+  --line-2:       #2a3863;
+  --blood:        #E63946;
+  --blood-dim:    #b02a36;
+  --blood-glow:   rgba(230, 57, 70, 0.55);
+  --ok:           #4ade80;
+  --warn:         #f59e0b;
+  --crit:         #E63946;
+  --txt:          #E6ECF5;
+  --txt-dim:      #93a0bf;
+  --txt-mute:     #5b6685;
+
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ── Reset global ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
 }
 
-/* Anneau de focus clavier cohérent et accessible. */
-:focus-visible {
-  outline: 2px solid #dc2626;
-  outline-offset: 2px;
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: 'Syne', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── Typographie utilitaires ───────────────────────────────────── */
+.font-syne { font-family: 'Syne', system-ui, sans-serif !important; }
+.font-mono { font-family: 'DM Mono', ui-monospace, monospace !important; }
+.syne      { font-family: 'Syne', system-ui, sans-serif; }
+.mono      { font-family: 'DM Mono', ui-monospace, monospace; }
+
+/* ── Surfaces (mode-aware) ────────────────────────────────────── */
+.surface {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.surface-2 {
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+}
+
+.dark .surface-2 {
+  background: linear-gradient(180deg, #16203d 0%, #111a36 100%);
+}
+
+/* ── Glows ────────────────────────────────────────────────────── */
+.glow-blood {
+  box-shadow: 0 0 0 1px rgba(230,57,70,0.25), 0 0 16px rgba(230,57,70,0.15);
+}
+.glow-blood-strong {
+  box-shadow: 0 0 0 1px rgba(230,57,70,0.45), 0 0 24px rgba(230,57,70,0.25), inset 0 0 16px rgba(230,57,70,0.06);
+}
+.dark .glow-blood {
+  box-shadow: 0 0 0 1px rgba(230,57,70,0.4), 0 0 24px rgba(230,57,70,0.35);
+}
+.dark .glow-blood-strong {
+  box-shadow: 0 0 0 1px rgba(230,57,70,0.6), 0 0 36px rgba(230,57,70,0.55), inset 0 0 24px rgba(230,57,70,0.12);
+}
+
+.glow-ok {
+  box-shadow: 0 0 0 1px rgba(74,222,128,0.25), 0 0 12px rgba(74,222,128,0.15);
+}
+
+/* ── Bouton "blood" ───────────────────────────────────────────── */
+.btn-blood {
+  background: linear-gradient(180deg, #ef3a48 0%, #c1232f 100%);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 10px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 16px rgba(230,57,70,0.30);
+}
+.btn-blood:hover  { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(230,57,70,0.40); }
+.btn-blood:active { transform: translateY(0); }
+.btn-blood:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+/* ── Animations ───────────────────────────────────────────────── */
+
+/* Glow concentrique rouge urgence */
+@keyframes bloodPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--blood-glow), 0 0 24px var(--blood-glow); }
+  50%       { box-shadow: 0 0 0 14px rgba(230,57,70,0), 0 0 36px var(--blood-glow); }
+}
+.pulse-blood { animation: bloodPulse 1.8s ease-in-out infinite; }
+
+/* Clignotement texte rouge */
+@keyframes textPulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 10px var(--blood-glow); }
+  50%       { opacity: 0.55; text-shadow: 0 0 22px var(--blood-glow); }
+}
+.pulse-text { animation: textPulse 1.4s ease-in-out infinite; }
+
+/* Opacity soft */
+@keyframes softPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+.pulse-soft { animation: softPulse 2s ease-in-out infinite; }
+
+/* Curseur clignotant */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.blink { animation: blink 1s steps(1) infinite; }
+
+/* Stroke dasharray animé (SVG) */
+@keyframes dash {
+  to { stroke-dashoffset: -24; }
+}
+.dash-anim { stroke-dasharray: 4 4; animation: dash 1.2s linear infinite; }
+
+/* Ticker marquee */
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-track {
+  display: inline-flex;
+  gap: 48px;
+  animation: tickerScroll 60s linear infinite;
+  white-space: nowrap;
+}
+
+/* Entrée de carte */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card-in { animation: cardIn 0.3s ease both; }
+
+/* Transition de vue */
+@keyframes viewFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.view-fade { animation: viewFade 0.35s ease both; }
+
+/* Scale bounce badge */
+@keyframes scaleBounce {
+  0%   { transform: scale(0.8); }
+  60%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+.scale-bounce { animation: scaleBounce 0.4s ease both; }
+
+/* Progress fill */
+@keyframes progressFill {
+  from { width: 0%; }
+  to   { width: var(--target-width, 100%); }
+}
+.progress-fill { animation: progressFill 1s ease-out both; }
+
+/* ── Shimmer (skeleton premium) ───────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 0%,
+    var(--line) 40%,
+    var(--surface-2) 100%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ── Bar rise (barres graphiques) ─────────────────────────────── */
+@keyframes barRise {
+  from { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+  to   { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+}
+.bar-rise { animation: barRise 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* ── Bell shake (alerte nationale) ───────────────────────────── */
+@keyframes bellShake {
+  0%, 100% { transform: rotate(0deg);   }
+  10%       { transform: rotate(-12deg); }
+  20%       { transform: rotate(10deg);  }
+  30%       { transform: rotate(-8deg);  }
+  40%       { transform: rotate(7deg);   }
+  50%       { transform: rotate(-4deg);  }
+  60%       { transform: rotate(3deg);   }
+  70%       { transform: rotate(-2deg);  }
+  80%       { transform: rotate(1deg);   }
+}
+.bell-shake { animation: bellShake 0.9s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite; }
+
+/* ── Accent pulse (top bar KPI) ───────────────────────────────── */
+@keyframes accentPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.accent-pulse { animation: accentPulse 2s ease-in-out infinite; }
+
+/* ── Dropdown animation ───────────────────────────────────────── */
+@keyframes dropdownPop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.dropdown-pop {
+  animation: dropdownPop 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: top center;
+}
+
+.chevron-rotate {
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.chevron-rotate.open {
+  transform: rotate(180deg);
+}
+
+/* ── Chart fade up (graphiques) ───────────────────────────────── */
+@keyframes chartFadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.chart-fade-up { animation: chartFadeUp 0.5s ease both; }
+
+/* ── Rank badge ───────────────────────────────────────────────── */
+@keyframes rankIn {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.rank-in { animation: rankIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* ── Hover élévation (cartes graphiques) ─────────────────────── */
+.chart-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.chart-card-hover:hover {
+  transform: translateY(-2px);
+}
+
+/* ── Alert item hover ─────────────────────────────────────────── */
+.alert-item {
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.alert-item:hover {
+  transform: translateX(2px);
+}
+
+/* ── Scanlines CRT (dark mode uniquement) ─────────────────────── */
+.scanlines::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.018) 0px,
+    rgba(255,255,255,0.018) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 9998;
+  mix-blend-mode: overlay;
+}
+.scanlines::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+  z-index: 9997;
+}
+
+/* ── Gridlines (fond de page) ─────────────────────────────────── */
+.gridlines {
+  background-image:
+    linear-gradient(to right, rgba(29, 53, 87, 0.10) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(29, 53, 87, 0.10) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.dark .gridlines {
+  background-image:
+    linear-gradient(to right, rgba(29, 53, 87, 0.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(29, 53, 87, 0.18) 1px, transparent 1px);
+}
+
+/* ── Phosphor USSD ────────────────────────────────────────────── */
+.phosphor {
+  background: #02100a;
+  color: var(--phosphor);
+  font-family: 'DM Mono', ui-monospace, monospace;
+  text-shadow: 0 0 6px var(--phosphor-dim), 0 0 14px var(--phosphor-dim);
+  line-height: 1.15;
+}
+.phosphor::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(57,255,20,0.04) 0px,
+    rgba(57,255,20,0.04) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* ── Scrollbar cachée ─────────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+/* ── Tooltip Command Center ───────────────────────────────────── */
+.cc-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  z-index: 50;
+  min-width: 160px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* ── StatusDot ────────────────────────────────────────────────── */
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+/* ── Region hover (SVG carte) ─────────────────────────────────── */
+.map-region {
+  transition: filter .15s ease, transform .15s ease;
+  cursor: pointer;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.map-region:hover {
+  filter: brightness(1.5) drop-shadow(0 0 8px currentColor);
+}
+
+/* ── Recharts overrides ───────────────────────────────────────── */
+.recharts-cartesian-axis-tick-value {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 11px !important;
+}
+
+/* ── Inputs Command Center ────────────────────────────────────── */
+.cc-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: 'DM Mono', monospace;
+  color: var(--txt);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.cc-input::placeholder { color: var(--txt-mute); }
+.cc-input:focus {
+  border-color: var(--blood);
+  box-shadow: 0 0 0 3px rgba(230,57,70,0.15);
+}
+
+/* ── Stagger delays ───────────────────────────────────────────── */
+.delay-0   { animation-delay: 0ms; }
+.delay-60  { animation-delay: 60ms; }
+.delay-120 { animation-delay: 120ms; }
+.delay-180 { animation-delay: 180ms; }
+.delay-240 { animation-delay: 240ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-360 { animation-delay: 360ms; }
+.delay-420 { animation-delay: 420ms; }
+
+/* ══════════════════════════════════════════════════════════════
+   CARTE DU SÉNÉGAL — Animations premium
+   ══════════════════════════════════════════════════════════════ */
+
+/* Anneaux pulsants sur régions critiques */
+@keyframes mapPulseRing1 {
+  0%   { r: 28; opacity: 0.75; stroke-width: 1.5; }
+  100% { r: 58; opacity: 0;    stroke-width: 0.3; }
+}
+@keyframes mapPulseRing2 {
+  0%   { r: 18; opacity: 0.55; stroke-width: 1; }
+  100% { r: 44; opacity: 0;    stroke-width: 0.2; }
+}
+.map-pulse-ring-1 {
+  animation: mapPulseRing1 2.4s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.map-pulse-ring-2 {
+  animation: mapPulseRing2 2.4s ease-out 0.8s infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Routes approvisionnement — flux de pointillés */
+@keyframes supplyFlow {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -34; }
+}
+.supply-route {
+  animation: supplyFlow 1.6s linear infinite;
+}
+
+/* Scrollbar masquée (detail panel) */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ── Container Carte (Light/Dark) ─────────────────────────────── */
+.map-bg {
+  background: #ffffff;
+}
+.dark .map-bg {
+  background: linear-gradient(135deg, #061020 0%, #0c1e3a 50%, #071428 100%);
+}
+
+/* ── UI Refactor Animations ───────────────────────────────────── */
+
+/* Lignes de tableau */
+@keyframes rowFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.row-fade-in { animation: rowFadeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* Entrée Modale */
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.modal-pop { animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* DataTable Hover Row Glow */
+.dt-row {
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.dt-row:hover {
+  background: var(--surface-2);
+  box-shadow: inset 4px 0 0 var(--blood);
+  transform: translateX(2px);
+}
+.dark .dt-row:hover {
+  background: rgba(230, 57, 70, 0.04);
+  box-shadow: inset 4px 0 0 var(--blood);
+}
+
+/* Page Header Title Glow */
+.page-title-glow {
+  text-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+.dark .page-title-glow {
+  text-shadow: 0 0 20px rgba(255,255,255,0.15);
 }

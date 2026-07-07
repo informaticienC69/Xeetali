@@ -1,188 +1,284 @@
-import { useState, type ComponentType, type ReactNode } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+// Layout.tsx — Sidebar Admin "Command Center" XÉÉTALI
+// Inspiré de la maquette.html · Light + Dark · Syne + DM Mono
+import { useEffect, useState, type ReactNode } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   ArrowLeftRight,
-  BadgeCheck,
   Bell,
-  Boxes,
   Building2,
-  CalendarDays,
   Droplet,
   LayoutDashboard,
   LogOut,
-  MapPin,
-  Megaphone,
-  Menu,
-  ScrollText,
-  Send,
-  User,
+  Monitor,
+  Moon,
+  Sun,
   Users,
-  X,
-  type LucideProps,
+  Activity,
+  ClipboardList,
+  ShieldCheck,
+  FileCheck,
+  type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "../lib/auth";
+import { useTheme } from "../lib/theme";
 import type { Role } from "../lib/api";
-import ThemeToggle from "./ThemeToggle";
 
-type Icon = ComponentType<LucideProps>;
+// ── Nav items par rôle ─────────────────────────────────────────
 interface NavItem {
   to: string;
   label: string;
-  icon: Icon;
+  sub?: string;
+  icon: LucideIcon;
 }
 
-const NAV: Record<Role, NavItem[]> = {
-  ADMIN_CNTS: [
-    { to: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
-    { to: "/admin/transfer", label: "Transfert", icon: ArrowLeftRight },
-    { to: "/admin/campaign", label: "Campagne", icon: Megaphone },
-    { to: "/admin/users", label: "Utilisateurs", icon: Users },
-    { to: "/admin/hospitals", label: "Établissements", icon: Building2 },
-  ],
-  PERSONNEL_MEDICAL: [
-    { to: "/medical", label: "Enregistrer poche", icon: Droplet },
-    { to: "/medical/stock", label: "Stock & recherche", icon: Boxes },
-    { to: "/medical/validity", label: "Vérifier validité", icon: BadgeCheck },
-    { to: "/medical/request", label: "Demande de sang", icon: Send },
-  ],
-  DONNEUR: [
-    { to: "/donor", label: "Mon profil", icon: User },
-    { to: "/donor/points", label: "Points de collecte", icon: MapPin },
-    { to: "/donor/appointments", label: "Rendez-vous", icon: CalendarDays },
-    { to: "/donor/alerts", label: "Alertes", icon: Bell },
-    { to: "/donor/history", label: "Mes dons", icon: ScrollText },
-  ],
+const ADMIN_NAV: NavItem[] = [
+  { to: "/admin",           label: "Command Center",  sub: "Tableau de bord",      icon: LayoutDashboard },
+  { to: "/admin/transfer",  label: "Transferts",      sub: "Routing poches",       icon: ArrowLeftRight  },
+  { to: "/admin/campaign",  label: "Alerte Nationale",sub: "SMS · Push · USSD",   icon: Bell            },
+  { to: "/admin/users",     label: "Utilisateurs",    sub: "Gestion des comptes",  icon: Users           },
+  { to: "/admin/hospitals", label: "Établissements",  sub: "Réseau hospitalier",   icon: Building2       },
+];
+
+const MEDICAL_NAV: NavItem[] = [
+  { to: "/medical",          label: "Enregistrement",  sub: "Nouvelle poche",      icon: Droplet         },
+  { to: "/medical/stock",    label: "Stock & Urgence", sub: "Recherche poches",    icon: ClipboardList   },
+  { to: "/medical/validity", label: "Contrôle",        sub: "Péremptions",         icon: FileCheck       },
+  { to: "/medical/request",  label: "Demandes",        sub: "Besoins hospitaliers",icon: Activity        },
+];
+
+const NAV_BY_ROLE: Record<Role, NavItem[]> = {
+  ADMIN_CNTS:        ADMIN_NAV,
+  PERSONNEL_MEDICAL: MEDICAL_NAV,
+  DONNEUR:           [],
 };
 
 const ROLE_LABEL: Record<Role, string> = {
-  ADMIN_CNTS: "Administrateur CNTS",
+  ADMIN_CNTS:        "CNTS · Admin",
   PERSONNEL_MEDICAL: "Personnel Médical",
-  DONNEUR: "Donneur",
+  DONNEUR:           "Donneur",
 };
 
-function Brand() {
+const ROLE_ACRONYM: Record<Role, string> = {
+  ADMIN_CNTS:        "AD",
+  PERSONNEL_MEDICAL: "PM",
+  DONNEUR:           "DN",
+};
+
+// ── Horloge temps réel ─────────────────────────────────────────
+function LiveClock() {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
   return (
-    <div className="flex items-center gap-2">
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-600 text-white">
-        <Droplet size={20} className="fill-white" />
-      </span>
-      <div className="leading-tight">
-        <div className="text-lg font-bold text-red-700">Xéétali</div>
-        <div className="text-[11px] text-slate-400">CNTS · Node Central</div>
-      </div>
-    </div>
+    <span className="mono tabular-nums" style={{ color: "var(--txt)" }}>
+      {now.toLocaleTimeString("fr-FR", { hour12: false })}
+    </span>
   );
 }
 
-function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => void }) {
-  const linkCls = ({ isActive }: { isActive: boolean }) =>
-    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition " +
-    (isActive
-      ? "bg-red-600 text-white shadow-sm"
-      : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800");
+// ── NavItem ────────────────────────────────────────────────────
+function SideNavItem({ item }: { item: NavItem }) {
   return (
-    <nav className="flex flex-col gap-1">
-      {items.map(({ to, label, icon: Icon }) => (
-        <NavLink key={to} to={to} end className={linkCls} onClick={onNavigate}>
-          <Icon size={18} className="shrink-0" />
-          <span className="truncate">{label}</span>
-        </NavLink>
-      ))}
-    </nav>
+    <NavLink
+      to={item.to}
+      end={item.to.split("/").length === 2}
+      className="group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-150 overflow-hidden"
+      style={({ isActive }) => ({
+        background: isActive ? "var(--surface-2)" : "transparent",
+        color: isActive ? "var(--txt)" : "var(--txt-mute)",
+      })}
+    >
+      {({ isActive }) => (
+        <>
+          {/* Barre latérale rouge active (maquette) */}
+          {isActive && (
+            <span
+              className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r"
+              style={{
+                background: "var(--blood)",
+                boxShadow: "0 0 12px var(--blood)",
+              }}
+            />
+          )}
+          <item.icon
+            size={17}
+            style={{ color: isActive ? "var(--blood)" : "var(--txt-mute)", flexShrink: 0 }}
+          />
+          <div className="flex-1 min-w-0">
+            <div className="syne font-semibold text-sm leading-none truncate"
+                 style={{ color: isActive ? "var(--txt)" : "var(--txt-dim)" }}>
+              {item.label}
+            </div>
+            {item.sub && (
+              <div className="mono text-[9px] uppercase tracking-wider mt-0.5 truncate"
+                   style={{ color: "var(--txt-mute)" }}>
+                {item.sub}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </NavLink>
   );
 }
 
+// ── Sidebar ────────────────────────────────────────────────────
 export default function Layout({ children }: { children: ReactNode }) {
-  const { role, nom, logout } = useAuth();
+  const { nom, role, logout } = useAuth();
+  const { mode, cycle } = useTheme();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [drawer, setDrawer] = useState(false);
-  if (!role) return null;
-  const items = NAV[role];
-  const current = items.find((i) => i.to === location.pathname);
-
-  const onLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
-  const UserFooter = (
-    <div className="flex items-center justify-between gap-2 border-t border-slate-100 px-3 py-3 dark:border-slate-800">
-      <div className="flex min-w-0 items-center gap-2">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-          <User size={16} />
-        </span>
-        <div className="min-w-0 leading-tight">
-          <div className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">{nom}</div>
-          <div className="truncate text-xs text-slate-400 dark:text-slate-500">{ROLE_LABEL[role]}</div>
-        </div>
-      </div>
-      <div className="flex shrink-0 items-center">
-        <ThemeToggle />
-        <button
-          onClick={onLogout}
-          title="Déconnexion"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-slate-800"
-        >
-          <LogOut size={16} />
-        </button>
-      </div>
-    </div>
-  );
+  const nav = role ? (NAV_BY_ROLE[role] ?? []) : [];
+  const prenom = (nom ?? "").split(" ")[0];
+  const ThemeIcon = mode === "light" ? Sun : mode === "dark" ? Moon : Monitor;
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 lg:flex">
-      {/* Sidebar (desktop) */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 lg:flex">
-        <div className="px-4 py-4">
-          <Brand />
+    <div className="flex h-screen overflow-hidden" style={{ background: "var(--bg)" }}>
+
+      {/* ── Sidebar ── */}
+      <aside
+        className="flex w-64 shrink-0 flex-col"
+        style={{
+          background: "var(--surface)",
+          borderRight: "1px solid var(--line)",
+        }}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-4 py-5" style={{ borderBottom: "1px solid var(--line)" }}>
+          {/* Icône logo gradient */}
+          <div
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+            style={{
+              background: "linear-gradient(135deg, #E63946 0%, #1D3557 100%)",
+              boxShadow: "0 4px 12px rgba(230,57,70,0.35)",
+            }}
+          >
+            <Droplet size={18} className="fill-white text-white" />
+            {/* Point pulsant */}
+            <span
+              className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full pulse-soft"
+              style={{ background: "var(--blood)", boxShadow: "0 0 8px var(--blood)" }}
+            />
+          </div>
+          <div>
+            <div className="syne font-extrabold tracking-[0.16em] text-sm leading-none" style={{ color: "var(--txt)" }}>
+              XÉÉTALI
+            </div>
+            <div className="mono text-[8px] uppercase tracking-wider mt-0.5" style={{ color: "var(--txt-mute)" }}>
+              DÉLIVRANCE · CNTS SN
+            </div>
+          </div>
         </div>
-        <div className="flex-1 overflow-y-auto px-3 py-2">
-          <NavList items={items} />
+
+        {/* Statut système */}
+        <div className="px-4 py-2 flex items-center gap-2" style={{ borderBottom: "1px solid var(--line)" }}>
+          <span className="h-1.5 w-1.5 rounded-full pulse-soft" style={{ background: "var(--ok)", boxShadow: "0 0 8px var(--ok)" }} />
+          <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
+            SYS <span style={{ color: "var(--ok)" }}>OPÉRATIONNEL</span>
+          </span>
+          <span className="ml-auto">
+            <LiveClock />
+          </span>
         </div>
-        {UserFooter}
+
+        {/* Label section */}
+        <div className="px-4 pt-4 pb-1">
+          <div className="mono text-[10px] uppercase tracking-[0.14em]" style={{ color: "var(--txt-mute)" }}>
+            Navigation
+          </div>
+        </div>
+
+        {/* Nav items */}
+        <nav className="flex-1 overflow-y-auto no-scrollbar px-2 py-1 space-y-0.5">
+          {nav.map((item) => (
+            <SideNavItem key={item.to} item={item} />
+          ))}
+        </nav>
+
+        {/* Footer : utilisateur + thème + déconnexion */}
+        <div style={{ borderTop: "1px solid var(--line)" }}>
+          {/* Statut LoRaWAN */}
+          <div className="px-4 py-2 flex items-center gap-3 mono text-[10px]" style={{ color: "var(--txt-mute)", borderBottom: "1px solid var(--line)" }}>
+            <ShieldCheck size={11} style={{ color: "var(--ok)" }} />
+            <span>Hyperledger <span style={{ color: "var(--ok)" }}>SYNC</span></span>
+            <span className="ml-auto">LoRaWAN <span style={{ color: "var(--ok)" }}>412/415</span></span>
+          </div>
+
+          {/* Utilisateur */}
+          <div className="flex items-center gap-2.5 px-4 py-3">
+            {/* Avatar initiales */}
+            <div
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg syne font-bold text-sm text-white"
+              style={{ background: "linear-gradient(135deg, #E63946, #1D3557)" }}
+            >
+              {role ? ROLE_ACRONYM[role] : "?"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="syne font-semibold text-sm truncate" style={{ color: "var(--txt)" }}>
+                {prenom || "Utilisateur"}
+              </div>
+              <div className="mono text-[9px] uppercase tracking-wider truncate" style={{ color: "var(--txt-mute)" }}>
+                {role ? ROLE_LABEL[role] : "—"}
+              </div>
+            </div>
+
+            {/* Thème */}
+            <button
+              onClick={cycle}
+              title="Changer de thème"
+              aria-label="Changer de thème"
+              className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
+              style={{ color: "var(--txt-mute)" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--txt)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--txt-mute)"; }}
+            >
+              <ThemeIcon size={15} />
+            </button>
+
+            {/* Déconnexion */}
+            <button
+              onClick={() => { logout(); navigate("/login"); }}
+              title="Déconnexion"
+              aria-label="Déconnexion"
+              className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
+              style={{ color: "var(--txt-mute)" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--blood)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--txt-mute)"; }}
+            >
+              <LogOut size={15} />
+            </button>
+          </div>
+        </div>
       </aside>
 
-      {/* Drawer (mobile) */}
-      {drawer && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-slate-900/40" onClick={() => setDrawer(false)} />
-          <aside className="absolute inset-y-0 left-0 flex w-72 max-w-[80%] flex-col bg-white shadow-xl dark:bg-slate-900">
-            <div className="flex items-center justify-between px-4 py-4">
-              <Brand />
-              <button
-                onClick={() => setDrawer(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-                aria-label="Fermer le menu"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto px-3 py-2">
-              <NavList items={items} onNavigate={() => setDrawer(false)} />
-            </div>
-            {UserFooter}
-          </aside>
+      {/* ── Contenu principal ── */}
+      <main
+        className="flex flex-1 flex-col overflow-hidden"
+        style={{ background: "var(--bg)" }}
+      >
+        {/* Top bar */}
+        <div
+          className="flex items-center justify-between px-6 py-3 shrink-0"
+          style={{ borderBottom: "1px solid var(--line)", background: "var(--surface)" }}
+        >
+          <div className="mono text-[11px] uppercase tracking-wider flex items-center gap-3" style={{ color: "var(--txt-mute)" }}>
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--blood)", boxShadow: "0 0 8px var(--blood)" }} />
+            v1.4.0
+          </div>
+          <div className="flex items-center gap-3 mono text-[11px]" style={{ color: "var(--txt-mute)" }}>
+            <span className="hidden sm:block uppercase tracking-wider">
+              {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long" })}
+            </span>
+            <LiveClock />
+          </div>
         </div>
-      )}
 
-      {/* Contenu */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* Barre supérieure (mobile) */}
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900 lg:hidden">
-          <button
-            onClick={() => setDrawer(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-            aria-label="Ouvrir le menu"
-          >
-            <Menu size={20} />
-          </button>
-          <span className="font-semibold text-slate-800 dark:text-slate-100">{current?.label ?? "Xéétali"}</span>
-          <span className="ml-auto"><ThemeToggle /></span>
-        </header>
-
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">{children}</main>
-      </div>
+        {/* Page scroll */}
+        <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 view-fade">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

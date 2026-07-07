@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Syringe } from "lucide-react";
 import { api, ApiError, BLOOD_GROUPS, type BloodGroup } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useAuth } from "../../lib/auth";
@@ -14,6 +15,9 @@ import {
   Select,
   Skeleton,
   Toolbar,
+  PageHeader,
+  DataTable,
+  UrgencyBadge
 } from "../../components/ui";
 
 const URGENCES = ["NORMALE", "URGENTE", "CRITIQUE"];
@@ -59,12 +63,13 @@ export default function Request() {
     }
   }
 
-  const urgenceCls = (u: string) =>
-    u === "CRITIQUE" ? "text-red-700 font-semibold" : u === "URGENTE" ? "text-amber-600" : "text-slate-500 dark:text-slate-400";
-
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Demande de sang</h1>
+      <PageHeader
+        title="Demande de sang"
+        subtitle="Urgences"
+        icon={Syringe}
+      />
 
       <Card title="Émettre une demande">
         <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -109,28 +114,19 @@ export default function Request() {
         ) : !filtered.length ? (
           <EmptyState message="Aucune demande ne correspond." />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/60 text-left text-slate-600 dark:text-slate-300">
-                  <th className="px-4 py-3 font-semibold">Groupe</th>
-                  <th className="px-4 py-3 font-semibold">Quantité</th>
-                  <th className="px-4 py-3 font-semibold">Urgence</th>
-                  <th className="px-4 py-3 font-semibold">Statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((r) => (
-                  <tr key={r.id} className="border-t border-slate-100 dark:border-slate-800">
-                    <td className="px-4 py-3"><GroupBadge groupe={r.groupe_sanguin} /></td>
-                    <td className="px-4 py-3">{r.quantite}</td>
-                    <td className={`px-4 py-3 ${urgenceCls(r.urgence)}`}>{r.urgence}</td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{r.statut}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={["Groupe", "Quantité", "Urgence", "Statut"]}
+            data={filtered}
+            keyExtractor={(r) => r.id}
+            renderRow={(r) => (
+              <>
+                <td className="px-4 py-3"><GroupBadge groupe={r.groupe_sanguin} /></td>
+                <td className="px-4 py-3 syne font-semibold">{r.quantite}</td>
+                <td className="px-4 py-3"><UrgencyBadge urgence={r.urgence} /></td>
+                <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{r.statut}</td>
+              </>
+            )}
+          />
         )}
       </Card>
     </div>
