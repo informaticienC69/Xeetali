@@ -11,6 +11,10 @@ from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
 
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.core.limiter import limiter
+
 # Importe le paquet ``models`` pour enregistrer toutes les tables sur Base.metadata.
 import app.models  # noqa: F401
 from app.routers import (
@@ -44,6 +48,9 @@ app = FastAPI(
     "(UC-04), donneurs & alertes (UC-14/17/18), administration. CNTS, Sénégal.",
     version="0.2.0",
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,

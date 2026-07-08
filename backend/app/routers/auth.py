@@ -1,23 +1,26 @@
 """Routes d'authentification."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
 from app.services import auth_service
+from app.core.limiter import limiter
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenResponse:
+@limiter.limit("5/minute")
+def register(request: Request, payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenResponse:
     """Crée un compte et renvoie un jeton d'accès."""
     return auth_service.register(db, payload)
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
+@limiter.limit("5/minute")
+def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
     """Authentifie un utilisateur et renvoie un jeton d'accès."""
     return auth_service.login(db, payload)

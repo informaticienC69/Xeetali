@@ -47,11 +47,21 @@ export default function Login() {
   }
 
   return (
-    /* Fond principal + scanlines (dark) + gridlines */
+    /* Fond principal */
     <div
-      className="dark:scanlines relative flex min-h-screen items-center justify-center gridlines p-4"
+      className="relative flex min-h-screen items-center justify-center p-4 flex-col"
       style={{ background: "var(--bg)" }}
     >
+      {/* ── Effets "Waouhh" Command Center ── */}
+      <div className="absolute inset-0 pointer-events-none scanlines opacity-30 z-0" />
+      <div className="absolute inset-0 pointer-events-none gridlines opacity-50 z-0" />
+      <div className="absolute inset-0 pointer-events-none holo-shimmer opacity-10 z-0" />
+      
+      {/* Particules d'ambiance */}
+      <div className="absolute top-[15%] left-[5%] w-2 h-2 rounded-full bg-red-500 particle pointer-events-none z-0" style={{ "--dur": "6s", "--delay": "0s" } as any} />
+      <div className="absolute top-[40%] right-[10%] w-3 h-3 rounded-full bg-blue-500 particle pointer-events-none z-0" style={{ "--dur": "8s", "--delay": "1.5s" } as any} />
+      <div className="absolute bottom-[20%] left-[25%] w-1.5 h-1.5 rounded-full bg-teal-400 particle pointer-events-none z-0" style={{ "--dur": "5s", "--delay": "0.5s" } as any} />
+      <div className="absolute top-[60%] right-[30%] w-2.5 h-2.5 rounded-full bg-purple-500 particle pointer-events-none z-0" style={{ "--dur": "7s", "--delay": "2s" } as any} />
       {/* ThemeToggle */}
       <button
         onClick={cycle}
@@ -79,13 +89,14 @@ export default function Login() {
             />
             {/* Logo principal */}
             <div
-              className="relative flex h-20 w-20 items-center justify-center rounded-2xl"
+              className="relative flex h-20 w-20 items-center justify-center rounded-[1.25rem] backdrop-blur-md"
               style={{
-                background: "linear-gradient(135deg, #E63946 0%, #1D3557 100%)",
-                boxShadow: "0 8px 32px rgba(230,57,70,0.40), 0 0 0 1px rgba(230,57,70,0.30)",
+                background: "linear-gradient(135deg, rgba(230,57,70,0.15) 0%, rgba(230,57,70,0.02) 100%)",
+                boxShadow: "0 12px 32px rgba(230,57,70,0.2), inset 0 1px 1px rgba(255,255,255,0.1)",
+                border: "1px solid rgba(230,57,70,0.3)"
               }}
             >
-              <Droplet size={36} className="fill-white text-white" />
+              <Droplet size={38} strokeWidth={2} className="text-red-500" style={{ fill: "rgba(230,57,70,0.25)", filter: "drop-shadow(0 2px 4px rgba(230,57,70,0.4))" }} />
             </div>
             {/* Point pulsant */}
             <span
@@ -223,6 +234,11 @@ export default function Login() {
           </span>
           <span>v1.4.0</span>
         </div>
+      </div>
+
+      {/* Footer global */}
+      <div className="text-center mono text-[10px] py-4 mt-8 shrink-0 relative z-10" style={{ color: "var(--txt-mute)" }}>
+        XÉÉTALI · CNTS Sénégal · Données hébergées à Diamniadio · Conforme CDP loi 2008-12
       </div>
     </div>
   );

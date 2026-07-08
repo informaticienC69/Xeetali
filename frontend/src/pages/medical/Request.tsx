@@ -10,6 +10,17 @@ import { Button, GroupBadge, PageHeader, Select, Skeleton, UrgencyBadge, EmptySt
 const URGENCES = ["NORMALE", "URGENTE", "CRITIQUE"] as const;
 const STATUTS  = ["OUVERTE", "SATISFAITE", "ANNULEE"] as const;
 
+const COMPATIBILITY: Record<BloodGroup, string> = {
+  "A+": "A+, A-, O+, O-",
+  "A-": "A-, O-",
+  "B+": "B+, B-, O+, O-",
+  "B-": "B-, O-",
+  "AB+": "Tous (Receveur universel)",
+  "AB-": "AB-, A-, B-, O-",
+  "O+": "O+, O-",
+  "O-": "O- (Donneur universel)",
+};
+
 const URGENCY_CONFIG = [
   {
     value: "NORMALE",
@@ -159,7 +170,7 @@ export default function Request() {
   const selectedUrgency = URGENCY_CONFIG.find((u) => u.value === urgence)!;
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full space-y-6">
       <PageHeader
         title="Demandes de sang"
         subtitle="Gestion des urgences"
@@ -180,13 +191,13 @@ export default function Request() {
       />
 
       {/* ── LAYOUT PRINCIPAL ── */}
-      <div className="flex flex-col xl:flex-row gap-6 items-stretch">
+      <div className="flex flex-col xl:flex-row gap-6 items-stretch flex-1 min-h-0">
 
         {/* ══ COLONNE GAUCHE : FORMULAIRE ══ */}
         <div className="w-full xl:w-[45%] shrink-0 flex flex-col">
           <form
             onSubmit={submit}
-            className="h-full flex flex-col gap-6 p-6 rounded-3xl"
+            className="h-full flex flex-col justify-between gap-4 p-5 rounded-3xl"
             style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}
           >
             {/* En-tête form */}
@@ -207,7 +218,7 @@ export default function Request() {
 
             {/* ─ ÉTAPE 1 : Hôpital ─ */}
             <div>
-              <label className="block mono text-[10px] uppercase tracking-wider mb-3" style={{ color: "var(--txt-mute)" }}>
+              <label className="block mono text-[10px] uppercase tracking-wider mb-1.5" style={{ color: "var(--txt-mute)" }}>
                 1. Hôpital demandeur
               </label>
               <Select
@@ -224,16 +235,16 @@ export default function Request() {
 
             {/* ─ ÉTAPE 2 : Groupe sanguin ─ */}
             <div>
-              <label className="block mono text-[10px] uppercase tracking-wider mb-3" style={{ color: "var(--txt-mute)" }}>
+              <label className="block mono text-[10px] uppercase tracking-wider mb-1.5" style={{ color: "var(--txt-mute)" }}>
                 2. Groupe sanguin requis
               </label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-1.5">
                 {BLOOD_GROUPS.map((g) => (
                   <button
                     key={g}
                     type="button"
                     onClick={() => setGroupe(g)}
-                    className="relative syne font-bold text-base py-2.5 rounded-xl transition-all duration-200 overflow-hidden"
+                    className="relative syne font-bold text-sm py-2 rounded-xl transition-all duration-200 overflow-hidden"
                     style={{
                       background: groupe === g ? "var(--blood)" : "var(--surface-2)",
                       color: groupe === g ? "#fff" : "var(--txt-dim)",
@@ -256,10 +267,10 @@ export default function Request() {
 
             {/* ─ ÉTAPE 3 : Quantité ─ */}
             <div>
-              <label className="block mono text-[10px] uppercase tracking-wider mb-3" style={{ color: "var(--txt-mute)" }}>
+              <label className="block mono text-[10px] uppercase tracking-wider mb-1.5" style={{ color: "var(--txt-mute)" }}>
                 3. Quantité de poches
               </label>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setQuantite(Math.max(1, quantite - 1))}
@@ -269,7 +280,7 @@ export default function Request() {
                   <Minus size={16} />
                 </button>
                 <div
-                  className="flex-1 text-center syne font-black text-3xl rounded-xl py-2"
+                  className="flex-1 text-center syne font-black text-2xl rounded-xl py-1.5"
                   style={{ background: "var(--surface-2)", border: "1px solid var(--line)", color: "var(--blood)" }}
                 >
                   {quantite}
@@ -290,10 +301,10 @@ export default function Request() {
 
             {/* ─ ÉTAPE 4 : Niveau d'urgence ─ */}
             <div>
-              <label className="block mono text-[10px] uppercase tracking-wider mb-3" style={{ color: "var(--txt-mute)" }}>
+              <label className="block mono text-[10px] uppercase tracking-wider mb-1.5" style={{ color: "var(--txt-mute)" }}>
                 4. Niveau d'urgence
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1.5">
                 {URGENCY_CONFIG.map((u) => {
                   const isSelected = urgence === u.value;
                   return (
@@ -301,7 +312,7 @@ export default function Request() {
                       key={u.value}
                       type="button"
                       onClick={() => setUrgence(u.value)}
-                      className="relative flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all duration-200 overflow-hidden cursor-pointer"
+                      className="relative flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl transition-all duration-200 overflow-hidden cursor-pointer"
                       style={{
                         background: isSelected ? u.bgActive : "var(--surface-2)",
                         border: `2px solid ${isSelected ? u.borderActive : "var(--line)"}`,
@@ -337,12 +348,28 @@ export default function Request() {
               </div>
             )}
 
+            {/* Protocole de compatibilité */}
+            <div className="flex-1 min-h-0 flex flex-col justify-end">
+              <div 
+                className="p-4 rounded-xl flex items-start gap-3"
+                style={{ background: "color-mix(in srgb, var(--surface-2) 50%, transparent)", border: "1px dashed var(--line)" }}
+              >
+                <div className="mt-0.5"><Activity size={14} style={{ color: "var(--txt-mute)" }} /></div>
+                <div>
+                  <h4 className="syne font-bold text-xs mb-1" style={{ color: "var(--txt)" }}>Protocole de transfusion</h4>
+                  <p className="mono text-[10px]" style={{ color: "var(--txt-dim)" }}>
+                    Si le groupe <strong style={{ color: "var(--blood)" }}>{groupe}</strong> est en rupture, vous pouvez accepter des poches des groupes suivants : <span className="font-bold">{COMPATIBILITY[groupe]}</span>.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Récap + Bouton */}
-            <div className="mt-auto flex flex-col gap-3">
+            <div className="mt-auto flex flex-col gap-2">
               {/* Récap visuel */}
               {hospital !== "" && (
                 <div
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl mono text-xs"
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl mono text-xs"
                   style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}
                 >
                   <span style={{ color: "var(--txt-mute)" }}>Résumé :</span>
@@ -361,7 +388,7 @@ export default function Request() {
                 type="submit"
                 loading={saving}
                 disabled={hospital === ""}
-                className="w-full py-3.5 rounded-xl font-bold tracking-wide"
+                className="w-full py-2.5 rounded-xl font-bold tracking-wide"
               >
                 <Syringe size={16} />
                 Émettre la demande
@@ -371,7 +398,7 @@ export default function Request() {
         </div>
 
         {/* ══ COLONNE DROITE : ACTIVITÉ EN TEMPS RÉEL ══ */}
-        <div className="grow w-full flex flex-col gap-4">
+        <div className="grow w-full flex flex-col gap-4 min-h-0">
           {/* En-tête de la colonne */}
           <div
             className="p-5 rounded-3xl flex flex-col gap-4"
@@ -437,8 +464,8 @@ export default function Request() {
 
           {/* ─ Liste des demandes ─ */}
           <div
-            className="flex-1 p-4 rounded-3xl flex flex-col gap-2 overflow-y-auto"
-            style={{ background: "var(--surface)", border: "1px solid var(--line)", maxHeight: "600px", minHeight: "300px" }}
+            className="flex-1 p-4 rounded-3xl flex flex-col gap-2 overflow-y-auto min-h-0"
+            style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
           >
             {requests.loading ? (
               <div className="flex flex-col gap-2">

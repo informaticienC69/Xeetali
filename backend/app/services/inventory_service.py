@@ -28,10 +28,10 @@ def _available_counts(db: Session) -> dict[tuple[int, str], int]:
     return {(hid, groupe): count for hid, groupe, count in rows}
 
 
-def inventory_by_hospital(db: Session) -> list[InventoryByHospital]:
+def inventory_by_hospital(db: Session, skip: int = 0, limit: int = 100) -> list[InventoryByHospital]:
     """État des stocks de tous les hôpitaux, une ligne par groupe présent."""
     counts = _available_counts(db)
-    hospitals = db.scalars(select(Hospital).order_by(Hospital.id)).all()
+    hospitals = db.scalars(select(Hospital).order_by(Hospital.id).offset(skip).limit(limit)).all()
 
     result: list[InventoryByHospital] = []
     for hospital in hospitals:

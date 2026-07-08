@@ -149,10 +149,10 @@ function AlertRow({ a }: { a: typeof INCOMING[0] }) {
   const [routed, setRouted] = useState(false);
   return (
     <div
-      className="alert-item px-3 py-3 flex items-center gap-3 rounded-xl mx-0 cursor-default"
+      className="alert-item px-4 py-3 flex items-center gap-4 rounded-xl mx-0 cursor-default transition-all hover:-translate-y-0.5 hover:shadow-md mb-2"
       style={{
-        borderBottom: "1px solid var(--line)",
-        background: isCrit ? "rgba(230,57,70,0.03)" : "transparent",
+        border: "1px solid var(--line)",
+        background: isCrit ? "rgba(230,57,70,0.03)" : "var(--surface)",
       }}
     >
       {/* Indicateur urgence */}
@@ -191,14 +191,14 @@ function AlertRow({ a }: { a: typeof INCOMING[0] }) {
       <button
         onClick={() => setRouted(true)}
         disabled={routed}
-        className="mono text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-lg border transition-all duration-150 shrink-0"
+        className="mono text-[10px] uppercase tracking-wider px-4 py-2 rounded-lg border transition-all duration-150 shrink-0 cursor-pointer hover:shadow-sm"
         style={{
           borderColor: routed ? "var(--ok)" : isCrit ? "rgba(230,57,70,0.5)" : "var(--line)",
-          color: routed ? "var(--ok)" : isCrit ? "var(--blood)" : "var(--txt-mute)",
-          background: routed ? "rgba(74,222,128,0.08)" : isCrit ? "rgba(230,57,70,0.06)" : "transparent",
+          color: routed ? "var(--ok)" : isCrit ? "var(--blood)" : "var(--txt)",
+          background: routed ? "rgba(74,222,128,0.08)" : isCrit ? "rgba(230,57,70,0.06)" : "var(--surface-2)",
         }}
       >
-        {routed ? <><Check size={12} className="mr-1" /> Routé</> : "Router →"}
+        {routed ? <><Check size={12} className="mr-1 inline-block" /> Routé</> : "Router →"}
       </button>
     </div>
   );
@@ -244,7 +244,7 @@ function AlertCenter({ alertCount }: { alertCount: number }) {
       <button
         onClick={() => setLaunched(true)}
         disabled={launched}
-        className={`btn-blood w-full py-4 mb-4 flex items-center justify-center gap-3 text-base ${!launched ? "pulse-blood" : ""}`}
+        className={`btn-blood w-full py-4 mb-4 flex items-center justify-center gap-3 text-base cursor-pointer transition-all hover:opacity-90 hover:shadow-xl ${!launched ? "pulse-blood" : ""}`}
       >
         <Bell size={20} className={!launched ? "bell-shake" : ""} />
         <span className="tracking-widest">
@@ -287,11 +287,12 @@ export default function Dashboard() {
   ] : [];
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "var(--bg)" }}>
-      <SystemBar alertCount={data?.alertes_actives ?? 0} />
-      <Ticker />
+    <div className="flex flex-col h-full relative" style={{ background: "var(--bg)" }}>
+      <div className="relative z-10 flex flex-col h-full">
+        <SystemBar alertCount={data?.alertes_actives ?? 0} />
+        <Ticker />
 
-      <div className="flex-1 overflow-auto no-scrollbar">
+        <div className="flex-1 overflow-auto no-scrollbar relative z-10">
         {error && (
           <div className="mx-5 mt-4 rounded-xl px-4 py-3 mono text-[12px]"
                style={{ background: "rgba(230,57,70,0.08)", border: "1px solid rgba(230,57,70,0.35)", color: "var(--blood)" }}>
@@ -370,12 +371,9 @@ export default function Dashboard() {
               <DonutChart data={data.demandes_par_urgence} colors={urgence} centerLabel="demandes" height={200} />}
           </ChartCard>
 
-          {/* Footer */}
-          <div className="text-center mono text-[10px] py-4" style={{ color: "var(--txt-mute)" }}>
-            XÉÉTALI · CNTS Sénégal · Données hébergées à Diamniadio · Conforme CDP loi 2008-12
-          </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

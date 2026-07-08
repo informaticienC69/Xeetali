@@ -4,14 +4,13 @@ import { Link } from "react-router-dom";
 import {
   Calendar, ChevronRight, Crown, Droplet, Flame, Heart,
   HeartPulse, Lock, Medal, QrCode, Star, Trophy, Zap,
-  Globe2, Gem, Activity, Share2, Smartphone, Users
+  Globe2, Gem, Activity, Share2
 } from "lucide-react";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { api, type BadgeStatus, type DonorStats, type LeaderboardEntry } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useAuth } from "../../lib/auth";
 import { CountUp, GroupBadge, Skeleton, Modal } from "../../components/ui";
-import { TrendAreaChart } from "../../components/charts";
 import QRCode from "react-qr-code";
 
 /* ─── Constantes ─────────────────────────────────────────────── */
@@ -112,6 +111,24 @@ function HeroCard({ s }: { s: DonorStats }) {
     el.style.transform = "rotateY(0deg) rotateX(0deg)";
   }, []);
 
+  const handleShare = async () => {
+    const shareText = `Je suis un donneur de niveau ${s.niveau} avec ${s.points} XP sur XEETALI ! Rejoignez-moi pour sauver des vies.`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Mon profil Donneur - XEETALI',
+          text: shareText,
+          url: window.location.origin,
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      navigator.clipboard.writeText(shareText + " " + window.location.origin);
+      alert("Lien copié dans le presse-papier !");
+    }
+  };
+
   return (
     <div className="perspective-container card-in" style={{ animationDelay: "0ms" }}>
       <div
@@ -170,7 +187,7 @@ function HeroCard({ s }: { s: DonorStats }) {
             <div className="mono text-[9px] uppercase tracking-wider mb-2" style={{ color: "var(--txt-mute)" }}>
               points xp
             </div>
-            <button className="flex items-center gap-1.5 ml-auto text-[10px] uppercase font-bold mono tracking-widest px-2 py-1 rounded-lg transition-all hover:bg-white/5 cursor-pointer" style={{ color: "var(--txt-dim)", border: "1px solid var(--line)" }}>
+            <button onClick={handleShare} className="flex items-center gap-1.5 ml-auto text-[10px] uppercase font-bold mono tracking-widest px-2 py-1 rounded-lg transition-all hover:bg-white/5 cursor-pointer active:scale-95" style={{ color: "var(--txt-dim)", border: "1px solid var(--line)" }}>
               <Share2 size={12} /> Partager
             </button>
           </div>
@@ -790,27 +807,31 @@ function QuickLinks({ s }: { s: DonorStats }) {
             Présentez ce QR Code à l'accueil pour vous identifier instantanément.
           </div>
           
-          <div className="p-6 bg-white rounded-3xl" style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.08)" }}>
-            <QRCode 
-              value={`XEETALI:DONOR:${userId}`} 
-              size={200}
-              fgColor="#0f1629"
-              bgColor="#ffffff"
-            />
+          <div className="relative group">
+            {/* Effet de lueur en arrière-plan */}
+            <div className="absolute -inset-1 bg-linear-to-r from-red-500 to-rose-400 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+            
+            <div className="relative p-6 bg-white rounded-3xl border border-gray-100" style={{ boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }}>
+              <QRCode 
+                value={`XEETALI:DONOR:${userId}`} 
+                size={220}
+                fgColor="#0f1629"
+                bgColor="#ffffff"
+                level="H" // High error correction level for better scanning
+              />
+              {/* Petits coins décoratifs */}
+              <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-red-500 rounded-tl-lg"></div>
+              <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-red-500 rounded-tr-lg"></div>
+              <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-red-500 rounded-bl-lg"></div>
+              <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-red-500 rounded-br-lg"></div>
+            </div>
           </div>
           
-          <div className="mt-8 syne font-bold tracking-widest text-lg" style={{ color: "var(--txt)" }}>
-            DON-{userId?.toString().padStart(5, '0')}
-          </div>
-
-          {/* Add to Wallet buttons */}
-          <div className="w-full grid grid-cols-2 gap-3 mt-8 pt-6" style={{ borderTop: "1px solid var(--line)" }}>
-             <button className="flex items-center justify-center gap-2 bg-[#000] text-white py-2.5 rounded-xl text-[11px] font-bold hover:bg-[#111] transition-colors cursor-pointer">
-               <Smartphone size={14} /> Apple Wallet
-             </button>
-             <button className="flex items-center justify-center gap-2 bg-white text-black py-2.5 rounded-xl text-[11px] font-bold border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
-               Google Wallet
-             </button>
+          <div className="mt-8 flex flex-col items-center gap-1">
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-[0.2em]">Identifiant Unique</span>
+            <div className="px-5 py-2 bg-gray-50 rounded-full border border-gray-100 syne font-bold tracking-widest text-lg text-gray-800 shadow-sm">
+              DON-{userId?.toString().padStart(5, '0')}
+            </div>
           </div>
         </div>
       </Modal>
