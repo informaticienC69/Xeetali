@@ -1,6 +1,6 @@
 // RegisterPouch.tsx — Refonte UX Premium "Workspace"
 import { useMemo, useState } from "react";
-import { Calendar, Download, Droplet, MapPin, Plus, Scan } from "lucide-react";
+import { Calendar, Download, Droplet, Plus, Scan } from "lucide-react";
 import { api, ApiError, BLOOD_GROUPS, type BloodGroup, type Pouch } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useAuth } from "../../lib/auth";
@@ -156,7 +156,7 @@ export default function RegisterPouch() {
                     onFocus={(e) => (e.currentTarget.style.borderColor = "var(--txt-mute)")}
                     onBlur={(e) => (e.currentTarget.style.borderColor = "var(--line)")}
                   />
-                  <div className="absolute top-[-7px] left-3.5 px-1 mono text-[8px] uppercase tracking-wider bg-[var(--surface)]" style={{ color: "var(--txt-dim)" }}>
+                  <div className="absolute top-[-7px] left-3.5 px-1 mono text-[8px] uppercase tracking-wider bg-(--surface)" style={{ color: "var(--txt-dim)" }}>
                     Prélèvement
                   </div>
                 </div>
@@ -173,7 +173,7 @@ export default function RegisterPouch() {
                     onFocus={(e) => (e.currentTarget.style.borderColor = expiryTone)}
                     onBlur={(e) => (e.currentTarget.style.borderColor = "var(--line)")}
                   />
-                  <div className="absolute top-[-7px] left-3.5 px-1 mono text-[8px] uppercase tracking-wider bg-[var(--surface)]" style={{ color: dateError ? "var(--blood)" : expiryTone }}>
+                  <div className="absolute top-[-7px] left-3.5 px-1 mono text-[8px] uppercase tracking-wider bg-(--surface)" style={{ color: dateError ? "var(--blood)" : expiryTone }}>
                     Péremption
                   </div>
                 </div>
@@ -184,7 +184,7 @@ export default function RegisterPouch() {
               <div className="mt-4 flex flex-col gap-2">
                 {dateError ? (
                   <div className="flex items-center gap-2 mono text-[11px] px-4 py-2 rounded-lg" style={{ background: "rgba(230,57,70,0.1)", color: "var(--blood)" }}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--blood)]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-(--blood)" />
                     {dateError}
                   </div>
                 ) : (
@@ -248,10 +248,10 @@ export default function RegisterPouch() {
                 <div className="relative p-3 rounded-xl mb-4 bg-white" style={{ border: "1px solid var(--line)" }}>
                   <img src={last.qr_code_b64} alt={`QR ${last.uid}`} className="w-36 h-36" style={{ mixBlendMode: "multiply" }} />
                   {/* Scanner corners */}
-                  <div className="absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2 border-[var(--blood)]" />
-                  <div className="absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2 border-[var(--blood)]" />
-                  <div className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 border-[var(--blood)]" />
-                  <div className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 border-[var(--blood)]" />
+                  <div className="absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2 border-(--blood)" />
+                  <div className="absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2 border-(--blood)" />
+                  <div className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 border-(--blood)" />
+                  <div className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 border-(--blood)" />
                 </div>
 
                 <div className="w-full flex items-center justify-between py-4 mb-4" style={{ borderTop: "1px dashed var(--line)", borderBottom: "1px dashed var(--line)" }}>

@@ -99,6 +99,13 @@ export interface DonorStats {
   jours_avant_eligibilite: number;
   nb_reponses_alertes: number;
   badges: BadgeStatus[];
+  streak_annees: number;
+}
+export interface UrgencyStats {
+  vies_en_attente: number;
+  capacite_pct: number;
+  groupe_critique: string;
+  regions: string;
 }
 export interface LeaderboardEntry {
   rang: number;
@@ -294,6 +301,7 @@ export const api = {
   myDonations: () => request<Donation[]>("GET", "/api/donors/me/donations"),
   donorStats: () => request<DonorStats>("GET", "/api/donors/me/stats"),
   leaderboard: () => request<LeaderboardEntry[]>("GET", "/api/donors/leaderboard"),
+  urgencyStats: () => request<UrgencyStats>("GET", "/api/donors/urgency"),
 
   collectionPoints: (localisation?: string) =>
     request<CollectionPoint[]>(

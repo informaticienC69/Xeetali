@@ -228,25 +228,37 @@ export function Card({
   className?: string;
 }) {
   return (
-    <section className={`card-in surface overflow-hidden ${className}`} style={{ padding: 18 }}>
-      {(title || subtitle || action) && (
-        <header className="flex items-start justify-between mb-4">
-          <div>
-            {subtitle && (
-              <div className="mono uppercase text-[10px] tracking-[0.14em] mb-0.5" style={{ color: "var(--txt-mute)" }}>
-                {subtitle}
-              </div>
-            )}
-            {title && (
-              <h3 className="syne font-bold text-lg leading-tight" style={{ color: "var(--txt)" }}>
-                {title}
-              </h3>
-            )}
-          </div>
-          {action}
-        </header>
-      )}
-      {children}
+    <section 
+      className={`card-in relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 ${className}`} 
+      style={{ 
+        padding: 24, 
+        borderRadius: 24,
+        background: "linear-gradient(145deg, var(--surface) 0%, var(--bg-2) 100%)",
+        border: "1px solid var(--line)",
+        boxShadow: "var(--shadow-lg)"
+      }}
+    >
+      <div className="absolute -top-32 -right-32 w-64 h-64 rounded-full pointer-events-none opacity-20" style={{ background: "radial-gradient(circle, var(--blood-glow) 0%, transparent 70%)", filter: "blur(40px)" }} />
+      <div className="relative z-10">
+        {(title || subtitle || action) && (
+          <header className="flex items-start justify-between mb-6">
+            <div>
+              {subtitle && (
+                <div className="mono uppercase text-[10px] tracking-[0.14em] mb-1" style={{ color: "var(--txt-mute)" }}>
+                  {subtitle}
+                </div>
+              )}
+              {title && (
+                <h3 className="syne font-bold text-lg leading-tight tracking-wide" style={{ color: "var(--txt)" }}>
+                  {title}
+                </h3>
+              )}
+            </div>
+            {action}
+          </header>
+        )}
+        {children}
+      </div>
     </section>
   );
 }
@@ -447,11 +459,13 @@ export function FilterSelect({
 export function Modal({
   open,
   title,
+  subtitle,
   onClose,
   children,
 }: {
   open: boolean;
   title: string;
+  subtitle?: string;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -464,23 +478,23 @@ export function Modal({
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      className="fixed inset-0 z-9999 flex items-center justify-center p-4"
       style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="modal-pop surface w-full max-w-md relative overflow-hidden"
-        style={{ padding: 24, maxHeight: "90vh", overflowY: "auto", borderRadius: 16, boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)" }}
+        className="modal-pop surface w-full max-w-md relative flex flex-col"
+        style={{ padding: 24, maxHeight: "85vh", borderRadius: 24, boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)" }}
       >
         <div
           className="absolute top-0 left-0 right-0 pointer-events-none"
           style={{ height: 3, background: "linear-gradient(90deg, var(--blood) 0%, rgba(230,57,70,0.2) 100%)" }}
         />
-        <div className="flex items-center justify-between mb-5 relative">
+        <div className="flex items-center justify-between mb-5 shrink-0 relative">
           <div>
-            <div className="mono text-[10px] uppercase tracking-[0.14em]" style={{ color: "var(--txt-mute)" }}>Formulaire</div>
+            {subtitle && <div className="mono text-[10px] uppercase tracking-[0.14em]" style={{ color: "var(--txt-mute)" }}>{subtitle}</div>}
             <h2 className="syne font-bold text-lg" style={{ color: "var(--txt)" }}>{title}</h2>
           </div>
           <button
@@ -494,9 +508,10 @@ export function Modal({
             ×
           </button>
         </div>
-        <div className="relative">{children}</div>
+        <div className="relative overflow-y-auto no-scrollbar">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -652,14 +667,14 @@ export function Select({
         <span className="truncate syne font-medium">{selectedOption?.label || "Sélectionner..."}</span>
         <ChevronDown
           size={14}
-          className={`chevron-rotate flex-shrink-0 transition-all ${open ? "open" : ""}`}
+          className={`chevron-rotate shrink-0 transition-all ${open ? "open" : ""}`}
           style={{ color: open ? "var(--blood)" : "var(--txt-mute)" }}
         />
       </button>
 
       {open && createPortal(
         <div
-          className="fixed inset-0 z-[120] flex items-center justify-center p-6"
+          className="fixed inset-0 z-120 flex items-center justify-center p-6"
           style={{ background: "rgba(0,0,0,0.72)", backdropFilter: "blur(8px)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
         >
@@ -755,7 +770,7 @@ export function Select({
                     {/* Bullet indicator */}
                     <div className="flex items-center gap-3 min-w-0">
                       <div
-                        className="flex-shrink-0 rounded-full transition-all"
+                        className="shrink-0 rounded-full transition-all"
                         style={{
                           width: 6,
                           height: 6,
@@ -773,7 +788,7 @@ export function Select({
 
                     {isSelected && (
                       <div
-                        className="flex-shrink-0 flex items-center justify-center rounded-full"
+                        className="shrink-0 flex items-center justify-center rounded-full"
                         style={{
                           width: 20,
                           height: 20,
@@ -893,7 +908,7 @@ export function ToastContainer() {
   }, []);
   const remove = (id: number) => setToasts((p) => p.filter((t) => t.id !== id));
   return (
-    <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none">
+    <div className="fixed bottom-5 right-5 z-9999 flex flex-col gap-2 pointer-events-none">
       {toasts.map((t) => <ToastItem key={t.id} entry={t} onDone={() => remove(t.id)} />)}
     </div>
   );
@@ -1066,7 +1081,7 @@ export function ConfirmModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      className="fixed inset-0 z-9999 flex items-center justify-center p-4"
       style={{ background: "rgba(0,0,0,0.70)", backdropFilter: "blur(8px)" }}
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >

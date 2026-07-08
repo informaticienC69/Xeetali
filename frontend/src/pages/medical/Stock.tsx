@@ -118,14 +118,14 @@ function PouchCard({
       </div>
 
       {/* Actions (Révélées au survol ou toujours visibles mais discrètes) */}
-      <div className="p-3 bg-[var(--surface-2)] border-t border-[var(--line)] flex gap-1.5 overflow-x-auto no-scrollbar">
+      <div className="p-3 bg-(--surface-2) border-t border-(--line) flex gap-1.5 overflow-x-auto no-scrollbar">
         {STATUSES.filter((s) => s !== p.statut).map((s) => {
           const sc = STATUS_COLORS[s];
           return (
             <button
               key={s}
               onClick={() => onChangeStatus(p.statut, s)}
-              className="flex-1 min-w-[max-content] shrink-0 mono text-[9px] px-2 py-1.5 rounded-lg border uppercase font-medium transition-all cursor-pointer"
+              className="flex-1 min-w-max shrink-0 mono text-[9px] px-2 py-1.5 rounded-lg border uppercase font-medium transition-all cursor-pointer"
               style={{
                 color: sc.color,
                 background: "transparent",
@@ -389,7 +389,7 @@ export default function Stock() {
               <div className="mono text-[11px] uppercase tracking-wider mb-3 flex justify-between items-center" style={{ color: "var(--txt-mute)" }}>
                 <span>Groupe Sanguin</span>
                 {groupe && (
-                  <button onClick={() => setGroupe("")} className="hover:text-[var(--blood)] transition-colors">Réinitialiser</button>
+                  <button onClick={() => setGroupe("")} className="hover:text-(--blood) transition-colors">Réinitialiser</button>
                 )}
               </div>
               <div className="grid grid-cols-4 gap-2">

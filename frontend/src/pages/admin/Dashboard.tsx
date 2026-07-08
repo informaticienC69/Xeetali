@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import {
   AlertTriangle, ArrowLeftRight, Bell, Building2,
   Droplet, HeartPulse, Inbox, ShieldCheck,
-  Thermometer, Users, Wifi,
+  Thermometer, Users, Wifi, Check, X
 } from "lucide-react";
 import { api } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
@@ -198,7 +198,7 @@ function AlertRow({ a }: { a: typeof INCOMING[0] }) {
           background: routed ? "rgba(74,222,128,0.08)" : isCrit ? "rgba(230,57,70,0.06)" : "transparent",
         }}
       >
-        {routed ? "✓ Routé" : "Router →"}
+        {routed ? <><Check size={12} className="mr-1" /> Routé</> : "Router →"}
       </button>
     </div>
   );
@@ -263,7 +263,7 @@ function AlertCenter({ alertCount }: { alertCount: number }) {
 
       {alertCount > 0 && (
         <div className="mt-4 mono text-[10px] text-center py-2 rounded-lg" style={{ color: "var(--blood)", background: "rgba(230,57,70,0.06)" }}>
-          ✕ {alertCount} alerte(s) active(s) dans le système
+            <X size={14} className="mr-1 inline-block" /> {alertCount} alerte(s) active(s) dans le système
         </div>
       )}
     </div>
