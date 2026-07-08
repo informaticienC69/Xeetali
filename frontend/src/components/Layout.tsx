@@ -40,10 +40,11 @@ const ADMIN_NAV: NavItem[] = [
 ];
 
 const MEDICAL_NAV: NavItem[] = [
-  { to: "/medical",          label: "Enregistrement",  sub: "Nouvelle poche",      icon: Droplet         },
-  { to: "/medical/stock",    label: "Stock & Urgence", sub: "Recherche poches",    icon: ClipboardList   },
-  { to: "/medical/validity", label: "Contrôle",        sub: "Péremptions",         icon: FileCheck       },
-  { to: "/medical/request",  label: "Demandes",        sub: "Besoins hospitaliers",icon: Activity        },
+  { to: "/medical",           label: "Vue d'ensemble",  sub: "Dashboard hôpital",   icon: LayoutDashboard },
+  { to: "/medical/register",  label: "Enregistrement",  sub: "Nouvelle poche",      icon: Droplet         },
+  { to: "/medical/stock",     label: "Stock & Urgence", sub: "Recherche poches",    icon: ClipboardList   },
+  { to: "/medical/validity",  label: "Contrôle",        sub: "Péremptions",         icon: FileCheck       },
+  { to: "/medical/request",   label: "Demandes",        sub: "Besoins hospitaliers",icon: Activity        },
 ];
 
 const NAV_BY_ROLE: Record<Role, NavItem[]> = {

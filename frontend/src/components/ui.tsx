@@ -14,6 +14,7 @@ import {
 import { createPortal } from "react-dom";
 import type { LucideProps } from "lucide-react";
 import { CheckCircle, Info, XCircle, ChevronDown, Check } from "lucide-react";
+import { BLOOD_GROUPS as BG_LIST, type BloodGroup as BG } from "../lib/api";
 
 // ── CountUp hook (requestAnimationFrame) ─────────────────────────
 function easeOut(t: number) { return 1 - Math.pow(1 - t, 3); }
@@ -72,27 +73,26 @@ export function Spinner({ size = 18 }: { size?: number }) {
 
 // ── KpiTile (premium avec barre accent) ─────────────────────────────────
 const KPI_TONES = {
-  // Light mode — couleurs plates nettes, lisibles
   normal: {
     bg:       "var(--surface)",
     border:   "var(--line)",
-    bar:      "#64748b",
-    accent:   "#475569",
+    bar:      "#94a3b8",
+    accent:   "#64748b",
     numColor: "var(--txt)",
   },
   ok: {
-    bg:       "#f0fdf4",
-    border:   "rgba(22,163,74,0.35)",
-    bar:      "#16a34a",
-    accent:   "#15803d",
-    numColor: "#14532d",
+    bg:       "var(--surface)",
+    border:   "var(--line)",
+    bar:      "#94a3b8",
+    accent:   "#64748b",
+    numColor: "var(--txt)",
   },
   warn: {
-    bg:       "#fffbeb",
-    border:   "rgba(217,119,6,0.35)",
+    bg:       "var(--surface)",
+    border:   "rgba(217,119,6,0.3)",
     bar:      "#d97706",
-    accent:   "#b45309",
-    numColor: "#78350f",
+    accent:   "#d97706",
+    numColor: "var(--txt)",
   },
   crit: {
     bg:       "#fff1f2",
@@ -112,10 +112,10 @@ const KPI_TONES_DARK = {
     numColor: "var(--txt)",
   },
   ok: {
-    bg:       "rgba(74,222,128,0.06)",
-    border:   "rgba(74,222,128,0.25)",
-    bar:      "#4ade80",
-    accent:   "#4ade80",
+    bg:       "var(--surface)",
+    border:   "var(--line)",
+    bar:      "#5b6685",
+    accent:   "#93a0bf",
     numColor: "var(--txt)",
   },
   warn: {
@@ -504,11 +504,11 @@ export function Modal({
 export function GroupBadge({ groupe }: { groupe: string }) {
   return (
     <span
-      className="mono text-[11px] px-2 py-0.5 rounded-md border font-medium"
+      className="mono text-[11px] px-2 py-0.5 rounded-md border font-bold"
       style={{
-        background: "rgba(230,57,70,0.12)",
-        color: "var(--blood)",
-        borderColor: "rgba(230,57,70,0.35)",
+        background: "var(--surface-2)",
+        color: "var(--txt-dim)",
+        borderColor: "var(--line)",
       }}
     >
       {groupe}
@@ -518,14 +518,14 @@ export function GroupBadge({ groupe }: { groupe: string }) {
 
 // ── StatusBadge ───────────────────────────────────────────────────
 const STATUS_STYLES: Record<string, { bg: string; color: string; border: string; label: string }> = {
-  DISPONIBLE: { bg: "rgba(22,163,74,0.10)",   color: "var(--ok)",   border: "rgba(22,163,74,0.35)",   label: "Disponible" },
-  RESERVEE:   { bg: "rgba(217,119,6,0.10)",   color: "var(--warn)", border: "rgba(217,119,6,0.35)",   label: "Réservée"   },
-  UTILISEE:   { bg: "rgba(139,92,246,0.10)",  color: "#8b5cf6",     border: "rgba(139,92,246,0.35)",  label: "Utilisée"   },
-  PERIMEE:    { bg: "rgba(230,57,70,0.10)",   color: "var(--blood)", border: "rgba(230,57,70,0.35)",  label: "Périmée"    },
+  DISPONIBLE: { bg: "var(--surface-2)",          color: "var(--txt-dim)",  border: "var(--line)",                label: "Disponible" },
+  RESERVEE:   { bg: "rgba(217,119,6,0.08)",      color: "var(--warn)",    border: "rgba(217,119,6,0.3)",        label: "Réservée"   },
+  UTILISEE:   { bg: "var(--surface-2)",          color: "var(--txt-mute)", border: "var(--line)",               label: "Utilisée"   },
+  PERIMEE:    { bg: "rgba(230,57,70,0.10)",      color: "var(--blood)",   border: "rgba(230,57,70,0.35)",       label: "Périmée"    },
 };
 
 export function StatusBadge({ statut }: { statut: string }) {
-  const s = STATUS_STYLES[statut] ?? { bg: "rgba(148,160,191,0.1)", color: "var(--txt-dim)", border: "var(--line)", label: statut };
+  const s = STATUS_STYLES[statut] ?? { bg: "var(--surface-2)", color: "var(--txt-dim)", border: "var(--line)", label: statut };
   return (
     <span
       className="mono text-[10px] px-2 py-0.5 rounded-md border uppercase tracking-wider font-medium"
@@ -896,5 +896,241 @@ export function ToastContainer() {
     <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none">
       {toasts.map((t) => <ToastItem key={t.id} entry={t} onDone={() => remove(t.id)} />)}
     </div>
+  );
+}
+
+// ── BloodGroupSelector ────────────────────────────────────────────
+// Sélecteur visuel premium de groupe sanguin (grille 4×2)
+
+export function BloodGroupSelector({
+  value,
+  onChange,
+}: {
+  value: BG;
+  onChange: (g: BG) => void;
+}) {
+  return (
+    <div className="grid grid-cols-4 gap-2">
+      {BG_LIST.map((g) => {
+        const isSelected = g === value;
+        const isNeg = g.includes("-");
+        return (
+          <button
+            key={g}
+            type="button"
+            onClick={() => onChange(g)}
+            className="relative flex flex-col items-center justify-center rounded-xl transition-all duration-150 cursor-pointer"
+            style={{
+              padding: "10px 6px",
+              background: isSelected
+                ? "linear-gradient(135deg, rgba(230,57,70,0.25) 0%, rgba(230,57,70,0.10) 100%)"
+                : "var(--surface-2)",
+              border: `2px solid ${isSelected ? "var(--blood)" : "var(--line)"}`,
+              boxShadow: isSelected
+                ? "0 0 0 1px rgba(230,57,70,0.2), 0 4px 12px rgba(230,57,70,0.25)"
+                : "none",
+              transform: isSelected ? "scale(1.04)" : "scale(1)",
+            }}
+            onMouseEnter={(e) => {
+              if (!isSelected) {
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(230,57,70,0.45)";
+                (e.currentTarget as HTMLElement).style.background = "rgba(230,57,70,0.07)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isSelected) {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--line)";
+                (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+              }
+            }}
+          >
+            <span
+              className="mono text-[8px] font-bold mb-0.5 uppercase tracking-wider"
+              style={{ color: isNeg ? "var(--warn)" : "var(--ok)", opacity: 0.8 }}
+            >
+              {isNeg ? "RH\u2212" : "RH+"}
+            </span>
+            <span
+              className="syne font-extrabold text-base leading-none"
+              style={{ color: isSelected ? "var(--blood)" : "var(--txt)" }}
+            >
+              {g.replace(/[+-]/, "")}
+            </span>
+            {isSelected && (
+              <span
+                className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full scale-bounce"
+                style={{ background: "var(--blood)" }}
+              >
+                <Check size={9} className="text-white" />
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── UrgencySelector ────────────────────────────────────────────────
+const URGENCY_CONFIG = [
+  { value: "NORMALE",  label: "Normale",  sub: "Délai standard", color: "var(--txt-mute)", bgActive: "rgba(90,96,120,0.20)",  borderActive: "rgba(90,96,120,0.55)"  },
+  { value: "URGENTE",  label: "Urgente",  sub: "Sous 24h",        color: "var(--warn)",     bgActive: "rgba(217,119,6,0.15)",  borderActive: "rgba(217,119,6,0.55)"  },
+  { value: "CRITIQUE", label: "Critique", sub: "Immédiat",        color: "var(--blood)",    bgActive: "rgba(230,57,70,0.15)",  borderActive: "rgba(230,57,70,0.55)"  },
+] as const;
+
+export function UrgencySelector({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {URGENCY_CONFIG.map((u) => {
+        const isSelected = u.value === value;
+        return (
+          <button
+            key={u.value}
+            type="button"
+            onClick={() => onChange(u.value)}
+            className="flex flex-col items-center justify-center rounded-xl transition-all duration-150 cursor-pointer relative overflow-hidden"
+            style={{
+              padding: "12px 8px",
+              background: isSelected ? u.bgActive : "var(--surface-2)",
+              border: `2px solid ${isSelected ? u.borderActive : "var(--line)"}`,
+              transform: isSelected ? "scale(1.03)" : "scale(1)",
+              boxShadow: isSelected ? `0 4px 16px ${u.color}30` : "none",
+            }}
+          >
+            {u.value === "CRITIQUE" && isSelected && (
+              <span
+                className="absolute inset-0 pointer-events-none pulse-soft"
+                style={{ background: `radial-gradient(circle at center, rgba(230,57,70,0.15) 0%, transparent 70%)` }}
+              />
+            )}
+            <span className="syne font-bold text-sm" style={{ color: isSelected ? u.color : "var(--txt-dim)" }}>
+              {u.label}
+            </span>
+            <span
+              className="mono text-[9px] mt-0.5 uppercase tracking-wider"
+              style={{ color: isSelected ? u.color : "var(--txt-mute)", opacity: 0.8 }}
+            >
+              {u.sub}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── ConfirmModal ───────────────────────────────────────────────────
+export function ConfirmModal({
+  open,
+  title,
+  description,
+  confirmLabel = "Confirmer",
+  cancelLabel = "Annuler",
+  tone = "blood",
+  onConfirm,
+  onCancel,
+}: {
+  open: boolean;
+  title: string;
+  description?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  tone?: "blood" | "warn" | "ok";
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onCancel();
+      if (e.key === "Enter") onConfirm();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onCancel, onConfirm]);
+
+  if (!open) return null;
+
+  const colors = {
+    blood: { accent: "#E63946", bg: "rgba(230,57,70,0.12)", border: "rgba(230,57,70,0.35)", glow: "var(--blood-glow)" },
+    warn:  { accent: "#d97706", bg: "rgba(217,119,6,0.12)", border: "rgba(217,119,6,0.35)", glow: "rgba(217,119,6,0.25)"  },
+    ok:    { accent: "#16a34a", bg: "rgba(22,163,74,0.12)", border: "rgba(22,163,74,0.35)", glow: "rgba(22,163,74,0.25)"  },
+  };
+  const c = colors[tone];
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.70)", backdropFilter: "blur(8px)" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
+    >
+      <div
+        className="modal-pop surface w-full max-w-sm relative overflow-hidden"
+        style={{
+          padding: 28,
+          borderRadius: 20,
+          border: `1px solid ${c.border}`,
+          boxShadow: `0 0 0 1px ${c.border}, 0 32px 64px rgba(0,0,0,0.4), 0 0 60px ${c.glow}`,
+        }}
+      >
+        <div
+          className="absolute top-0 left-0 right-0"
+          style={{ height: 3, background: `linear-gradient(90deg, ${c.accent} 0%, ${c.accent}44 80%, transparent 100%)` }}
+        />
+        <div
+          className="flex h-12 w-12 items-center justify-center rounded-2xl mb-4"
+          style={{ background: c.bg, border: `1px solid ${c.border}` }}
+        >
+          <XCircle size={22} style={{ color: c.accent }} />
+        </div>
+        <h2 className="syne font-bold text-lg mb-2" style={{ color: "var(--txt)" }}>
+          {title}
+        </h2>
+        {description && (
+          <p className="mono text-[12px] mb-2" style={{ color: "var(--txt-mute)" }}>
+            {description}
+          </p>
+        )}
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={onCancel}
+            className="flex-1 py-2.5 rounded-xl syne font-bold text-sm transition-all cursor-pointer"
+            style={{ background: "var(--surface-2)", border: "1px solid var(--line)", color: "var(--txt-dim)" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--line-2)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--line)"; }}
+          >
+            {cancelLabel}
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-2.5 rounded-xl syne font-bold text-sm text-white transition-all cursor-pointer"
+            style={{
+              background: `linear-gradient(135deg, ${c.accent} 0%, ${c.accent}cc 100%)`,
+              border: `1px solid ${c.border}`,
+              boxShadow: `0 4px 16px ${c.glow}`,
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+        <div className="mt-4 text-center">
+          <span className="mono text-[10px]" style={{ color: "var(--txt-mute)" }}>
+            <kbd className="px-1 py-0.5 rounded text-[9px]" style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}>Entrée</kbd>
+            {" "}confirmer ·{" "}
+            <kbd className="px-1 py-0.5 rounded text-[9px]" style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}>Échap</kbd>
+            {" "}annuler
+          </span>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
