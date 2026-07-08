@@ -1,10 +1,10 @@
-﻿// SenegalMap.tsx — XÉÉTALI · Carte fidèle 100% (react-simple-maps + GADM officiel)
+// SenegalMap.tsx — XÉÉTALI · Carte fidèle 100% (react-simple-maps + GADM officiel)
 import { useCallback, useRef, useState } from "react";
 import { ComposableMap, Geographies, Geography, Marker, Line } from "react-simple-maps";
 import {
   AlertTriangle, Building2, ChevronRight,
   Droplet, Filter, Minus, TrendingDown, TrendingUp,
-  Users, X, Zap,
+  Users, X, Zap, Clock
 } from "lucide-react";
 
 const GEO_URL = "/senegal-regions.json";
@@ -209,7 +209,7 @@ function SummaryPanel({filterGroup,alertesNationales,totalPoches,nbHopitaux}:{fi
               <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{background:"#E63946",boxShadow:"0 0 6px #E63946"}}/>
               <span className="flex-1 syne font-semibold text-xs" style={{color:"var(--txt)"}}>{r.name}</span>
               <span className="mono text-[11px] font-bold tabular-nums" style={{color:"#E63946"}}>{r.stockPct}%</span>
-              {r.alertes>0&&<span className="mono text-[10px]" style={{color:"#E63946"}}>⚡{r.alertes}</span>}
+              {r.alertes>0&&<span className="mono text-[10px] flex items-center gap-0.5" style={{color:"#E63946"}}><Zap size={10} />{r.alertes}</span>}
             </div>
           ))}
           {tensions.slice(0,2).map(r=>(
@@ -227,7 +227,7 @@ function SummaryPanel({filterGroup,alertesNationales,totalPoches,nbHopitaux}:{fi
           ))}
         </div>
         <div className="mono text-[10px] text-center" style={{color:"var(--txt-mute)"}}>Cliquez sur une région</div>
-        <div className="mono text-[9px] text-center" style={{color:"var(--txt-mute)",opacity:0.6}}>🕐 {now}</div>
+        <div className="mono text-[9px] text-center flex items-center justify-center gap-1" style={{color:"var(--txt-mute)",opacity:0.6}}><Clock size={10} /> {now}</div>
       </div>
     </div>
   );

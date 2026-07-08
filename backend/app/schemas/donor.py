@@ -59,6 +59,16 @@ class DonorStats(BaseModel):
     jours_avant_eligibilite: int
     nb_reponses_alertes: int
     badges: list[BadgeStatus]
+    streak_annees: int
+
+
+class UrgencyStats(BaseModel):
+    """Statistiques d'urgence nationale (vies en attente, capacité restante)."""
+
+    vies_en_attente: int
+    capacite_pct: int
+    groupe_critique: str
+    regions: str
 
 
 class LeaderboardEntry(BaseModel):

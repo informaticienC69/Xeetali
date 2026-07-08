@@ -17,17 +17,23 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
-const STYLES: Record<ToastKind, { cls: string; Icon: typeof Info }> = {
+const STYLES: Record<ToastKind, { border: string; glow: string; icon: string; Icon: typeof Info }> = {
   success: {
-    cls: "border-green-200 bg-green-50 text-green-800 dark:border-green-900 dark:bg-green-950/80 dark:text-green-200",
+    border: "rgba(16, 185, 129, 0.3)",
+    glow: "rgba(16, 185, 129, 0.15)",
+    icon: "#10B981", // Emerald
     Icon: CheckCircle2,
   },
   error: {
-    cls: "border-red-200 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950/80 dark:text-red-200",
+    border: "rgba(230, 57, 70, 0.3)",
+    glow: "rgba(230, 57, 70, 0.15)",
+    icon: "var(--blood)",
     Icon: XCircle,
   },
   info: {
-    cls: "border-slate-200 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100",
+    border: "var(--line)",
+    glow: "rgba(0, 0, 0, 0.05)",
+    icon: "var(--txt-dim)",
     Icon: Info,
   },
 };
@@ -56,19 +62,34 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed inset-x-0 top-4 z-[60] flex flex-col items-center gap-2 px-4">
+      <div className="fixed inset-x-0 top-6 z-9999 flex flex-col items-center gap-3 px-4 pointer-events-none">
         {toasts.map(({ id, kind, message }) => {
-          const { cls, Icon } = STYLES[kind];
+          const s = STYLES[kind];
           return (
             <div
               key={id}
               role="status"
-              className={`pointer-events-auto flex w-full max-w-md items-start gap-2.5 rounded-lg border px-4 py-3 text-sm shadow-lg animate-[fadeIn_0.15s_ease-out] ${cls}`}
+              className="pointer-events-auto flex items-center gap-3 rounded-full border px-5 py-3 text-[14px] shadow-2xl animate-in fade-in slide-in-from-top-6 duration-500 mx-auto w-max max-w-[90vw]"
+              style={{
+                background: "color-mix(in srgb, var(--surface) 85%, transparent)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                borderColor: s.border,
+                color: "var(--txt)",
+                boxShadow: `0 8px 30px ${s.glow}, 0 1px 3px rgba(0,0,0,0.05)`,
+              }}
             >
-              <Icon size={18} className="mt-0.5 shrink-0" />
-              <span className="flex-1">{message}</span>
-              <button onClick={() => dismiss(id)} className="shrink-0 opacity-60 hover:opacity-100" aria-label="Fermer">
-                <X size={15} />
+              <div className="flex h-6 w-6 items-center justify-center rounded-full shrink-0" style={{ background: `color-mix(in srgb, ${s.icon} 10%, transparent)` }}>
+                <s.Icon size={14} style={{ color: s.icon }} />
+              </div>
+              <span className="syne font-semibold tracking-wide">{message}</span>
+              <button 
+                onClick={() => dismiss(id)} 
+                className="shrink-0 ml-1 flex h-6 w-6 items-center justify-center rounded-full transition-colors hover:bg-black/5 dark:hover:bg-white/10" 
+                aria-label="Fermer" 
+                style={{ color: "var(--txt-mute)" }}
+              >
+                <X size={14} />
               </button>
             </div>
           );

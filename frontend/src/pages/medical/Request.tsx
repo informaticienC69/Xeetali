@@ -1,6 +1,6 @@
 // Request.tsx — Refonte UX Premium "Command Center"
 import { useMemo, useState } from "react";
-import { Activity, AlertTriangle, Building2, Clock, Droplets, Filter, Minus, Plus, Syringe } from "lucide-react";
+import { Activity, AlertTriangle, Clock, Droplets, Minus, Plus, Syringe } from "lucide-react";
 import { api, ApiError, BLOOD_GROUPS, type BloodGroup, type BloodRequest } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useAuth } from "../../lib/auth";
@@ -15,7 +15,6 @@ const URGENCY_CONFIG = [
     value: "NORMALE",
     label: "Normale",
     sub: "Délai standard",
-    icon: "🟢",
     color: "var(--txt-mute)",
     bg: "var(--surface-2)",
     bgActive: "rgba(34,197,94,0.12)",
@@ -26,7 +25,6 @@ const URGENCY_CONFIG = [
     value: "URGENTE",
     label: "Urgente",
     sub: "Sous 24 heures",
-    icon: "🟡",
     color: "var(--warn)",
     bg: "var(--surface-2)",
     bgActive: "rgba(217,119,6,0.12)",
@@ -37,7 +35,6 @@ const URGENCY_CONFIG = [
     value: "CRITIQUE",
     label: "Critique",
     sub: "Intervention immédiate",
-    icon: "🔴",
     color: "var(--blood)",
     bg: "var(--surface-2)",
     bgActive: "rgba(230,57,70,0.12)",
@@ -72,7 +69,7 @@ function RequestCard({ r }: { r: BloodRequest }) {
       <div className="relative shrink-0">
         <GroupBadge groupe={r.groupe_sanguin} />
         {isCrit && (
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[var(--blood)] pulse-soft" />
+          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-(--blood) pulse-soft" />
         )}
       </div>
 

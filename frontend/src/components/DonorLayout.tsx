@@ -5,7 +5,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Bell, CalendarDays, Home, LogOut, ScrollText, User, type LucideProps } from "lucide-react";
 import { useAuth } from "../lib/auth";
 import { useTheme } from "../lib/theme";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun, Hand } from "lucide-react";
 
 type LucideIcon = ComponentType<LucideProps>;
 
@@ -17,21 +17,7 @@ const TABS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: "/donor/profile",      label: "Profil",     icon: User        },
 ];
 
-/* ── Pill indicator glissant ──────────────────────────────────── */
-function PillIndicator({ activeIndex, tabCount }: { activeIndex: number; tabCount: number }) {
-  const pct = 100 / tabCount;
-  return (
-    <span
-      className="absolute top-0 left-0 h-[2px] rounded-full transition-all duration-300 ease-out"
-      style={{
-        width: `${pct}%`,
-        transform: `translateX(${activeIndex * 100}%)`,
-        background: "var(--blood)",
-        boxShadow: "0 0 8px var(--blood)",
-      }}
-    />
-  );
-}
+
 
 /* ── Donor App Layout ─────────────────────────────────────────── */
 export default function DonorLayout({ children }: { children: ReactNode }) {
@@ -42,9 +28,6 @@ export default function DonorLayout({ children }: { children: ReactNode }) {
   const prenom = (nom ?? "").split(" ")[0];
   const ThemeIcon = mode === "light" ? Sun : mode === "dark" ? Moon : Monitor;
 
-  const activeIndex = TABS.findIndex((t) =>
-    t.to === "/donor" ? pathname === "/donor" : pathname.startsWith(t.to)
-  );
 
   return (
     <div className="flex min-h-screen justify-center" style={{ background: "var(--bg-2)" }}>
@@ -67,8 +50,8 @@ export default function DonorLayout({ children }: { children: ReactNode }) {
               <div className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--txt-mute)" }}>
                 Bonjour
               </div>
-              <h1 className="syne font-bold text-xl mt-0.5" style={{ color: "var(--txt)" }}>
-                {prenom || "Donneur"} 👋
+              <h1 className="syne font-bold text-xl mt-0.5 flex items-center gap-1.5" style={{ color: "var(--txt)" }}>
+                {prenom || "Donneur"} <Hand size={18} style={{ color: "#f59e0b" }} className="animate-pulse" />
               </h1>
               <p className="mono text-[10px] mt-1 italic" style={{ color: "var(--txt-mute)" }}>
                 "Joxal sa dërew, mu jox aye dund"
@@ -111,23 +94,19 @@ export default function DonorLayout({ children }: { children: ReactNode }) {
           {children}
         </main>
 
-        {/* ── TabBar style maquette ── */}
+        {/* ── Floating Glass Navbar ── */}
         <nav
-          className="fixed bottom-0 left-1/2 z-30 w-full max-w-md -translate-x-1/2"
+          className="fixed bottom-6 left-1/2 z-30 w-[92%] max-w-[400px] -translate-x-1/2 rounded-full"
           style={{
-            background: "var(--surface)",
-            borderTop: "1px solid var(--line)",
-            boxShadow: "0 -4px 24px rgba(0,0,0,0.12)",
+            background: "color-mix(in srgb, var(--surface) 70%, transparent)",
+            backdropFilter: "blur(24px) saturate(1.5)",
+            WebkitBackdropFilter: "blur(24px) saturate(1.5)",
+            border: "1px solid color-mix(in srgb, var(--line) 50%, rgba(255,255,255,0.1))",
+            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.15), 0 12px 40px rgba(0,0,0,0.2)",
+            padding: "8px 12px"
           }}
         >
-          {/* Conteneur avec pill indicator */}
-          <div
-            className="relative mx-2 mt-1.5 mb-1 flex rounded-2xl overflow-hidden"
-            style={{ background: "var(--surface-2)", padding: 4, borderRadius: 18 }}
-          >
-            {/* Pill slide */}
-            <PillIndicator activeIndex={Math.max(0, activeIndex)} tabCount={TABS.length} />
-
+          <div className="flex items-center justify-between">
             {TABS.map(({ to, label, icon: Icon }) => {
               const active = to === "/donor" ? pathname === "/donor" : pathname.startsWith(to);
               return (
@@ -135,21 +114,27 @@ export default function DonorLayout({ children }: { children: ReactNode }) {
                   key={to}
                   to={to}
                   end={to === "/donor"}
-                  className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl py-1.5 text-[9px] font-medium transition-all duration-200 active:scale-95"
+                  className="flex flex-col items-center justify-center gap-1.5 transition-all duration-300 active:scale-95 flex-1 h-14 rounded-full"
                   style={{
                     color: active ? "var(--blood)" : "var(--txt-mute)",
-                    background: active ? "rgba(230,57,70,0.10)" : "transparent",
                   }}
                 >
-                  <Icon size={18} />
-                  <span className="mono uppercase tracking-wider">{label}</span>
+                  <div className="relative">
+                    <Icon size={22} strokeWidth={active ? 2.5 : 1.5} className="transition-all duration-300" style={{ filter: active ? "drop-shadow(0 2px 8px var(--blood-glow))" : "none" }} />
+                    {active && (
+                      <div className="absolute -bottom-2 left-1/2 w-1 h-1 rounded-full -translate-x-1/2 transition-all" style={{ background: "var(--blood)", boxShadow: "0 0 8px var(--blood)" }} />
+                    )}
+                  </div>
+                  <span 
+                    className="syne text-[10px] font-semibold transition-all duration-300"
+                    style={{ opacity: active ? 1 : 0.7 }}
+                  >
+                    {label}
+                  </span>
                 </NavLink>
               );
             })}
           </div>
-
-          {/* Safe area */}
-          <div className="h-[env(safe-area-inset-bottom,0px)]" />
         </nav>
       </div>
     </div>

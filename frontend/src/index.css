@@ -54,6 +54,28 @@
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+  /* ── Neon dark-mode accents (refonte Home) */
+  --neon-blood:     #ff2d3d;
+  --neon-gold:      #fbbf24;
+  --neon-blood-glow: rgba(255, 45, 61, 0.7);
+  --neon-gold-glow:  rgba(251, 191, 36, 0.6);
+}
+
+/* ── Glass tokens (light + dark) ──────────────────────────────── */
+:root {
+  --glass-bg:      rgba(255, 255, 255, 0.70);
+  --glass-border:  rgba(255, 255, 255, 0.50);
+  --glass-shadow:  0 8px 32px rgba(15, 22, 41, 0.10);
+  --neon-blood:     #E63946;
+  --neon-gold:      #d97706;
+  --neon-blood-glow: rgba(230, 57, 70, 0.35);
+  --neon-gold-glow:  rgba(217, 119, 6, 0.40);
+}
+.dark {
+  --glass-bg:      rgba(13, 20, 45, 0.75);
+  --glass-border:  rgba(255, 255, 255, 0.08);
+  --glass-shadow:  0 8px 32px rgba(0, 0, 0, 0.50);
 }
 
 /* ── Reset global ──────────────────────────────────────────────── */
@@ -515,3 +537,216 @@ body {
 .dark .page-title-glow {
   text-shadow: 0 0 20px rgba(255,255,255,0.15);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   REFONTE HOME "HORS NORME" — Animations & Utilitaires
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Heartbeat (bouton CTA principal) ─────────────────────────── */
+@keyframes heartbeat {
+  0%,100% { transform: scale(1);    box-shadow: 0 0 0 0 var(--blood-glow), 0 6px 20px rgba(230,57,70,0.35); }
+  14%      { transform: scale(1.06); box-shadow: 0 0 0 6px rgba(230,57,70,0), 0 8px 28px rgba(230,57,70,0.55); }
+  28%      { transform: scale(1);    box-shadow: 0 0 0 0 rgba(230,57,70,0), 0 6px 20px rgba(230,57,70,0.35); }
+  42%      { transform: scale(1.04); box-shadow: 0 0 0 4px rgba(230,57,70,0), 0 8px 24px rgba(230,57,70,0.45); }
+}
+.heartbeat { animation: heartbeat 1.6s ease-in-out infinite; }
+
+/* ── Ring expand (ondes concentriques éligibilité) ────────────── */
+@keyframes ringExpand {
+  0%   { transform: scale(1);   opacity: 0.8; }
+  100% { transform: scale(2.6); opacity: 0;   }
+}
+.ring-expand-1 { animation: ringExpand 2.4s ease-out infinite; }
+.ring-expand-2 { animation: ringExpand 2.4s ease-out 0.8s infinite; }
+.ring-expand-3 { animation: ringExpand 2.4s ease-out 1.6s infinite; }
+
+/* ── Particle float (ambiance héros requis) ───────────────────── */
+@keyframes particleFloat {
+  0%   { transform: translateY(0px) translateX(0px) scale(1);  opacity: 0.7; }
+  33%  { transform: translateY(-18px) translateX(6px) scale(1.2); opacity: 1; }
+  66%  { transform: translateY(-30px) translateX(-4px) scale(0.8); opacity: 0.5; }
+  100% { transform: translateY(-48px) translateX(2px) scale(0.4); opacity: 0; }
+}
+.particle { animation: particleFloat var(--dur, 3s) ease-out var(--delay, 0s) infinite; }
+
+/* ── Holographic shimmer (HeroCard) ──────────────────────────── */
+@keyframes holographicShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.holo-shimmer {
+  background: linear-gradient(
+    125deg,
+    transparent 20%,
+    rgba(255,255,255,0.08) 30%,
+    rgba(230,57,70,0.06) 40%,
+    rgba(251,191,36,0.06) 50%,
+    rgba(139,92,246,0.06) 60%,
+    rgba(255,255,255,0.08) 70%,
+    transparent 80%
+  );
+  background-size: 300% 300%;
+  animation: holographicShift 5s linear infinite;
+  pointer-events: none;
+}
+.dark .holo-shimmer {
+  background: linear-gradient(
+    125deg,
+    transparent 20%,
+    rgba(255,255,255,0.04) 30%,
+    rgba(230,57,70,0.10) 40%,
+    rgba(251,191,36,0.08) 50%,
+    rgba(139,92,246,0.08) 60%,
+    rgba(255,255,255,0.04) 70%,
+    transparent 80%
+  );
+  background-size: 300% 300%;
+  animation: holographicShift 5s linear infinite;
+}
+
+/* ── Drop fill (goutte de sang) ───────────────────────────────── */
+@keyframes dropFill {
+  from { transform: scaleY(0); transform-origin: bottom; opacity: 0.6; }
+  to   { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+}
+.drop-fill { animation: dropFill 1.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ── Neon flicker (badges obtenus) ───────────────────────────── */
+@keyframes neonFlicker {
+  0%,90%,100% { opacity: 1; }
+  92%          { opacity: 0.7; }
+  96%          { opacity: 1; }
+  98%          { opacity: 0.85; }
+}
+.neon-flicker { animation: neonFlicker 4s ease-in-out infinite; }
+
+/* ── Trophy glow (top 3 leaderboard) ─────────────────────────── */
+@keyframes trophyGlow {
+  0%,100% { filter: drop-shadow(0 0 4px currentColor); }
+  50%      { filter: drop-shadow(0 0 12px currentColor) drop-shadow(0 0 20px currentColor); }
+}
+.trophy-glow { animation: trophyGlow 2.5s ease-in-out infinite; }
+
+/* ── Badge shine (badges obtenus) ────────────────────────────── */
+@keyframes badgeShine {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.badge-shine {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%);
+  background-size: 200% auto;
+  animation: badgeShine 3s linear infinite;
+}
+
+/* ── Float up gentle (floating CTA) ──────────────────────────── */
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+.float-up { animation: floatUp 3s ease-in-out infinite; }
+
+/* ── Glassmorphism ────────────────────────────────────────────── */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* ── Perspective container (HeroCard tilt) ────────────────────── */
+.perspective-container {
+  perspective: 800px;
+}
+.tilt-card {
+  transform-style: preserve-3d;
+  transition: transform 0.12s ease-out;
+  will-change: transform;
+}
+
+/* ── Neon text (dark mode accent) ────────────────────────────── */
+.dark .neon-blood-text {
+  color: var(--neon-blood);
+  text-shadow: 0 0 8px var(--neon-blood-glow), 0 0 20px var(--neon-blood-glow);
+}
+.dark .neon-gold-text {
+  color: var(--neon-gold);
+  text-shadow: 0 0 8px var(--neon-gold-glow), 0 0 16px var(--neon-gold-glow);
+}
+
+/* ── Glow rings (auras leaderboard) ──────────────────────────── */
+.aura-gold   { box-shadow: 0 0 0 2px rgba(234,179,8,0.5), 0 0 16px rgba(234,179,8,0.35); }
+.aura-silver { box-shadow: 0 0 0 2px rgba(148,163,184,0.5), 0 0 12px rgba(148,163,184,0.30); }
+.aura-bronze { box-shadow: 0 0 0 2px rgba(180,83,9,0.5), 0 0 12px rgba(180,83,9,0.30); }
+.dark .aura-gold   { box-shadow: 0 0 0 2px rgba(251,191,36,0.7), 0 0 20px rgba(251,191,36,0.55); }
+.dark .aura-silver { box-shadow: 0 0 0 2px rgba(148,163,184,0.6), 0 0 16px rgba(148,163,184,0.40); }
+.dark .aura-bronze { box-shadow: 0 0 0 2px rgba(180,83,9,0.7), 0 0 16px rgba(180,83,9,0.45); }
+
+/* ── Locked badge blur ────────────────────────────────────────── */
+.badge-locked {
+  filter: blur(2px) grayscale(0.9) brightness(0.6);
+  transition: filter 0.3s ease;
+}
+.badge-locked:hover {
+  filter: blur(0.5px) grayscale(0.5) brightness(0.8);
+}
+
+/* ── Slide in from bottom (FloatingCTA) ───────────────────────── */
+@keyframes slideInBottom {
+  from { transform: translateY(80px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.slide-in-bottom { animation: slideInBottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* ── Bounce in scale (hero mode badge) ───────────────────────── */
+@keyframes bounceInScale {
+  0%   { transform: scale(0.3); opacity: 0; }
+  50%  { transform: scale(1.08); opacity: 1; }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.bounce-in-scale { animation: bounceInScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* ── Shimmer streak bar ───────────────────────────────────────── */
+@keyframes streakShimmer {
+  0%   { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+.streak-bar {
+  background: linear-gradient(90deg, #ef3a48 0%, #f97316 30%, #eab308 60%, #ef3a48 100%);
+  background-size: 200% auto;
+  animation: streakShimmer 2.5s linear infinite;
+}
+
+/* ── Community challenge bar ─────────────────────────────────── */
+@keyframes challengeProgress {
+  from { width: 0%; }
+  to   { width: var(--challenge-pct, 70%); }
+}
+.challenge-fill {
+  animation: challengeProgress 1.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.5s;
+}
+
+/* ── Reduced motion safety ────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .heartbeat,
+  .ring-expand-1, .ring-expand-2, .ring-expand-3,
+  .particle,
+  .holo-shimmer,
+  .drop-fill,
+  .neon-flicker,
+  .trophy-glow,
+  .badge-shine,
+  .float-up,
+  .streak-bar,
+  .challenge-fill,
+  .bounce-in-scale,
+  .slide-in-bottom,
+  .progress-fill {
+    animation: none !important;
+  }
+  .tilt-card { transform: none !important; }
+}
+
