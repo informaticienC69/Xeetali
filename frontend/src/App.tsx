@@ -14,6 +14,7 @@ import Campaign from "./pages/admin/Campaign";
 import Users from "./pages/admin/Users";
 import Hospitals from "./pages/admin/Hospitals";
 
+import MedicalDashboard from "./pages/medical/MedicalDashboard";
 import RegisterPouch from "./pages/medical/RegisterPouch";
 import Stock from "./pages/medical/Stock";
 import Validity from "./pages/medical/Validity";
@@ -64,7 +65,8 @@ export default function App() {
       <Route path="/admin/hospitals" element={<Protected roles={["ADMIN_CNTS"]}><Hospitals /></Protected>} />
 
       {/* Personnel Médical */}
-      <Route path="/medical" element={<Protected roles={["PERSONNEL_MEDICAL"]}><RegisterPouch /></Protected>} />
+      <Route path="/medical" element={<Protected roles={["PERSONNEL_MEDICAL"]}><MedicalDashboard /></Protected>} />
+      <Route path="/medical/register" element={<Protected roles={["PERSONNEL_MEDICAL"]}><RegisterPouch /></Protected>} />
       <Route path="/medical/stock" element={<Protected roles={["PERSONNEL_MEDICAL"]}><Stock /></Protected>} />
       <Route path="/medical/validity" element={<Protected roles={["PERSONNEL_MEDICAL"]}><Validity /></Protected>} />
       <Route path="/medical/request" element={<Protected roles={["PERSONNEL_MEDICAL"]}><Request /></Protected>} />
