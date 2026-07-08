@@ -81,16 +81,18 @@ export default function RegisterPouch() {
       <div className="flex flex-col xl:flex-row gap-8 items-stretch">
         
         {/* ── COLONNE GAUCHE : FORMULAIRE PREMIUM ── */}
-        <div className="grow w-full xl:w-[60%] flex flex-col gap-6">
-          <form onSubmit={submit} className="h-full flex flex-col p-6 rounded-3xl transition-all duration-500" style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
+        <div className="grow w-full xl:w-[60%] flex flex-col gap-6 relative group perspective-container card-in">
+          <div className="absolute -inset-2 bg-linear-to-r from-red-500/10 via-transparent to-red-500/5 rounded-[40px] blur-xl opacity-60 pointer-events-none holo-shimmer"></div>
+          <form onSubmit={submit} className="relative h-full flex flex-col p-8 rounded-[32px] transition-all duration-500 tilt-card hover:-translate-y-1 hover:shadow-[0_30px_60px_rgba(230,57,70,0.08)]" style={{ background: "linear-gradient(145deg, var(--surface) 0%, var(--surface-2) 100%)", border: "1px solid color-mix(in srgb, var(--line) 40%, transparent)", boxShadow: "0 20px 50px rgba(0,0,0,0.05), inset 0 2px 0 rgba(255,255,255,0.4)" }}>
             
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="syne font-bold text-xl" style={{ color: "var(--txt)" }}>Nouvelle poche</h2>
                 <p className="mono text-[10px] uppercase tracking-wider mt-1.5" style={{ color: "var(--txt-mute)" }}>Saisie des caractéristiques</p>
               </div>
-              <div className="h-10 w-10 rounded-full flex items-center justify-center" style={{ background: "rgba(230,57,70,0.1)" }}>
-                <Droplet size={16} style={{ color: "var(--blood)" }} />
+              <div className="h-10 w-10 rounded-full flex items-center justify-center relative overflow-hidden group-hover:scale-110 transition-transform duration-500" style={{ background: "rgba(230,57,70,0.1)" }}>
+                <div className="absolute inset-0 bg-red-500/20 drop-fill opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Droplet size={16} className="relative z-10 heartbeat" style={{ color: "var(--blood)" }} />
               </div>
             </div>
 
@@ -99,22 +101,23 @@ export default function RegisterPouch() {
               <label className="block mono text-[10px] uppercase tracking-wider mb-3" style={{ color: "var(--txt-mute)" }}>1. Groupe Sanguin</label>
               <div className="grid grid-cols-4 gap-2">
                 {BLOOD_GROUPS.map((g) => (
-                  <button
-                    key={g}
-                    type="button"
-                    onClick={() => setGroupe(g)}
-                    className="relative syne font-bold text-lg py-3 rounded-xl transition-all duration-300 overflow-hidden"
-                    style={{
-                      background: groupe === g ? "var(--blood)" : "var(--surface-2)",
-                      color: groupe === g ? "#fff" : "var(--txt-dim)",
-                      border: `1px solid ${groupe === g ? "var(--blood)" : "var(--line)"}`,
-                      boxShadow: groupe === g ? "0 8px 24px rgba(230,57,70,0.3)" : "none",
-                      transform: groupe === g ? "translateY(-2px)" : "none"
-                    }}
-                  >
-                    {groupe === g && (
-                      <div className="absolute inset-0 bg-white opacity-20" style={{ clipPath: "polygon(0 0, 100% 0, 100% 30%, 0 100%)" }} />
-                    )}
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setGroupe(g)}
+                      className="relative syne font-bold text-lg py-4 rounded-2xl transition-all duration-300 overflow-hidden group"
+                      style={{
+                        background: groupe === g ? "linear-gradient(135deg, var(--blood), #c1232f)" : "var(--surface)",
+                        color: groupe === g ? "#fff" : "var(--txt-dim)",
+                        border: `1px solid ${groupe === g ? "transparent" : "var(--line)"}`,
+                        boxShadow: groupe === g ? "0 12px 24px rgba(230,57,70,0.3)" : "0 4px 12px rgba(0,0,0,0.02)",
+                        transform: groupe === g ? "translateY(-3px) scale(1.02)" : "translateY(0)"
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
+                      {groupe === g && (
+                        <div className="absolute inset-0 bg-white opacity-20" style={{ clipPath: "polygon(0 0, 100% 0, 100% 30%, 0 100%)" }} />
+                      )}
                     <span className="relative z-10">
                       {g.replace(/[+-]/, "")}
                       <span className="text-sm opacity-80 ml-0.5">{g.includes("-") ? "−" : "+"}</span>
@@ -125,18 +128,22 @@ export default function RegisterPouch() {
             </div>
 
             {/* Hôpital */}
-            <div className="mb-6">
+            <div className="mb-6 relative z-20">
               <label className="block mono text-[10px] uppercase tracking-wider mb-3" style={{ color: "var(--txt-mute)" }}>2. Centre de prélèvement</label>
-              <Select
-                value={hospital}
-                onChange={(e) => setHospital(e.target.value === "" ? "" : Number(e.target.value))}
-                className="w-full"
-              >
-                <option value="" disabled>— Choisir l'hôpital —</option>
-                {inv.data?.map((h) => (
-                  <option key={h.hospital_id} value={h.hospital_id}>{h.nom}</option>
-                ))}
-              </Select>
+              <div className="relative group">
+                <Select
+                  value={hospital}
+                  onChange={(e) => setHospital(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full pl-4 pr-10 py-4 rounded-2xl mono text-xs font-bold transition-all duration-300 cursor-pointer hover:shadow-lg"
+                  style={{ background: "var(--surface)", border: "1px solid color-mix(in srgb, var(--line) 60%, transparent)", outline: "none", boxShadow: "inset 0 2px 6px rgba(0,0,0,0.02)" }}
+                >
+                  <option value="" disabled>— Choisir l'hôpital —</option>
+                  {inv.data?.map((h) => (
+                    <option key={h.hospital_id} value={h.hospital_id}>{h.nom}</option>
+                  ))}
+                </Select>
+                <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-red-500/10 pointer-events-none transition-colors" />
+              </div>
             </div>
 
             {/* Dates */}
@@ -146,34 +153,34 @@ export default function RegisterPouch() {
                 
                 {/* Date Prélèvement */}
                 <div className="relative">
-                  <Calendar size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--txt-dim)" }} />
+                  <Calendar size={14} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--txt-dim)" }} />
                   <input
                     type="date"
                     value={prelevement}
                     onChange={(e) => setPrelevement(e.target.value)}
-                    className="w-full mono text-xs rounded-xl pl-9 pr-3 py-3 transition-all"
-                    style={{ background: "var(--surface-2)", border: "1px solid var(--line)", color: "var(--txt)", outline: "none" }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = "var(--txt-mute)")}
-                    onBlur={(e) => (e.currentTarget.style.borderColor = "var(--line)")}
+                    className="w-full mono text-xs rounded-2xl pl-10 pr-4 py-4 transition-all"
+                    style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--txt)", outline: "none", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.02)" }}
+                    onFocus={(e) => (e.currentTarget.style.borderColor = "var(--txt-mute)", e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,0,0,0.05)")}
+                    onBlur={(e) => (e.currentTarget.style.borderColor = "var(--line)", e.currentTarget.style.boxShadow = "inset 0 2px 4px rgba(0,0,0,0.02)")}
                   />
-                  <div className="absolute top-[-7px] left-3.5 px-1 mono text-[8px] uppercase tracking-wider bg-(--surface)" style={{ color: "var(--txt-dim)" }}>
+                  <div className="absolute top-[-8px] left-4 px-1.5 mono text-[9px] font-bold uppercase tracking-widest bg-white rounded-sm" style={{ color: "var(--txt-dim)" }}>
                     Prélèvement
                   </div>
                 </div>
 
                 {/* Date Péremption */}
                 <div className="relative">
-                  <Calendar size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: expiryTone }} />
+                  <Calendar size={14} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: expiryTone }} />
                   <input
                     type="date"
                     value={peremption}
                     onChange={(e) => setPeremption(e.target.value)}
-                    className="w-full mono text-xs rounded-xl pl-9 pr-3 py-3 transition-all"
-                    style={{ background: "var(--surface-2)", border: `1px solid ${dateError ? "var(--blood)" : "var(--line)"}`, color: "var(--txt)", outline: "none" }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = expiryTone)}
-                    onBlur={(e) => (e.currentTarget.style.borderColor = "var(--line)")}
+                    className="w-full mono text-xs rounded-2xl pl-10 pr-4 py-4 transition-all"
+                    style={{ background: "var(--surface)", border: `1px solid ${dateError ? "var(--blood)" : "var(--line)"}`, color: "var(--txt)", outline: "none", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.02)" }}
+                    onFocus={(e) => (e.currentTarget.style.borderColor = expiryTone, e.currentTarget.style.boxShadow = `0 0 0 3px ${expiryTone}20`)}
+                    onBlur={(e) => (e.currentTarget.style.borderColor = "var(--line)", e.currentTarget.style.boxShadow = "inset 0 2px 4px rgba(0,0,0,0.02)")}
                   />
-                  <div className="absolute top-[-7px] left-3.5 px-1 mono text-[8px] uppercase tracking-wider bg-(--surface)" style={{ color: dateError ? "var(--blood)" : expiryTone }}>
+                  <div className="absolute top-[-8px] left-4 px-1.5 mono text-[9px] font-bold uppercase tracking-widest bg-white rounded-sm" style={{ color: dateError ? "var(--blood)" : expiryTone }}>
                     Péremption
                   </div>
                 </div>
@@ -181,17 +188,17 @@ export default function RegisterPouch() {
               </div>
 
               {/* Feedback expiration */}
-              <div className="mt-4 flex flex-col gap-2">
+              <div className="mt-4 flex flex-col gap-2 relative z-10">
                 {dateError ? (
-                  <div className="flex items-center gap-2 mono text-[11px] px-4 py-2 rounded-lg" style={{ background: "rgba(230,57,70,0.1)", color: "var(--blood)" }}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-(--blood)" />
+                  <div className="flex items-center gap-2 mono text-[11px] px-5 py-3 rounded-xl border" style={{ background: "rgba(230,57,70,0.05)", borderColor: "rgba(230,57,70,0.2)", color: "var(--blood)" }}>
+                    <span className="w-2 h-2 rounded-full bg-(--blood) pulse-blood" />
                     {dateError}
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 mono text-[11px] px-4 py-2 rounded-lg transition-all" style={{ background: `${expiryTone}15`, color: expiryTone }}>
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: expiryTone }} />
-                    Validité : {daysLeft} jours restants
-                    {daysLeft < 14 && " (Critique)"}
+                  <div className="flex items-center gap-2 mono text-[11px] px-5 py-3 rounded-xl transition-all border" style={{ background: daysLeft < 14 ? 'rgba(230,57,70,0.05)' : `${expiryTone}10`, borderColor: daysLeft < 14 ? 'rgba(230,57,70,0.2)' : `${expiryTone}20`, color: expiryTone }}>
+                    <span className={`w-2 h-2 rounded-full ${daysLeft < 14 ? 'pulse-blood' : 'glow-ok'}`} style={{ background: expiryTone }} />
+                    Validité : <span className="font-extrabold text-sm mx-1">{daysLeft}</span> jours restants
+                    {daysLeft < 14 && <span className="uppercase font-bold tracking-widest text-[9px] ml-1 px-1.5 py-0.5 rounded bg-(--blood) text-white heartbeat">Critique</span>}
                   </div>
                 )}
               </div>
@@ -202,7 +209,7 @@ export default function RegisterPouch() {
                 type="submit"
                 loading={saving}
                 disabled={!!dateError || hospital === ""}
-                className="w-full py-3.5 rounded-xl text-sm font-bold tracking-wide shadow-lg hover:-translate-y-0.5 transition-transform"
+                className="w-full py-4 rounded-2xl text-[15px] font-extrabold tracking-wide shadow-xl transition-all hover:scale-[1.02] hover:shadow-2xl bg-linear-to-br from-[#ef3a48] to-[#a81c26] text-white border-none"
               >
                 Créer la poche et générer l'UID
               </Button>
@@ -211,11 +218,18 @@ export default function RegisterPouch() {
         </div>
 
         {/* ── COLONNE DROITE : DIGITAL TWIN (Dernière Poche) ── */}
-        <div className="w-full xl:w-[40%] shrink-0 flex flex-col gap-6">
-          <div className="h-full p-6 rounded-3xl flex flex-col items-center justify-center relative overflow-hidden transition-all duration-500" style={{ background: "var(--surface-2)", border: "1px solid var(--line)", minHeight: "420px" }}>
+        <div className="w-full xl:w-[40%] shrink-0 flex flex-col gap-6 relative group perspective-container card-in delay-120">
+          <div className="absolute -inset-2 bg-linear-to-tr from-rose-100 to-teal-50 rounded-[40px] blur-xl opacity-60 pointer-events-none holo-shimmer"></div>
+          <div className="relative h-full p-8 rounded-[32px] flex flex-col items-center justify-center overflow-hidden transition-all duration-500 backdrop-blur-xl bg-white/60 tilt-card hover:-translate-y-1 hover:shadow-[0_30px_60px_rgba(0,0,0,0.1)]" style={{ border: "1px solid rgba(255,255,255,0.8)", minHeight: "420px", boxShadow: "0 20px 40px rgba(0,0,0,0.05)" }}>
             
-            {/* Background design elements */}
+            {/* Background design elements & Particles */}
             <Droplet size={300} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(230,57,70,0.03)" }} />
+            
+            {/* Particules flottantes "Holographiques" */}
+            <div className="absolute top-12 left-12 w-2 h-2 rounded-full bg-red-400 particle" style={{ "--dur": "4s", "--delay": "0s" } as any} />
+            <div className="absolute bottom-24 right-12 w-3 h-3 rounded-full bg-teal-400 particle" style={{ "--dur": "6s", "--delay": "1s" } as any} />
+            <div className="absolute top-1/2 left-8 w-1 h-1 rounded-full bg-yellow-400 particle" style={{ "--dur": "3s", "--delay": "0.5s" } as any} />
+            <div className="absolute top-1/4 right-1/4 w-2 h-2 rounded-full bg-purple-400 particle" style={{ "--dur": "5s", "--delay": "2s" } as any} />
 
             {!last ? (
               <div className="relative z-10 flex flex-col items-center text-center opacity-60">
@@ -228,7 +242,7 @@ export default function RegisterPouch() {
                 </p>
               </div>
             ) : (
-              <div className="relative z-10 flex flex-col items-center w-full max-w-[320px] p-6 rounded-[24px] card-in" style={{ background: "var(--surface)", boxShadow: "0 12px 40px rgba(0,0,0,0.1), 0 0 0 1px var(--line)" }}>
+              <div className="relative z-10 flex flex-col items-center w-full max-w-[340px] p-8 rounded-[32px] bounce-in-scale" style={{ background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)", boxShadow: "0 24px 48px rgba(0,0,0,0.08), inset 0 2px 0 rgba(255,255,255,1), 0 0 0 1px rgba(0,0,0,0.05)" }}>
                 
                 <div className="w-full flex justify-between items-start mb-6">
                   <div className="flex flex-col">

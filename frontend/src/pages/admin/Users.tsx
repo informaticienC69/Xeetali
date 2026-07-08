@@ -4,7 +4,7 @@ import { Plus, Trash2, Users as UsersIcon } from "lucide-react";
 import { api, ApiError, type Role } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useToast } from "../../lib/toast";
-import { Button, Card, EmptyState, Field, FilterSelect, Input, Modal, SearchInput, Select, Skeleton, Toolbar, PageHeader, DataTable } from "../../components/ui";
+import { Button, Card, EmptyState, Field, FilterSelect, Input, Modal, SearchInput, Select, Skeleton, Toolbar, PageHeader, DataTable, ConfirmModal } from "../../components/ui";
 
 const ROLES: Role[] = ["ADMIN_CNTS", "PERSONNEL_MEDICAL", "DONNEUR"];
 const ROLE_COLOR: Record<Role, string> = {
@@ -32,6 +32,7 @@ export default function Users() {
   const [saving, setSaving] = useState(false);
   const [q, setQ] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number, nom: string } | null>(null);
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -55,10 +56,12 @@ export default function Users() {
     } finally { setSaving(false); }
   }
 
-  async function remove(id: number) {
+  async function remove() {
+    if (!confirmDelete) return;
     try {
-      await api.deleteUser(id);
+      await api.deleteUser(confirmDelete.id);
       toast.success("Utilisateur supprimé.");
+      setConfirmDelete(null);
       users.reload();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Erreur.");
@@ -112,7 +115,7 @@ export default function Users() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <Button variant="danger" onClick={() => remove(u.id)}>
+                  <Button variant="danger" onClick={() => setConfirmDelete({ id: u.id, nom: u.nom })}>
                     <Trash2 size={14} /> Supprimer
                   </Button>
                 </td>
@@ -144,6 +147,16 @@ export default function Users() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        open={confirmDelete !== null}
+        title="Supprimer l'utilisateur"
+        description={`Êtes-vous sûr de vouloir supprimer définitivement le compte "${confirmDelete?.nom}" ? Cette action est irréversible.`}
+        confirmLabel="Supprimer"
+        onConfirm={remove}
+        onCancel={() => setConfirmDelete(null)}
+        tone="blood"
+      />
     </div>
   );
 }

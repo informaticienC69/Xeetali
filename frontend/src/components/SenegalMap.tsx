@@ -1,5 +1,6 @@
 // SenegalMap.tsx — XÉÉTALI · Carte fidèle 100% (react-simple-maps + GADM officiel)
 import { useCallback, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ComposableMap, Geographies, Geography, Marker, Line } from "react-simple-maps";
 import {
   AlertTriangle, Building2, ChevronRight,
@@ -77,7 +78,7 @@ function MapTooltip({region,filterGroup,viewMode,pos,containerW}:{region:RegionD
   const flip=pos.x>containerW*0.65;
   const shown=filterGroup?region.bloodGroups.filter(b=>b.group===filterGroup):region.bloodGroups.slice(0,5);
   return (
-    <div style={{position:"absolute",left:flip?pos.x-236:pos.x+14,top:Math.max(8,pos.y-20),width:224,background:"var(--surface)",border:`1px solid ${color}50`,borderRadius:12,padding:"12px 14px",boxShadow:`0 12px 40px rgba(0,0,0,0.5),0 0 0 1px ${color}30`,zIndex:100,pointerEvents:"none"}}>
+    <div className="dropdown-pop backdrop-blur-xl" style={{position:"absolute",left:flip?pos.x-210:pos.x+14,top:Math.max(8,pos.y-20),width:196,background:"color-mix(in srgb, var(--surface) 80%, transparent)",border:`1px solid ${color}50`,borderRadius:12,padding:"10px 12px",boxShadow:`0 12px 40px rgba(0,0,0,0.5),inset 0 0 0 1px rgba(255,255,255,0.2)`,zIndex:100,pointerEvents:"none"}}>
       <div className="flex items-center justify-between mb-2">
         <div>
           <div className="syne font-bold text-sm" style={{color:"var(--txt)"}}>{region.name}</div>
@@ -89,15 +90,17 @@ function MapTooltip({region,filterGroup,viewMode,pos,containerW}:{region:RegionD
         </div>
       </div>
       <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{background:"var(--line)"}}>
-        <div className="h-full rounded-full" style={{width:`${region.stockPct}%`,background:color,boxShadow:`0 0 8px ${color}80`}}/>
+        <div className="h-full rounded-full scale-x-in" style={{width:`${region.stockPct}%`,background:color,boxShadow:`0 0 8px ${color}80`}}/>
       </div>
       <div className="space-y-1">
         <div className="mono text-[9px] uppercase tracking-wider mb-1" style={{color:"var(--txt-mute)"}}>{filterGroup?`Groupe ${filterGroup}`:"Groupes sanguins"}</div>
-        {shown.map(bg=>{const p=Math.round((bg.qty/bg.max)*100);const bc=p>50?"#4ade80":p>20?"#f59e0b":"#E63946";return(
+        {shown.map((bg, i)=>{const p=Math.round((bg.qty/bg.max)*100);const bc=p>50?"#4ade80":p>20?"#f59e0b":"#E63946";return(
           <div key={bg.group} className="flex items-center gap-2">
             <span className="mono text-[10px] w-7 shrink-0 font-semibold" style={{color:"var(--txt-dim)"}}>{bg.group}</span>
-            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{background:"var(--line)"}}><div className="h-full rounded-full" style={{width:`${p}%`,background:bc}}/></div>
-            <span className="mono text-[9px] w-10 text-right tabular-nums" style={{color:"var(--txt-mute)"}}>{bg.qty}/{bg.max}</span>
+            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{background:"var(--line)"}}>
+              <div className="h-full rounded-full scale-x-in" style={{width:`${p}%`,background:bc, animationDelay: `${i * 60 + 100}ms`}}/>
+            </div>
+            <span className="mono text-[9px] w-9 text-right tabular-nums" style={{color:"var(--txt-mute)"}}>{bg.qty}/{bg.max}</span>
           </div>
         );})}
       </div>
@@ -112,6 +115,7 @@ function MapTooltip({region,filterGroup,viewMode,pos,containerW}:{region:RegionD
 }
 
 function DetailPanel({region,onClose}:{region:RegionData;onClose:()=>void}) {
+  const navigate = useNavigate();
   const color=STATUS_CFG[region.status].color;
   const TI=region.trend==="up"?TrendingUp:region.trend==="down"?TrendingDown:Minus;
   return(
@@ -169,8 +173,8 @@ function DetailPanel({region,onClose}:{region:RegionData;onClose:()=>void}) {
           ))}
         </div>
         <div className="space-y-2 pt-1">
-          <button className="btn-blood w-full py-2.5 text-sm flex items-center justify-center gap-2" style={{opacity:region.alertes>0||region.stockPct<40?1:0.5}}><Zap size={14}/> Lancer alerte urgence</button>
-          <button className="w-full py-2.5 text-sm flex items-center justify-center gap-2 rounded-xl border mono text-[11px] uppercase tracking-wider" style={{borderColor:"var(--line)",color:"var(--txt-dim)",background:"var(--surface-2)"}}><ChevronRight size={14}/> Commander approvisionnement</button>
+          <button onClick={() => navigate("/admin/campaign")} className="btn-blood w-full py-2.5 text-sm flex items-center justify-center gap-2 cursor-pointer transition-all hover:opacity-90" style={{opacity:region.alertes>0||region.stockPct<40?1:0.5}}><Zap size={14}/> Lancer alerte urgence</button>
+          <button onClick={() => navigate("/admin/transfer")} className="w-full py-2.5 text-sm flex items-center justify-center gap-2 rounded-xl border mono text-[11px] uppercase tracking-wider cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-sm" style={{borderColor:"var(--line)",color:"var(--txt-dim)",background:"var(--surface-2)"}} onMouseEnter={(e) => { e.currentTarget.style.borderColor="var(--txt-mute)"; e.currentTarget.style.color="var(--txt)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor="var(--line)"; e.currentTarget.style.color="var(--txt-dim)"; }}><ChevronRight size={14}/> Commander approvisionnement</button>
         </div>
       </div>
     </div>

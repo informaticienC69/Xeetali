@@ -146,28 +146,41 @@ export default function Layout({ children }: { children: ReactNode }) {
         }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-4 py-5" style={{ borderBottom: "1px solid var(--line)" }}>
-          {/* Icône logo gradient */}
-          <div
-            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-            style={{
-              background: "linear-gradient(135deg, #E63946 0%, #1D3557 100%)",
-              boxShadow: "0 4px 12px rgba(230,57,70,0.35)",
-            }}
-          >
-            <Droplet size={18} className="fill-white text-white" />
-            {/* Point pulsant */}
-            <span
-              className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full pulse-soft"
-              style={{ background: "var(--blood)", boxShadow: "0 0 8px var(--blood)" }}
-            />
-          </div>
-          <div>
-            <div className="syne font-extrabold tracking-[0.16em] text-sm leading-none" style={{ color: "var(--txt)" }}>
-              XÉÉTALI
+        <div className="flex items-center gap-4 px-5 py-6 relative overflow-hidden" style={{ borderBottom: "1px solid var(--line)" }}>
+          {/* Subtle background glow behind the logo */}
+          <div className="absolute left-0 top-0 w-32 h-32 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(230,57,70,0.15) 0%, transparent 70%)", filter: "blur(20px)" }} />
+
+          {/* Icône logo premium */}
+          <div className="relative group cursor-pointer">
+            <div
+              className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-[0_0_30px_rgba(230,57,70,0.3)] backdrop-blur-md"
+              style={{
+                background: "linear-gradient(135deg, rgba(230,57,70,0.2) 0%, rgba(230,57,70,0.02) 100%)",
+                boxShadow: "0 8px 24px rgba(230,57,70,0.15), inset 0 1px 1px rgba(255,255,255,0.1)",
+                border: "1px solid rgba(230,57,70,0.3)"
+              }}
+            >
+              <Droplet size={22} strokeWidth={2} className="text-red-500" style={{ fill: "rgba(230,57,70,0.25)", filter: "drop-shadow(0 2px 4px rgba(230,57,70,0.4))" }} />
             </div>
-            <div className="mono text-[8px] uppercase tracking-wider mt-0.5" style={{ color: "var(--txt-mute)" }}>
-              DÉLIVRANCE · CNTS SN
+            {/* Point pulsant (laser style) */}
+            <div className="absolute -right-1 -top-1">
+              <span className="absolute inline-flex h-3.5 w-3.5 animate-ping rounded-full bg-red-400 opacity-80" />
+              <span className="relative inline-flex h-3.5 w-3.5 rounded-full" style={{ background: "var(--blood)", border: "2px solid var(--surface)", boxShadow: "0 0 10px var(--blood)" }} />
+            </div>
+          </div>
+
+          <div className="relative z-10 flex flex-col justify-center">
+            <div className="syne font-black tracking-[0.2em] text-[16px] leading-none flex items-center">
+              <span style={{ color: "var(--txt)" }}>X</span>
+              <span className="relative inline-block" style={{ color: "var(--blood)", textShadow: "0 0 16px var(--blood-glow)" }}>
+                É
+                <div className="absolute -inset-1 animate-pulse opacity-50" style={{ background: "radial-gradient(circle, var(--blood-glow) 0%, transparent 70%)", filter: "blur(4px)", zIndex: -1 }} />
+              </span>
+              <span style={{ color: "var(--txt)" }}>ÉTALI</span>
+            </div>
+            <div className="mono text-[8.5px] uppercase tracking-[0.25em] mt-1.5 flex items-center gap-1.5 opacity-80" style={{ color: "var(--txt-mute)" }}>
+              <span className="w-1 h-1 rounded-sm animate-pulse" style={{ background: "var(--blood)", boxShadow: "0 0 6px var(--blood)" }} />
+              SYS.DÉLIVRANCE
             </div>
           </div>
         </div>
@@ -210,8 +223,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2.5 px-4 py-3">
             {/* Avatar initiales */}
             <div
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg syne font-bold text-sm text-white"
-              style={{ background: "linear-gradient(135deg, #E63946, #1D3557)" }}
+              className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl syne font-bold text-[13px] backdrop-blur-md transition-all duration-300 hover:shadow-[0_0_15px_rgba(230,57,70,0.2)]"
+              style={{ 
+                background: "linear-gradient(135deg, rgba(230,57,70,0.15) 0%, rgba(230,57,70,0.02) 100%)",
+                boxShadow: "inset 0 1px 1px rgba(255,255,255,0.1)",
+                border: "1px solid rgba(230,57,70,0.25)",
+                color: "var(--blood)",
+                textShadow: "0 0 12px rgba(230,57,70,0.5)"
+              }}
             >
               {role ? ROLE_ACRONYM[role] : "?"}
             </div>
@@ -255,12 +274,23 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       {/* ── Contenu principal ── */}
       <main
-        className="flex flex-1 flex-col overflow-hidden"
+        className="flex flex-1 flex-col overflow-hidden relative"
         style={{ background: "var(--bg)" }}
       >
+        {/* ── Effets "Waouhh" Command Center ── */}
+        <div className="absolute inset-0 pointer-events-none scanlines opacity-30 z-0" />
+        <div className="absolute inset-0 pointer-events-none gridlines opacity-50 z-0" />
+        <div className="absolute inset-0 pointer-events-none holo-shimmer opacity-10 z-0" />
+        
+        {/* Particules d'ambiance */}
+        <div className="absolute top-[15%] left-[5%] w-2 h-2 rounded-full bg-red-500 particle pointer-events-none z-0" style={{ "--dur": "6s", "--delay": "0s" } as any} />
+        <div className="absolute top-[40%] right-[10%] w-3 h-3 rounded-full bg-blue-500 particle pointer-events-none z-0" style={{ "--dur": "8s", "--delay": "1.5s" } as any} />
+        <div className="absolute bottom-[20%] left-[25%] w-1.5 h-1.5 rounded-full bg-teal-400 particle pointer-events-none z-0" style={{ "--dur": "5s", "--delay": "0.5s" } as any} />
+        <div className="absolute top-[60%] right-[30%] w-2.5 h-2.5 rounded-full bg-purple-500 particle pointer-events-none z-0" style={{ "--dur": "7s", "--delay": "2s" } as any} />
+
         {/* Top bar */}
         <div
-          className="flex items-center justify-between px-6 py-3 shrink-0"
+          className="flex items-center justify-between px-6 py-3 shrink-0 relative z-10"
           style={{ borderBottom: "1px solid var(--line)", background: "var(--surface)" }}
         >
           <div className="mono text-[11px] uppercase tracking-wider flex items-center gap-3" style={{ color: "var(--txt-mute)" }}>
@@ -276,8 +306,14 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
 
         {/* Page scroll */}
-        <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 view-fade">
-          {children}
+        <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 view-fade relative z-10 flex flex-col">
+          <div className="flex-1">
+            {children}
+          </div>
+          {/* Footer global */}
+          <div className="text-center mono text-[10px] py-4 mt-8 shrink-0" style={{ color: "var(--txt-mute)" }}>
+            XÉÉTALI · CNTS Sénégal · Données hébergées à Diamniadio · Conforme CDP loi 2008-12
+          </div>
         </div>
       </main>
     </div>

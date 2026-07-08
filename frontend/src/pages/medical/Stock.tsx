@@ -476,7 +476,7 @@ export default function Stock() {
               
               {/* Pagination / Voir plus */}
               {shown.length > displayCount && (
-                <div className="pt-6 pb-2 flex justify-center">
+                <div className="pt-2 pb-2 flex justify-center">
                   <button
                     onClick={() => setDisplayCount(c => c + 6)}
                     className="mono text-[11px] uppercase font-bold px-6 py-2.5 rounded-full transition-all cursor-pointer"

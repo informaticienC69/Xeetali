@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: xeetali_db
+    restart: always
+    environment:
+      POSTGRES_USER: xeetali
+      POSTGRES_PASSWORD: xeetali_password
+      POSTGRES_DB: xeetali_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: 
+      context: ./backend
+    container_name: xeetali_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://xeetali:xeetali_password@db:5432/xeetali_db
+      - JWT_SECRET=prod-secret-change-me-in-production
+    depends_on:
+      - db
+    # On ajoute une commande pour lancer les migrations puis l'application
+    command: >
+      sh -c "alembic upgrade head &&
+             python seed.py &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: xeetali_frontend
+    restart: always
+    ports:
+      - "5173:80" # Nginx sert sur le port 80 dans le container
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

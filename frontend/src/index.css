@@ -729,6 +729,16 @@ body {
   animation-delay: 0.5s;
 }
 
+/* ── Bar fill scale X ─────────────────────────────────────────── */
+@keyframes scaleXIn {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.scale-x-in {
+  transform-origin: left;
+  animation: scaleXIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* ── Reduced motion safety ────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .heartbeat,
@@ -744,6 +754,7 @@ body {
   .challenge-fill,
   .bounce-in-scale,
   .slide-in-bottom,
+  .scale-x-in,
   .progress-fill {
     animation: none !important;
   }
