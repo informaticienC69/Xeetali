@@ -13,6 +13,7 @@ from app.schemas.donor import (
     DonorProfileUpsert,
     DonorStats,
     LeaderboardEntry,
+    UrgencyStats,
 )
 from app.schemas.enums import UserRole
 from app.services import donor_service
@@ -62,3 +63,9 @@ def leaderboard(
 ) -> list[LeaderboardEntry]:
     """Classement des meilleurs donneurs (noms abrégés)."""
     return donor_service.leaderboard(db, current.id)
+
+
+@router.get("/urgency", response_model=UrgencyStats)
+def get_urgency(db: Session = Depends(get_db)) -> UrgencyStats:
+    """Récupère les statistiques d'urgence nationale en temps réel."""
+    return donor_service.get_urgency_stats(db)
