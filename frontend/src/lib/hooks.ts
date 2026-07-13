@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ApiError } from "./api";
 
 interface AsyncState<T> {
@@ -8,28 +9,29 @@ interface AsyncState<T> {
   reload: () => void;
 }
 
-// Charge des données au montage, expose loading/error et une fonction reload().
+// Transform the fetcher to a unique key if none is provided.
+// Since React Query needs a key, we generate a random key per hook instance
+// if we cannot determine one. Ideally, components should migrate to useQuery directly.
 export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []): AsyncState<T> {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  // We use a generated key based on the function body for legacy compatibility, 
+  // or a static key with deps. 
+  // WARNING: This is a bridging strategy for Phase 2.
+  const queryKey = [fetcher.toString().slice(0, 50), ...deps];
 
-  const run = useCallback(async () => {
-    setLoading(true);
-    try {
-      setData(await fetcher());
-      setError(null);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Erreur de chargement.");
-    } finally {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  const { data, isLoading, error, refetch } = useQuery<T, Error>({
+    queryKey,
+    queryFn: fetcher,
+  });
 
-  useEffect(() => {
-    void run();
-  }, [run]);
+  const reload = useCallback(() => {
+    void refetch();
+  }, [refetch]);
 
-  return { data, loading, error, reload: run };
+  return { 
+    data: data ?? null, 
+    loading: isLoading, 
+    error: error instanceof ApiError ? error.message : error?.message ?? null, 
+    reload 
+  };
 }

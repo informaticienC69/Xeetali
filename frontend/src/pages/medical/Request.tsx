@@ -372,9 +372,8 @@ export default function Request() {
               <Button
                 type="submit"
                 loading={saving}
-                disabled={hospital === ""}
-                className="w-full py-4 rounded-xl font-bold tracking-wide shadow-lg hover:shadow-xl hover:opacity-90 transition-all text-[13px]"
-                style={{ background: "var(--blood)", color: "#fff", borderColor: "var(--blood)" }}
+                disabled={saving}
+                className="w-full h-12"
               >
                 <Syringe size={18} className="mr-2" />
                 Émettre la demande — {quantite} poche(s) {groupe}

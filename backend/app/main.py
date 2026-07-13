@@ -40,7 +40,6 @@ from app.services.exceptions import (
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("xeetali")
 
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.app_name,

@@ -8,7 +8,8 @@ from __future__ import annotations
 import logging
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.core.constants import compatible_donor_groups
 from app.models.alert import Alert, AlertResponse
@@ -25,7 +26,7 @@ from app.services.exceptions import NotFoundError
 logger = logging.getLogger("xeetali.alert")
 
 
-def _mask_number(number: str) -> str:
+async def _mask_number(number: str) -> str:
     """Masque un numéro : 2 chiffres de tête, 2 de fin (``77****89``)."""
     digits = "".join(ch for ch in number if ch.isdigit())
     if len(digits) <= 4:
@@ -33,18 +34,18 @@ def _mask_number(number: str) -> str:
     return f"{digits[:2]}{'*' * (len(digits) - 4)}{digits[-2:]}"
 
 
-def _select_target_donors(
-    db: Session, receiver: BloodGroup, localisation: str | None
+async def _select_target_donors(
+    db: AsyncSession, receiver: BloodGroup, localisation: str | None
 ) -> list[DonorProfile]:
     """Donneurs compatibles (matrice ABO/Rh) et, si fournie, de la même localité."""
     compatibles = [g.value for g in compatible_donor_groups(receiver)]
     stmt = select(DonorProfile).where(DonorProfile.groupe_sanguin.in_(compatibles))
     if localisation is not None:
         stmt = stmt.where(DonorProfile.localisation == localisation)
-    return list(db.scalars(stmt).all())
+    return list((await db.scalars(stmt)).all())
 
 
-def dispatch_alert(db: Session, payload: AlertCreate, user_id: int) -> AlertDispatchResult:
+async def dispatch_alert(db: AsyncSession, payload: AlertCreate, user_id: int) -> AlertDispatchResult:
     """Crée l'alerte, cible les donneurs compatibles, simule l'envoi (atomique)."""
     receiver = payload.groupe_sanguin
     portee = AlertScope.NATIONALE if payload.localisation is None else AlertScope.LOCALE
@@ -63,10 +64,10 @@ def dispatch_alert(db: Session, payload: AlertCreate, user_id: int) -> AlertDisp
             created_by=user_id,
         )
         db.add(alert)
-        db.commit()
-        db.refresh(alert)
+        await db.commit()
+        await db.refresh(alert)
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise
 
     numeros_masques = [_mask_number(d.telephone) for d in donors]
@@ -87,20 +88,20 @@ def dispatch_alert(db: Session, payload: AlertCreate, user_id: int) -> AlertDisp
     )
 
 
-def respond_to_alert(
-    db: Session, alert_id: int, user_id: int, disponible: bool
+async def respond_to_alert(
+    db: AsyncSession, alert_id: int, user_id: int, disponible: bool
 ) -> AlertRespondResult:
     """Enregistre la réponse d'un donneur à une alerte (atomique)."""
     profile = get_profile(db, user_id)
-    alert = db.get(Alert, alert_id)
+    alert = await db.get(Alert, alert_id)
     if alert is None:
         raise NotFoundError(f"Alerte {alert_id} introuvable.")
     try:
         response = AlertResponse(alert_id=alert_id, donor_id=profile.id, disponible=disponible)
         db.add(response)
-        db.commit()
+        await db.commit()
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise
 
     instructions = (
@@ -112,10 +113,10 @@ def respond_to_alert(
     return AlertRespondResult(alert_id=alert_id, disponible=disponible, instructions=instructions)
 
 
-def list_active_alerts(db: Session) -> list[Alert]:
+async def list_active_alerts(db: AsyncSession) -> list[Alert]:
     """Alertes actives (pour l'espace donneur)."""
     return list(
-        db.scalars(
+        await db.scalars(
             select(Alert)
             .where(Alert.statut == AlertStatus.ACTIVE.value)
             .order_by(Alert.created_at.desc())

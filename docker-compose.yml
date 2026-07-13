@@ -14,6 +14,16 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  db_setup:
+    build: 
+      context: ./backend
+    container_name: xeetali_db_setup
+    environment:
+      - DATABASE_URL=postgresql://xeetali:xeetali_password@db:5432/xeetali_db
+    depends_on:
+      - db
+    command: sh -c "alembic upgrade head && python seed.py"
+
   backend:
     build: 
       context: ./backend
@@ -25,12 +35,8 @@ services:
       - DATABASE_URL=postgresql://xeetali:xeetali_password@db:5432/xeetali_db
       - JWT_SECRET=prod-secret-change-me-in-production
     depends_on:
-      - db
-    # On ajoute une commande pour lancer les migrations puis l'application
-    command: >
-      sh -c "alembic upgrade head &&
-             python seed.py &&
-             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+      db_setup:
+        condition: service_completed_successfully
 
   frontend:
     build:

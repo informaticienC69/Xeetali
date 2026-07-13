@@ -1,29 +1,26 @@
 """Moteur, fabrique de sessions et dépendance FastAPI ``get_db``."""
 from __future__ import annotations
 
-from collections.abc import Generator
+from collections.abc import AsyncGenerator
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import settings
 
-# ``check_same_thread`` est spécifique à SQLite (autorise l'usage multi-thread du
-# serveur ASGI). Ignoré silencieusement pour les autres SGBD (ex. PostgreSQL).
 _connect_args = {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
 
-engine = create_engine(settings.database_url, connect_args=_connect_args, future=True)
+url = settings.database_url
+if url.startswith("sqlite://"):
+    url = url.replace("sqlite://", "sqlite+aiosqlite://")
+elif url.startswith("postgresql://"):
+    url = url.replace("postgresql://", "postgresql+psycopg://")
 
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
+engine = create_async_engine(url, connect_args=_connect_args, future=True)
+
+SessionLocal = async_sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
 
-def get_db() -> Generator[Session, None, None]:
-    """Fournit une session par requête, systématiquement fermée à la fin.
-
-    Surchargée dans les tests par une base SQLite en mémoire.
-    """
-    db = SessionLocal()
-    try:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """Fournit une session asynchrone par requête."""
+    async with SessionLocal() as db:
         yield db
-    finally:
-        db.close()

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, timezone
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import ForeignKey, String, Text, Index
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -22,6 +22,9 @@ class BloodPouch(Base):
     """
 
     __tablename__ = "blood_pouches"
+    __table_args__ = (
+        Index("idx_inventory", "hospital_id", "groupe_sanguin", "statut"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     uid: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
