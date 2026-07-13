@@ -6,7 +6,7 @@ import {
   HeartPulse, Lock, Medal, QrCode, Star, Trophy, Zap,
   Globe2, Gem, Activity, Share2
 } from "lucide-react";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, type BadgeStatus, type DonorStats, type LeaderboardEntry } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useAuth } from "../../lib/auth";
@@ -94,22 +94,6 @@ function HeroCard({ s }: { s: DonorStats }) {
   const pct    = Math.round(s.progression * 100);
   const next   = LEVEL_NAMES[s.niveau_index + 1];
   const streak = s.streak_annees;
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const el = cardRef.current;
-    if (!el) return;
-    const { left, top, width, height } = el.getBoundingClientRect();
-    const x = ((e.clientX - left) / width - 0.5) * 18;
-    const y = ((e.clientY - top) / height - 0.5) * -12;
-    el.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    el.style.transform = "rotateY(0deg) rotateX(0deg)";
-  }, []);
 
   const handleShare = async () => {
     const shareText = `Je suis un donneur de niveau ${s.niveau} avec ${s.points} XP sur XEETALI ! Rejoignez-moi pour sauver des vies.`;
@@ -132,10 +116,7 @@ function HeroCard({ s }: { s: DonorStats }) {
   return (
     <div className="perspective-container card-in" style={{ animationDelay: "0ms" }}>
       <div
-        ref={cardRef}
-        className="tilt-card relative overflow-hidden"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        className="relative overflow-hidden"
         style={{
           borderRadius: 20,
           padding: "22px 20px",
@@ -144,9 +125,6 @@ function HeroCard({ s }: { s: DonorStats }) {
           boxShadow: `0 8px 32px ${color}25, 0 2px 8px rgba(0,0,0,0.08)`,
         }}
       >
-        {/* Reflet holographique */}
-        <div className="holo-shimmer absolute inset-0 rounded-[20px]" />
-
         {/* Header : niveau + points */}
         <div className="relative flex items-start gap-4">
           {/* Icône niveau */}
@@ -256,22 +234,6 @@ function PulseAction({ s }: { s: DonorStats }) {
           animationDelay: "80ms",
         }}
       >
-        {/* Particules flottantes */}
-        {[...Array(6)].map((_, i) => (
-          <span
-            key={i}
-            className="particle absolute w-2 h-2 rounded-full"
-            style={{
-              left: `${12 + i * 15}%`,
-              bottom: "20%",
-              background: i % 2 === 0 ? "var(--blood)" : "rgba(230,57,70,0.5)",
-              "--dur": `${2.2 + i * 0.4}s`,
-              "--delay": `${i * 0.35}s`,
-              boxShadow: "0 0 6px var(--blood-glow)",
-            } as React.CSSProperties}
-          />
-        ))}
-
         {/* Badge "Héros Requis" */}
         <div className="relative flex items-center gap-2 mb-4">
           <div
@@ -510,7 +472,7 @@ function ImpactVisualizer({ s }: { s: DonorStats }) {
         {stats.map(({ v, label, icon: Icon, color }, i) => (
           <div
             key={label}
-            className="group flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 hover:-translate-y-0.5 cursor-default"
+            className="group flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 cursor-default"
             style={{ 
               background: "var(--surface)", 
               border: "1px solid var(--line)",
@@ -518,7 +480,7 @@ function ImpactVisualizer({ s }: { s: DonorStats }) {
             }}
           >
             <div
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:rotate-[8deg] group-hover:scale-110"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-transform duration-300"
               style={{ background: "var(--surface-2)", border: `1px solid var(--line)`, color }}
             >
               <Icon size={20} />
@@ -579,7 +541,7 @@ function BadgeVault({ badges }: { badges: BadgeStatus[] }) {
               key={b.code}
               title={b.obtenu ? b.description : `[Bloqué] ${b.description}`}
               className={`group relative flex flex-col items-center justify-center p-5 rounded-[20px] transition-all duration-500 ${
-                b.obtenu ? "cursor-pointer hover:-translate-y-1" : "opacity-60 grayscale"
+                b.obtenu ? "cursor-pointer" : "opacity-60 grayscale"
               }`}
               style={{
                 background: b.obtenu ? "var(--surface)" : "var(--bg)",
@@ -594,7 +556,7 @@ function BadgeVault({ badges }: { badges: BadgeStatus[] }) {
               )}
               
               <div
-                className="relative flex items-center justify-center w-14 h-14 rounded-full mb-3 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12"
+                className="relative flex items-center justify-center w-14 h-14 rounded-full mb-3 transition-transform duration-500"
                 style={{
                   background: b.obtenu ? "var(--surface-2)" : "var(--bg-2)",
                   border: b.obtenu ? "1px solid var(--blood-glow)" : "1px solid var(--line)",
@@ -628,53 +590,13 @@ function BadgeVault({ badges }: { badges: BadgeStatus[] }) {
 /* ─── EpicLeaderboard ────────────────────────────────────────── */
 const RANK_AURA: Record<number, string> = { 1: "aura-gold", 2: "aura-silver", 3: "aura-bronze" };
 const RANK_COLOR: Record<number, string> = { 1: "#eab308", 2: "#94a3b8", 3: "#b45309" };
-const CHALLENGE_TARGET = 1000;
-const CHALLENGE_CURRENT = 847;
 
 function EpicLeaderboard({ rows }: { rows: LeaderboardEntry[] }) {
-  const challengePct = Math.round((CHALLENGE_CURRENT / CHALLENGE_TARGET) * 100);
-
   return (
     <div
       className="card-in surface"
       style={{ borderRadius: 20, padding: "20px", animationDelay: "240ms" }}
     >
-      {/* Community Challenge */}
-      <div
-        className="mb-5 rounded-2xl p-4"
-        style={{
-          background: "linear-gradient(135deg, rgba(234,179,8,0.10) 0%, rgba(230,57,70,0.07) 100%)",
-          border: "1px solid rgba(234,179,8,0.30)",
-        }}
-      >
-        <div className="flex items-center gap-2 mb-2">
-          <Star size={13} style={{ color: "#eab308" }} className="trophy-glow" />
-          <span className="syne font-bold text-sm" style={{ color: "var(--txt)" }}>
-            Défi Communauté
-          </span>
-          <span className="mono text-[9px] ml-auto" style={{ color: "var(--txt-mute)" }}>Se termine vendredi</span>
-        </div>
-        <div className="syne font-extrabold text-base leading-tight" style={{ color: "var(--txt)" }}>
-          Objectif{" "}
-          <CountUp value={CHALLENGE_TARGET} duration={1400} />
-          {" "}dons
-        </div>
-        <div className="mono text-[10px] mt-0.5" style={{ color: "var(--txt-dim)" }}>
-          <CountUp value={CHALLENGE_CURRENT} duration={1200} /> atteints · encore {CHALLENGE_TARGET - CHALLENGE_CURRENT} à faire !
-        </div>
-        <div className="mt-2.5 h-2.5 w-full overflow-hidden rounded-full" style={{ background: "var(--line)" }}>
-          <div
-            className="challenge-fill h-full rounded-full"
-            style={{
-              background: "linear-gradient(90deg, #eab308 0%, #ef3a48 100%)",
-              boxShadow: "0 0 8px rgba(234,179,8,0.50)",
-              "--challenge-pct": `${challengePct}%`,
-            } as React.CSSProperties}
-          />
-        </div>
-        <div className="mt-1 mono text-[10px] text-right" style={{ color: "var(--txt-mute)" }}>{challengePct}%</div>
-      </div>
-
       {/* Leaderboard header */}
       <div className="flex items-center gap-2 mb-3">
         <Trophy size={14} style={{ color: "var(--blood)" }} />
@@ -862,39 +784,38 @@ export default function Home() {
   const board = useApi(() => api.leaderboard(), []);
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col md:grid md:grid-cols-12 md:gap-6 space-y-4 md:space-y-0">
       {/* Floating CTA — toujours présent */}
       {stats.data && <FloatingCTA eligible={stats.data.eligible_maintenant} />}
 
       {/* États de chargement */}
       {stats.loading || !stats.data ? (
-        <HomeSkeleton />
+        <div className="md:col-span-12">
+          <HomeSkeleton />
+        </div>
       ) : (
         <>
-          {/* ① Carte de Héros holographique */}
-          <HeroCard s={stats.data} />
+          {/* Colonne gauche (40% environ) */}
+          <div className="md:col-span-5 space-y-4">
+            <HeroCard s={stats.data} />
+            <PulseAction s={stats.data} />
+            <QuickLinks s={stats.data} />
+          </div>
 
-          {/* ② Action pulsante (eligible ou attente) */}
-          <PulseAction s={stats.data} />
-
-          {/* ③ Bannière d'urgence nationale */}
-          <NationalEmergencyBanner />
-
-          {/* ④ Impact réel visuel */}
-          <ImpactVisualizer s={stats.data} />
-
-          {/* ⑤ Arsenal de badges */}
-          <BadgeVault badges={stats.data.badges} />
-
-          {/* ⑥ Liens rapides */}
-          <QuickLinks s={stats.data} />
+          {/* Colonne droite (60% environ) */}
+          <div className="md:col-span-7 space-y-4">
+            <NationalEmergencyBanner />
+            <ImpactVisualizer s={stats.data} />
+            <BadgeVault badges={stats.data.badges} />
+            
+            {board.loading || !board.data ? (
+              <Skeleton className="h-48 rounded-[20px]" />
+            ) : (
+              <EpicLeaderboard rows={board.data} />
+            )}
+          </div>
         </>
       )}
-
-      {/* ⑦ Classement épique */}
-      {board.loading || !board.data
-        ? <Skeleton className="h-48 rounded-[20px]" />
-        : <EpicLeaderboard rows={board.data} />}
     </div>
   );
 }

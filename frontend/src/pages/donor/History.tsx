@@ -157,7 +157,7 @@ export default function History() {
 
                   {/* Card */}
                   <div
-                    className="flex-1 min-w-0 rounded-[24px] p-5 transition-all duration-500 hover:-translate-y-1 hover:scale-[1.02] group relative overflow-hidden"
+                    className="flex-1 min-w-0 rounded-[24px] p-5 transition-all duration-500 hover:scale-[1.02] group relative overflow-hidden"
                     style={{
                       background: "linear-gradient(145deg, var(--surface) 0%, var(--bg) 100%)",
                       border: "1px solid var(--line)",

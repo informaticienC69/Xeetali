@@ -2,9 +2,9 @@
 // Inspiré fidèlement de maquette.html · Logic inchangée
 import { useEffect, useState } from "react";
 import {
-  AlertTriangle, ArrowLeftRight, Bell, Building2,
-  Droplet, HeartPulse, Inbox, ShieldCheck,
-  Thermometer, Users, Wifi, Check, X
+  ArrowLeftRight, Bell, Building2,
+  Droplet, HeartPulse, Inbox,
+  Thermometer, Users, Check, X
 } from "lucide-react";
 import { api } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
@@ -35,121 +35,36 @@ function StatusDot({ color, pulse = false }: { color: string; pulse?: boolean })
   );
 }
 
-// ── SystemBar ─────────────────────────────────────────────────
-// Style fidèle à maquette.html ligne 424–456
-function SystemBar({ alertCount }: { alertCount: number }) {
-  const [now, setNow] = useState(new Date());
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-  const time = now.toLocaleTimeString("fr-FR", { hour12: false });
-  const date = now.toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long" });
-
-  return (
-    <div
-      className="flex items-center justify-between px-5 py-2.5 shrink-0"
-      style={{ borderBottom: "1px solid var(--line)", background: "var(--surface)" }}
-    >
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <StatusDot color="var(--blood)" pulse />
-          <span className="syne font-extrabold tracking-[0.18em] text-sm" style={{ color: "var(--txt)" }}>
-            XÉÉTALI
-          </span>
-          <span className="mono text-[10px] uppercase" style={{ color: "var(--txt-mute)" }}>
-            // délivrance · v1.4.0
-          </span>
-        </div>
-        <div className="hidden md:flex items-center gap-3 mono text-[11px]" style={{ color: "var(--txt-dim)" }}>
-          <span>SYS</span>
-          <span className="flex items-center gap-1" style={{ color: "var(--ok)" }}>
-            <StatusDot color="var(--ok)" /> OPÉRATIONNEL
-          </span>
-          <span style={{ color: "var(--txt-mute)" }}>|</span>
-          <Wifi size={11} /> <span style={{ color: "var(--ok)" }}>412/415</span>
-          <span style={{ color: "var(--txt-mute)" }}>|</span>
-          <ShieldCheck size={11} /> <span style={{ color: "var(--ok)" }}>SYNC</span>
-        </div>
-      </div>
-      <div className="flex items-center gap-4 mono text-[11px]">
-        <div className="hidden sm:block uppercase tracking-wider" style={{ color: "var(--txt-dim)" }}>{date}</div>
-        <div className="tabular-nums text-base font-medium" style={{ color: "var(--txt)" }}>{time}</div>
-        {alertCount > 0 && (
-          <div
-            className="flex items-center gap-1 px-2 py-1 rounded-md mono text-[11px] font-semibold"
-            style={{
-              background: "rgba(230,57,70,0.12)",
-              border: "1px solid rgba(230,57,70,0.4)",
-              color: "var(--blood)",
-            }}
-          >
-            <AlertTriangle size={12} />
-            {alertCount} ALERTE{alertCount > 1 ? "S" : ""}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── Ticker ────────────────────────────────────────────────────
-// Style fidèle à maquette.html ligne 729–744
-const TICKER_ITEMS = [
-  { icon: AlertTriangle, label: "PIKINE · O- épuisé · alerte régionale" },
-  { icon: Thermometer,   label: "Glacière LR-04 · 6.4°C · seuil dépassé" },
-  { icon: ShieldCheck,   label: "Bloc Hyperledger #84210 signé · 14ms" },
-  { icon: Wifi,          label: "LoRaWAN · 412 capteurs · 99.2% uptime" },
-  { icon: HeartPulse,    label: "Modèle LSTM · prédiction +47% Magal J+6" },
-  { icon: Users,         label: "1 284 donneurs mobilisables Dakar" },
-];
-
-function Ticker() {
-  const doubled = [...TICKER_ITEMS, ...TICKER_ITEMS];
-  return (
-    <div
-      className="overflow-hidden py-1.5 shrink-0"
-      style={{ borderBottom: "1px solid var(--line)", background: "var(--bg-2)" }}
-    >
-      <div className="ticker-track mono text-[11px]" style={{ color: "var(--txt-mute)" }}>
-        {doubled.map((it, i) => (
-          <span key={i} className="inline-flex items-center gap-2">
-            <it.icon size={11} style={{ color: "var(--blood)" }} />
-            <span>{it.label}</span>
-            <span className="mx-2" style={{ color: "var(--txt-mute)" }}>●</span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-
 // ── AlertCenter ─────────────────────────────────────────────────────
-function useElapsed(since: number) {
-  const [elapsed, setElapsed] = useState(Date.now() - since);
+function useElapsed(since: string) {
+  const [elapsed, setElapsed] = useState(Date.now() - new Date(since).getTime());
   useEffect(() => {
-    const t = setInterval(() => setElapsed(Date.now() - since), 10000);
+    const t = setInterval(() => setElapsed(Date.now() - new Date(since).getTime()), 10000);
     return () => clearInterval(t);
   }, [since]);
   const mins = Math.floor(elapsed / 60000);
   return mins < 1 ? "à l'instant" : `il y a ${mins} min`;
 }
 
-const NOW = Date.now();
-const INCOMING = [
-  { id: 1, hosp: "CHN Pikine",  group: "O-",  urgency: "critical" as const, since: NOW - 2 * 60 * 1000  },
-  { id: 2, hosp: "HOGGY",       group: "O-",  urgency: "critical" as const, since: NOW - 5 * 60 * 1000  },
-  { id: 3, hosp: "CHU Fann",   group: "AB+", urgency: "high"     as const, since: NOW - 11 * 60 * 1000 },
-];
-
-function AlertRow({ a }: { a: typeof INCOMING[0] }) {
-  const when = useElapsed(a.since);
-  const isCrit = a.urgency === "critical";
+function AlertRow({ a, onRouted }: { a: any, onRouted: () => void }) {
+  const when = useElapsed(a.created_at);
+  const isCrit = a.urgence === "CRITIQUE";
   const [routed, setRouted] = useState(false);
+  
+  async function handleRoute() {
+    try {
+      setRouted(true);
+      await api.updateRequest(a.id, { statut: "EN_COURS" });
+      onRouted();
+    } catch (err) {
+      setRouted(false);
+      console.error(err);
+    }
+  }
+
   return (
     <div
-      className="alert-item px-4 py-3 flex items-center gap-4 rounded-xl mx-0 cursor-default transition-all hover:-translate-y-0.5 hover:shadow-md mb-2"
+      className="alert-item px-4 py-3 flex items-center gap-4 rounded-xl mx-0 cursor-default mb-2"
       style={{
         border: "1px solid var(--line)",
         background: isCrit ? "rgba(230,57,70,0.03)" : "var(--surface)",
@@ -162,7 +77,7 @@ function AlertRow({ a }: { a: typeof INCOMING[0] }) {
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="syne font-semibold text-sm truncate" style={{ color: "var(--txt)" }}>{a.hosp}</span>
+          <span className="syne font-semibold text-sm truncate" style={{ color: "var(--txt)" }}>{a.nom_hopital || "Hôpital inconnu"}</span>
           {/* Badge groupe + urgence */}
           <span
             className="mono text-[10px] px-1.5 py-0.5 rounded-md border shrink-0"
@@ -172,7 +87,7 @@ function AlertRow({ a }: { a: typeof INCOMING[0] }) {
               borderColor: isCrit ? "rgba(230,57,70,0.4)" : "rgba(245,158,11,0.35)",
             }}
           >
-            {a.group}
+            {a.groupe_sanguin}
           </span>
           <span
             className="mono text-[9px] px-1.5 py-0.5 rounded-md shrink-0"
@@ -185,11 +100,11 @@ function AlertRow({ a }: { a: typeof INCOMING[0] }) {
           </span>
         </div>
         <div className="mono text-[10px] mt-0.5" style={{ color: "var(--txt-mute)" }}>
-          {when} · besoin : <strong style={{ color: "var(--txt-dim)" }}>4 poches</strong>
+          {when} · besoin : <strong style={{ color: "var(--txt-dim)" }}>{a.quantite} poche{a.quantite > 1 ? "s" : ""}</strong>
         </div>
       </div>
       <button
-        onClick={() => setRouted(true)}
+        onClick={handleRoute}
         disabled={routed}
         className="mono text-[10px] uppercase tracking-wider px-4 py-2 rounded-lg border transition-all duration-150 shrink-0 cursor-pointer hover:shadow-sm"
         style={{
@@ -207,6 +122,13 @@ function AlertRow({ a }: { a: typeof INCOMING[0] }) {
 function AlertCenter({ alertCount }: { alertCount: number }) {
   const [launched, setLaunched] = useState(false);
   const hasAlerts = alertCount > 0;
+  const requests = useApi(() => api.listRequests(), []);
+  
+  const incoming = (requests.data || []).filter((r: any) => r.statut === "OUVERTE").sort((a: any, b: any) => {
+    const pA = a.urgence === "CRITIQUE" ? 0 : a.urgence === "URGENTE" ? 1 : 2;
+    const pB = b.urgence === "CRITIQUE" ? 0 : b.urgence === "URGENTE" ? 1 : 2;
+    return pA - pB;
+  }).slice(0, 5);
 
   return (
     <div
@@ -254,11 +176,14 @@ function AlertCenter({ alertCount }: { alertCount: number }) {
 
       {/* Liste demandes */}
       <div className="flex-1 overflow-auto no-scrollbar space-y-1">
-        {INCOMING.map((a, i) => (
+        {incoming.map((a: any, i: number) => (
           <div key={a.id} className="card-in" style={{ animationDelay: `${i * 80}ms` }}>
-            <AlertRow a={a} />
+            <AlertRow a={a} onRouted={() => requests.reload()} />
           </div>
         ))}
+        {incoming.length === 0 && !requests.loading && (
+          <div className="text-center mono text-[11px] text-gray-500 py-4">Aucune demande en attente.</div>
+        )}
       </div>
 
       {alertCount > 0 && (
@@ -289,8 +214,6 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col h-full relative" style={{ background: "var(--bg)" }}>
       <div className="relative z-10 flex flex-col h-full">
-        <SystemBar alertCount={data?.alertes_actives ?? 0} />
-        <Ticker />
 
         <div className="flex-1 overflow-auto no-scrollbar relative z-10">
         {error && (

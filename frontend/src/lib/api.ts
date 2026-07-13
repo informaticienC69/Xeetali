@@ -289,6 +289,7 @@ export const api = {
     quantite: number;
     urgence: string;
   }) => request<BloodRequest>("POST", "/api/requests", payload),
+  updateRequest: (id: number, payload: Partial<BloodRequest>) => request<BloodRequest>("PUT", `/api/requests/${id}`, payload),
   listRequests: () => request<BloodRequest[]>("GET", "/api/requests"),
 
   myProfile: () => request<DonorProfile>("GET", "/api/donors/me/profile"),

@@ -1,10 +1,10 @@
 // Hospitals.tsx — Command Center
 import { useMemo, useState } from "react";
-import { Building2, Plus, Trash2, MapPin, Activity, Radio } from "lucide-react";
+import { Building2, Plus, Trash2, MapPin, Activity } from "lucide-react";
 import { api, ApiError } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useToast } from "../../lib/toast";
-import { Button, Card, EmptyState, Field, FilterSelect, Input, Modal, SearchInput, Skeleton, Toolbar, PageHeader, DataTable, ConfirmModal } from "../../components/ui";
+import { Button, Card, EmptyState, Field, FilterSelect, Input, Modal, SearchInput, Skeleton, Toolbar, PageHeader, ConfirmModal } from "../../components/ui";
 
 export default function Hospitals() {
   const toast = useToast();
@@ -78,41 +78,30 @@ export default function Hospitals() {
           <EmptyState message="Aucun établissement ne correspond." />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mt-4">
-            {filtered.map((h, i) => (
+            {filtered.map((h) => (
               <div 
                 key={h.id} 
-                className="relative p-5 rounded-2xl border transition-all duration-500 hover:-translate-y-1 group overflow-hidden"
+                className="relative p-5 rounded-2xl border"
                 style={{ 
                   background: "var(--surface)", 
                   borderColor: "color-mix(in srgb, var(--line) 60%, transparent)", 
                   boxShadow: "0 8px 30px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.05)" 
                 }}
               >
-                {/* Effet de lueur au survol */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                     style={{ background: "radial-gradient(circle at top right, rgba(230,57,70,0.08), transparent 70%)" }} />
-
                 <div className="relative z-10 flex justify-between items-start mb-5">
                   <div className="flex items-center gap-4">
                     <div className="relative">
-                      <div className="absolute inset-0 rounded-xl animate-pulse opacity-10" style={{ background: "var(--blood)", filter: "blur(10px)" }} />
-                      <div className="relative flex items-center justify-center w-12 h-12 rounded-xl transition-transform duration-500 group-hover:scale-105 group-hover:rotate-2" 
+                      <div className="relative flex items-center justify-center w-12 h-12 rounded-xl" 
                            style={{ background: "color-mix(in srgb, var(--blood) 8%, transparent)", color: "var(--blood)", border: "1px solid color-mix(in srgb, var(--blood) 20%, transparent)" }}>
                         <Building2 size={22} strokeWidth={1.5} />
                       </div>
                     </div>
                     
-                    {/* Informations textuelles */}
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="mono text-[9px] uppercase tracking-wider opacity-50" style={{ color: "var(--txt-mute)" }}>ID-{String(h.id).padStart(4, '0')}</span>
-                        {/* Indicateur de statut "En ligne" */}
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, #10b981 12%, transparent)", border: "1px solid color-mix(in srgb, #10b981 25%, transparent)" }}>
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" style={{ boxShadow: "0 0 6px #10b981" }} />
-                          <span className="mono text-[8px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-semibold">Sync</span>
-                        </div>
                       </div>
-                      <h3 className="syne font-bold text-[15px] tracking-wide leading-tight group-hover:text-red-500 transition-colors" style={{ color: "var(--txt)" }}>{h.nom}</h3>
+                      <h3 className="syne font-bold text-[15px] tracking-wide leading-tight" style={{ color: "var(--txt)" }}>{h.nom}</h3>
                       <div className="flex items-center gap-1.5 mono text-[10px] mt-1.5 uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
                         <MapPin size={12} strokeWidth={1.5} className="opacity-70" /> {h.localisation}
                       </div>
@@ -120,7 +109,6 @@ export default function Hospitals() {
                   </div>
                 </div>
 
-                {/* Séparateur tech */}
                 <div className="relative h-px w-full my-4" style={{ background: "linear-gradient(90deg, var(--line) 0%, transparent 100%)" }}>
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-px bg-red-500/50" />
                 </div>

@@ -32,19 +32,10 @@ export default function DonorLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen justify-center" style={{ background: "var(--bg-2)" }}>
       <div
-        className="relative flex w-full max-w-md flex-col"
+        className="relative flex w-full flex-col"
         style={{ background: "var(--bg)", minHeight: "100svh" }}
       >
-        {/* ── Effets "Waouhh" Command Center ── */}
-        <div className="absolute inset-0 pointer-events-none scanlines opacity-30 z-0" />
-        <div className="absolute inset-0 pointer-events-none gridlines opacity-50 z-0" />
-        <div className="absolute inset-0 pointer-events-none holo-shimmer opacity-10 z-0" />
-        
-        {/* Particules d'ambiance */}
-        <div className="absolute top-[15%] left-[5%] w-2 h-2 rounded-full bg-red-500 particle pointer-events-none z-0" style={{ "--dur": "6s", "--delay": "0s" } as any} />
-        <div className="absolute top-[40%] right-[10%] w-3 h-3 rounded-full bg-blue-500 particle pointer-events-none z-0" style={{ "--dur": "8s", "--delay": "1.5s" } as any} />
-        <div className="absolute bottom-[20%] left-[25%] w-1.5 h-1.5 rounded-full bg-teal-400 particle pointer-events-none z-0" style={{ "--dur": "5s", "--delay": "0.5s" } as any} />
-        <div className="absolute top-[60%] right-[30%] w-2.5 h-2.5 rounded-full bg-purple-500 particle pointer-events-none z-0" style={{ "--dur": "7s", "--delay": "2s" } as any} />
+        {/* ── Effets Command Center supprimés ── */}
 
         {/* ── App Bar ── */}
         <header

@@ -56,21 +56,6 @@ function UrgencyBanner({ u }: { u: UrgencyStats | null }) {
                 boxShadow: "0 0 8px var(--blood)",
               }}
             />
-            {/* Bubbles */}
-            {[20, 50, 75].map((b, i) => (
-              <div
-                key={i}
-                className="particle absolute rounded-full"
-                style={{
-                  width: 4, height: 4,
-                  left: `${25 + i * 18}%`,
-                  bottom: `${b}%`,
-                  background: "rgba(230,57,70,0.6)",
-                  "--dur": `${1.8 + i * 0.5}s`,
-                  "--delay": `${i * 0.4}s`,
-                } as React.CSSProperties}
-              />
-            ))}
           </div>
           {/* Pourcentage */}
           <div
@@ -139,7 +124,7 @@ export default function Alerts() {
           {alerts.data.map((a) => (
             <div
               key={a.id}
-              className="card-in relative overflow-hidden flex flex-col p-6 rounded-[32px] transition-all duration-500 hover:-translate-y-2 group"
+              className="card-in relative overflow-hidden flex flex-col p-6 rounded-[32px] transition-all duration-500 group"
               style={{
                 background: "linear-gradient(145deg, var(--surface) 0%, var(--bg-2) 100%)",
                 border: "1px solid color-mix(in srgb, var(--blood) 30%, var(--line))",

@@ -15,7 +15,6 @@ import {
   Users,
   Activity,
   ClipboardList,
-  ShieldCheck,
   FileCheck,
   type LucideIcon,
 } from "lucide-react";
@@ -34,7 +33,7 @@ interface NavItem {
 const ADMIN_NAV: NavItem[] = [
   { to: "/admin",           label: "Command Center",  sub: "Tableau de bord",      icon: LayoutDashboard },
   { to: "/admin/transfer",  label: "Transferts",      sub: "Routing poches",       icon: ArrowLeftRight  },
-  { to: "/admin/campaign",  label: "Alerte Nationale",sub: "SMS · Push · USSD",   icon: Bell            },
+  { to: "/admin/campaign",  label: "Alerte Nationale",sub: "SMS · Push",          icon: Bell            },
   { to: "/admin/users",     label: "Utilisateurs",    sub: "Gestion des comptes",  icon: Users           },
   { to: "/admin/hospitals", label: "Établissements",  sub: "Réseau hospitalier",   icon: Building2       },
 ];
@@ -186,14 +185,13 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
 
         {/* Statut système */}
-        <div className="px-4 py-2 flex items-center gap-2" style={{ borderBottom: "1px solid var(--line)" }}>
-          <span className="h-1.5 w-1.5 rounded-full pulse-soft" style={{ background: "var(--ok)", boxShadow: "0 0 8px var(--ok)" }} />
-          <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
-            SYS <span style={{ color: "var(--ok)" }}>OPÉRATIONNEL</span>
-          </span>
-          <span className="ml-auto">
-            <LiveClock />
-          </span>
+        <div className="px-4 py-2 flex items-center justify-between" style={{ borderBottom: "1px solid var(--line)" }}>
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full pulse-soft" style={{ background: "var(--ok)", boxShadow: "0 0 8px var(--ok)" }} />
+            <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
+              SYS <span style={{ color: "var(--ok)" }}>OPÉRATIONNEL</span>
+            </span>
+          </div>
         </div>
 
         {/* Label section */}
@@ -212,12 +210,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         {/* Footer : utilisateur + thème + déconnexion */}
         <div style={{ borderTop: "1px solid var(--line)" }}>
-          {/* Statut LoRaWAN */}
-          <div className="px-4 py-2 flex items-center gap-3 mono text-[10px]" style={{ color: "var(--txt-mute)", borderBottom: "1px solid var(--line)" }}>
-            <ShieldCheck size={11} style={{ color: "var(--ok)" }} />
-            <span>Hyperledger <span style={{ color: "var(--ok)" }}>SYNC</span></span>
-            <span className="ml-auto">LoRaWAN <span style={{ color: "var(--ok)" }}>412/415</span></span>
-          </div>
+          {/* Statut LoRaWAN supprimé */}
 
           {/* Utilisateur */}
           <div className="flex items-center gap-2.5 px-4 py-3">
@@ -277,16 +270,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         className="flex flex-1 flex-col overflow-hidden relative"
         style={{ background: "var(--bg)" }}
       >
-        {/* ── Effets "Waouhh" Command Center ── */}
-        <div className="absolute inset-0 pointer-events-none scanlines opacity-30 z-0" />
-        <div className="absolute inset-0 pointer-events-none gridlines opacity-50 z-0" />
-        <div className="absolute inset-0 pointer-events-none holo-shimmer opacity-10 z-0" />
-        
-        {/* Particules d'ambiance */}
-        <div className="absolute top-[15%] left-[5%] w-2 h-2 rounded-full bg-red-500 particle pointer-events-none z-0" style={{ "--dur": "6s", "--delay": "0s" } as any} />
-        <div className="absolute top-[40%] right-[10%] w-3 h-3 rounded-full bg-blue-500 particle pointer-events-none z-0" style={{ "--dur": "8s", "--delay": "1.5s" } as any} />
-        <div className="absolute bottom-[20%] left-[25%] w-1.5 h-1.5 rounded-full bg-teal-400 particle pointer-events-none z-0" style={{ "--dur": "5s", "--delay": "0.5s" } as any} />
-        <div className="absolute top-[60%] right-[30%] w-2.5 h-2.5 rounded-full bg-purple-500 particle pointer-events-none z-0" style={{ "--dur": "7s", "--delay": "2s" } as any} />
+        {/* ── Effets Command Center supprimés ── */}
 
         {/* Top bar */}
         <div
@@ -306,7 +290,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
 
         {/* Page scroll */}
-        <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 view-fade relative z-10 flex flex-col">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-6 py-6 view-fade relative z-10 flex flex-col">
           <div className="flex-1">
             {children}
           </div>

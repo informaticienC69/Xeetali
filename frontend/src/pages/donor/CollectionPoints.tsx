@@ -54,7 +54,7 @@ export default function CollectionPoints() {
           {filtered.map((p, i) => (
             <div
               key={p.id}
-              className="card-in relative overflow-hidden flex flex-col justify-between p-6 rounded-[32px] transition-all duration-500 hover:-translate-y-2 group"
+              className="card-in relative overflow-hidden flex flex-col justify-between p-6 rounded-[32px] transition-all duration-500 group"
               style={{ 
                 background: "linear-gradient(145deg, var(--surface) 0%, var(--bg-2) 100%)",
                 border: "1px solid var(--line)",

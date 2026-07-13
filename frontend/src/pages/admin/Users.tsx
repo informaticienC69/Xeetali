@@ -22,6 +22,11 @@ const ROLE_TEXT: Record<Role, string> = {
   PERSONNEL_MEDICAL: "var(--txt-dim)",
   DONNEUR:           "var(--ok)",
 };
+const ROLE_DISPLAY: Record<Role, string> = {
+  ADMIN_CNTS:        "Admin CNTS",
+  PERSONNEL_MEDICAL: "Personnel Médical",
+  DONNEUR:           "Donneur",
+};
 
 export default function Users() {
   const toast = useToast();
@@ -111,7 +116,7 @@ export default function Users() {
                           borderColor: ROLE_BORDER[u.role as Role] ?? "var(--line)",
                           color: ROLE_TEXT[u.role as Role] ?? "var(--txt-mute)",
                         }}>
-                    {u.role}
+                    {ROLE_DISPLAY[u.role as Role] ?? u.role}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
