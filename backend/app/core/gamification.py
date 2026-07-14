@@ -2,10 +2,15 @@
 
 Tout est dérivé de faits en base (nombre de dons, réponses aux alertes) — aucune
 donnée fabriquée. Ce module ne fait que définir les seuils et les calculs purs.
+Les seuils peuvent être surchargés par la configuration en base de données.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 POINTS_PAR_DON = 100
 VIES_PAR_DON = 3  # estimation de sensibilisation (1 don ≈ 3 vies)
@@ -22,7 +27,7 @@ class BadgeDef:
 
 
 # Paliers de niveau selon le nombre de dons (borne basse incluse).
-LEVELS: list[tuple[int, str]] = [
+DEFAULT_LEVELS: list[tuple[int, str]] = [
     (0, "Nouveau donneur"),
     (1, "Bronze"),
     (3, "Argent"),
@@ -31,7 +36,7 @@ LEVELS: list[tuple[int, str]] = [
     (20, "Diamant"),
 ]
 
-BADGES: list[BadgeDef] = [
+DEFAULT_BADGES: list[BadgeDef] = [
     BadgeDef("premier_don", "Premier don", "Réalisez votre tout premier don", "dons", 1),
     BadgeDef("regulier", "Donneur régulier", "Atteignez 3 dons", "dons", 3),
     BadgeDef("confirme", "Donneur confirmé", "Atteignez 5 dons", "dons", 5),
@@ -39,6 +44,36 @@ BADGES: list[BadgeDef] = [
     BadgeDef("heros", "Héros CNTS", "Atteignez 20 dons", "dons", 20),
     BadgeDef("reactif", "Réactif", "Répondez à une alerte d'urgence", "reponses", 1),
 ]
+
+# Variables globales pouvant être surchargées par la configuration
+LEVELS: list[tuple[int, str]] = DEFAULT_LEVELS.copy()
+BADGES: list[BadgeDef] = DEFAULT_BADGES.copy()
+
+
+async def load_gamification_config(db: AsyncSession) -> None:
+    """Charge les configurations de gamification depuis la base de données."""
+    from app.services.configuration_service import get_config_value
+
+    global LEVELS, BADGES
+
+    # Charger les seuils de niveaux
+    level_thresholds = []
+    for i in range(1, 7):  # Jusqu'à 6 niveaux
+        threshold = await get_config_value(db, f"gamification.level_{i}_threshold")
+        if threshold is not None:
+            level_thresholds.append(threshold)
+
+    if level_thresholds:
+        # Reconstruire LEVELS avec les seuils personnalisés
+        custom_levels = [(0, "Nouveau donneur")]
+        level_names = ["Bronze", "Argent", "Or", "Platine", "Diamant"]
+        for i, threshold in enumerate(level_thresholds):
+            if i < len(level_names):
+                custom_levels.append((threshold, level_names[i]))
+        LEVELS = custom_levels
+
+    # Charger les seuils de badges (optionnel - pour l'instant on garde les défauts)
+    # Les badges pourraient être rendus configurables dans une version future
 
 
 @dataclass(frozen=True)

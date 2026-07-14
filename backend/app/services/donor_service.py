@@ -12,6 +12,7 @@ from app.core.gamification import (
     VIES_PAR_DON,
     evaluate_badges,
     level_for,
+    load_gamification_config,
     points_for,
 )
 from app.models.alert import AlertResponse
@@ -77,6 +78,9 @@ async def list_donations(db: AsyncSession, user_id: int) -> list[Donation]:
 
 async def get_stats(db: AsyncSession, user_id: int) -> DonorStats:
     """Statistiques gamifiées du donneur, entièrement dérivées de la base."""
+    # Charger la configuration de gamification depuis la base
+    await load_gamification_config(db)
+    
     profile = await get_profile(db, user_id)
 
     donations_result = await db.scalars(
@@ -140,6 +144,9 @@ async def get_stats(db: AsyncSession, user_id: int) -> DonorStats:
 
 async def leaderboard(db: AsyncSession, user_id: int, limit: int = 10) -> list[LeaderboardEntry]:
     """Classement des meilleurs donneurs (noms abrégés)."""
+    # Charger la configuration de gamification depuis la base
+    await load_gamification_config(db)
+    
     me = await get_profile_or_none(db, user_id)
     rows = (await db.execute(
         select(

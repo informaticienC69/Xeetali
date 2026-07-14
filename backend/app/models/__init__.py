@@ -2,6 +2,7 @@
 from app.models.alert import Alert, AlertResponse
 from app.models.appointment import Appointment
 from app.models.collection_point import CollectionPoint
+from app.models.configuration import Configuration
 from app.models.donation import Donation
 from app.models.donor_profile import DonorProfile
 from app.models.hospital import Hospital
@@ -17,6 +18,7 @@ __all__ = [
     "BloodPouch",
     "BloodRequest",
     "CollectionPoint",
+    "Configuration",
     "Donation",
     "DonorProfile",
     "Hospital",

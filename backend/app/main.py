@@ -23,6 +23,7 @@ from app.routers import (
     appointments,
     auth,
     collection_points,
+    configuration,
     donors,
     inventory,
     pouches,
@@ -68,6 +69,7 @@ for r in (
     donors.router,
     appointments.router,
     alerts.router,
+    configuration.router,
     admin.router,
 ):
     app.include_router(r)

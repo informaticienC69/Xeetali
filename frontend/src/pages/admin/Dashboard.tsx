@@ -131,66 +131,8 @@ function AlertCenter({ alertCount }: { alertCount: number }) {
   }).slice(0, 5);
 
   return (
-    <div
-      className="surface flex flex-col card-in"
-      style={{
-        padding: 20,
-        minHeight: 340,
-        borderColor: hasAlerts ? "rgba(206,51,65,0.35)" : undefined,
-        background: hasAlerts ? "rgba(206,51,65,0.02)" : undefined,
-      }}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <div className="mono uppercase text-[10px] tracking-[0.14em] flex items-center gap-2" style={{ color: "var(--txt-mute)" }}>
-            Centre d’Alertes
-            {hasAlerts && (
-              <span
-                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md mono text-[9px] font-bold pulse-soft"
-                style={{ background: "rgba(206,51,65,0.15)", color: "var(--blood)" }}
-              >
-                ● {alertCount} ACTIVE{alertCount > 1 ? "S" : ""}
-              </span>
-            )}
-          </div>
-          <div className="text-lg font-bold mt-0.5" style={{ color: "var(--txt)" }}>Demandes Entrantes</div>
-        </div>
-        <span className="mono text-[10px] flex items-center gap-1" style={{ color: "var(--txt-mute)" }}>
-          <span className="pulse-soft h-1.5 w-1.5 rounded-full" style={{ background: "var(--ok)", boxShadow: "0 0 5px var(--ok)" }} />
-          FLUX TEMPS RÉEL
-        </span>
-      </div>
-
-      {/* Bouton ALERTE NATIONALE */}
-      <button
-        onClick={() => setLaunched(true)}
-        disabled={launched}
-        className={`btn-blood w-full py-4 mb-4 flex items-center justify-center gap-3 text-base cursor-pointer transition-all hover:opacity-90 hover:shadow-xl ${!launched ? "pulse-blood" : ""}`}
-      >
-        <Bell size={20} className={!launched ? "bell-shake" : ""} />
-        <span className="tracking-widest">
-          {launched ? "ALERTE NATIONALE EN COURS — ● ACTIF" : "LANCER ALERTE NATIONALE"}
-        </span>
-      </button>
-
-      {/* Liste demandes */}
-      <div className="flex-1 overflow-auto no-scrollbar space-y-1">
-        {incoming.map((a: any, i: number) => (
-          <div key={a.id} className="card-in" style={{ animationDelay: `${i * 80}ms` }}>
-            <AlertRow a={a} onRouted={() => requests.reload()} />
-          </div>
-        ))}
-        {incoming.length === 0 && !requests.loading && (
-          <div className="text-center mono text-[11px] text-gray-500 py-4">Aucune demande en attente.</div>
-        )}
-      </div>
-
-      {alertCount > 0 && (
-        <div className="mt-4 mono text-[10px] text-center py-2 rounded-lg" style={{ color: "var(--blood)", background: "rgba(206,51,65,0.06)" }}>
-            <X size={14} className="mr-1 inline-block" /> {alertCount} alerte(s) active(s) dans le système
-        </div>
-      )}
+    <div>
+      
     </div>
   );
 }

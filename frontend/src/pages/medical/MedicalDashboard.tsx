@@ -20,25 +20,28 @@ import { useAuth } from "../../lib/auth";
 import { Card, KpiTile, GroupBadge, UrgencyBadge, Skeleton, Button } from "../../components/ui";
 
 // ── Carte de stock par groupe sanguin (design clinique) ────────────
-const IDEAL_STOCK = 50; // seuil de stock idéal
 
 function BloodGroupCard({
   groupe,
   count,
+  idealStock,
+  lowThreshold,
 }: {
   groupe: BloodGroup;
   count: number;
+  idealStock: number;
+  lowThreshold: number;
 }) {
-  const pct = Math.min(Math.round((count / IDEAL_STOCK) * 100), 100);
-  const state = count === 0 ? "empty" : count <= 5 ? "low" : "ok";
+  const pct = Math.min(Math.round((count / idealStock) * 100), 100);
+  const state = count === 0 ? "empty" : count <= lowThreshold ? "low" : "ok";
 
   const theme = {
     empty: { stroke: "var(--crit)", label: "RUPTURE", icon: AlertTriangle },
     low:   { stroke: "var(--warn)", label: "FAIBLE", icon: Zap },
     ok:    { stroke: "var(--ok)",   label: "OK", icon: CheckCircle2 },
-  }[state];
+  }[state as "empty" | "low" | "ok"];
 
-  const Icon = theme.icon;
+  const Icon = theme!.icon;
 
   return (
     <div
@@ -50,9 +53,9 @@ function BloodGroupCard({
     >
       <div className="flex justify-between items-center">
         <span className="font-bold text-lg leading-none" style={{ color: "var(--txt)" }}>{groupe}</span>
-        <span className="flex items-center gap-1 mono text-[9px] font-bold uppercase tracking-wider" style={{ color: theme.stroke }}>
+        <span className="flex items-center gap-1 mono text-[9px] font-bold uppercase tracking-wider" style={{ color: theme!.stroke }}>
           <Icon size={10} />
-          {theme.label}
+          {theme!.label}
         </span>
       </div>
 
@@ -61,6 +64,92 @@ function BloodGroupCard({
         <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
           {count <= 1 ? "poche" : "poches"}
         </span>
+      </div>
+      {/* Barre de progression */}
+      <div className="h-1.5 rounded-full mt-2" style={{ background: "var(--surface-2)" }}>
+        <div
+          className="h-full rounded-full transition-all duration-300"
+          style={{
+            width: `${pct}%`,
+            background: theme!.stroke
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ── Composant famille de groupes sanguins ────────────────────────────
+function BloodFamily({
+  family,
+  groups,
+  idealStock,
+  lowThreshold,
+}: {
+  family: string;
+  groups: { type: BloodGroup; count: number }[];
+  idealStock: number;
+  lowThreshold: number;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <div className="w-1 h-4 rounded" style={{ background: "var(--accent)" }} />
+        <span className="font-semibold text-sm" style={{ color: "var(--txt)" }}>Groupe {family}</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 pl-3">
+        {groups.map((g) => (
+          <BloodGroupCard 
+            key={g.type} 
+            groupe={g.type} 
+            count={g.count} 
+            idealStock={idealStock}
+            lowThreshold={lowThreshold}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Synthèse de santé du stock ───────────────────────────────────────
+function StockHealthSummary({
+  ok,
+  low,
+  empty,
+  total,
+}: {
+  ok: number;
+  low: number;
+  empty: number;
+  total: number;
+}) {
+  return (
+    <div
+      className="rounded-xl p-4"
+      style={{ background: "var(--surface-2)" }}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <span className="mono text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--txt-dim)" }}>
+          Santé du stock
+        </span>
+        <span className="mono text-[10px]" style={{ color: "var(--txt-mute)" }}>
+          {total} poches total
+        </span>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="flex flex-col items-center gap-1 rounded-lg py-3" style={{ background: "var(--ok-tint)" }}>
+          <span className="num font-bold text-xl" style={{ color: "var(--ok)" }}>{ok}</span>
+          <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "var(--ok)" }}>OK</span>
+        </div>
+        <div className="flex flex-col items-center gap-1 rounded-lg py-3" style={{ background: "var(--warn-tint)" }}>
+          <span className="num font-bold text-xl" style={{ color: "var(--warn)" }}>{low}</span>
+          <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "var(--warn)" }}>Faibles</span>
+        </div>
+        <div className="flex flex-col items-center gap-1 rounded-lg py-3" style={{ background: "var(--crit-tint)" }}>
+          <span className="num font-bold text-xl" style={{ color: "var(--crit)" }}>{empty}</span>
+          <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "var(--crit)" }}>Rupture</span>
+        </div>
       </div>
     </div>
   );
@@ -72,8 +161,11 @@ export default function MedicalDashboard() {
   const navigate = useNavigate();
   const inv = useApi(() => api.inventory(), []);
   const requests = useApi(() => api.listRequests(), []);
+  const config = useApi(() => api.publicConfig(), []);
 
   const prenom = (nom ?? "").split(" ")[0];
+  const idealStock = config.data?.ideal_stock ?? 50;
+  const lowThreshold = config.data?.low_stock_threshold ?? 5;
 
   // Stock de l'hôpital connecté
   const myHospital = useMemo<HospitalInventory | null>(() => {
@@ -166,6 +258,48 @@ export default function MedicalDashboard() {
         )}
       </div>
 
+      {/* ── Priorités du moment ── */}
+      <div
+        className="rounded-2xl border p-4 md:p-5"
+        style={{
+          background: "linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%)",
+          borderColor: "var(--line)",
+        }}
+      >
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="mono text-[10px] uppercase tracking-[0.14em] mb-1" style={{ color: "var(--txt-mute)" }}>
+              Priorités du moment
+            </div>
+            <div className="font-semibold text-base" style={{ color: "var(--txt)" }}>
+              {criticalReqs > 0
+                ? `${criticalReqs} demande${criticalReqs > 1 ? "s" : ""} critique${criticalReqs > 1 ? "s" : ""} requiert une action immédiate`
+                : "Aucune urgence critique en cours"}
+            </div>
+            <div className="mt-1 text-sm" style={{ color: "var(--txt-dim)" }}>
+              {groupsAlerts.length > 0
+                ? `Rupture de stock sur ${groupsAlerts.join(", ")}`
+                : "Le stock est globalement stable pour les groupes principaux"}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <span
+              className="rounded-full px-3 py-1 text-[11px] font-semibold"
+              style={{ background: "var(--warn-tint)", color: "var(--warn)" }}
+            >
+              Urgence · {criticalReqs}
+            </span>
+            <span
+              className="rounded-full px-3 py-1 text-[11px] font-semibold"
+              style={{ background: "var(--crit-tint)", color: "var(--crit)" }}
+            >
+              Rupture · {groupsAlerts.length}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* ── KPIs ── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <KpiTile
@@ -173,8 +307,8 @@ export default function MedicalDashboard() {
           label="Poches disponibles"
           value={totalDispo}
           sub="hôpital"
-          tone={totalDispo === 0 ? "crit" : totalDispo <= 10 ? "warn" : "ok"}
-          pulse={totalDispo <= 5}
+          tone={totalDispo === 0 ? "crit" : totalDispo <= lowThreshold * 2 ? "warn" : "ok"}
+          pulse={totalDispo <= lowThreshold}
           delay={0}
         />
         <KpiTile
@@ -206,7 +340,7 @@ export default function MedicalDashboard() {
       {/* ── Contenu principal ── */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 
-        {/* ── Stock par groupe sanguin ── */}
+        {/* ── Stock par groupe sanguin (layout amélioré) ── */}
         <Card
           title="Stock · Hôpital"
           subtitle="Poches disponibles par groupe"
@@ -231,79 +365,67 @@ export default function MedicalDashboard() {
         >
           {inv.loading ? (
             <div className="flex flex-col gap-4">
-              {/* Squelette de la grille 4x2 */}
-              <div className="grid grid-cols-4 gap-2">
-                {BLOOD_GROUPS.map((g) => (
-                  <Skeleton key={g} className="h-[148px] rounded-2xl" />
-                ))}
-              </div>
-
-              <div className="flex flex-col gap-3">
-                {/* Squelette des totaux */}
-                <Skeleton className="h-[52px] rounded-2xl" />
-
-                {/* Squelette de la synthèse */}
-                <div className="flex flex-col gap-2">
-                  <Skeleton className="h-[12px] w-24 rounded-md opacity-50" />
-                  <div className="grid grid-cols-3 gap-2">
-                    <Skeleton className="h-[72px] rounded-xl" />
-                    <Skeleton className="h-[72px] rounded-xl" />
-                    <Skeleton className="h-[72px] rounded-xl" />
+              <Skeleton className="h-[80px] rounded-xl" />
+              <div className="space-y-3">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-[20px] w-16 rounded-md" />
+                    <div className="grid grid-cols-2 gap-2 pl-3">
+                      <Skeleton className="h-[90px] rounded-xl" />
+                      <Skeleton className="h-[90px] rounded-xl" />
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              {/* Grille 4x2 de cartes */}
-              <div className="grid grid-cols-4 gap-2">
-                {BLOOD_GROUPS.map((g, i) => (
-                  <BloodGroupCard
-                    key={g}
-                    groupe={g}
-                    count={stockByGroup[g]}
-                  />
-                ))}
-              </div>
+              {/* Synthèse de santé du stock (en haut maintenant) */}
+              <StockHealthSummary
+                ok={BLOOD_GROUPS.filter(g => stockByGroup[g] > lowThreshold).length}
+                low={BLOOD_GROUPS.filter(g => stockByGroup[g] > 0 && stockByGroup[g] <= lowThreshold).length}
+                empty={BLOOD_GROUPS.filter(g => stockByGroup[g] === 0).length}
+                total={totalDispo}
+              />
 
-              <div className="flex flex-col gap-3">
-                {/* Totaux */}
-                <div
-                  className="flex items-center justify-between px-4 py-3 rounded-2xl"
-                  style={{ background: "var(--surface-2)" }}
-                >
-                  <span className="mono text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--txt-dim)" }}>Total disponible</span>
-                  <span className="num font-bold text-2xl" style={{ color: totalDispo === 0 ? "var(--crit)" : totalDispo <= 10 ? "var(--warn)" : "var(--ok)" }}>
-                    {totalDispo}
-                    <span className="font-semibold text-sm ml-1.5" style={{ color: "var(--txt-mute)" }}>poches</span>
-                  </span>
-                </div>
-
-                {/* Synthèse de santé du stock */}
-                <div className="flex flex-col gap-2">
-                  <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>Santé du stock</span>
-                  {(() => {
-                    const nbOk    = BLOOD_GROUPS.filter(g => stockByGroup[g] > 5).length;
-                    const nbLow   = BLOOD_GROUPS.filter(g => stockByGroup[g] > 0 && stockByGroup[g] <= 5).length;
-                    const nbEmpty = BLOOD_GROUPS.filter(g => stockByGroup[g] === 0).length;
-                    return (
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="flex flex-col items-center gap-1 rounded-xl py-3" style={{ background: "var(--ok-tint)" }}>
-                          <span className="num font-bold text-2xl" style={{ color: "var(--ok)" }}>{nbOk}</span>
-                          <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "var(--ok)" }}>OK</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1 rounded-xl py-3" style={{ background: "var(--warn-tint)" }}>
-                          <span className="num font-bold text-2xl" style={{ color: "var(--warn)" }}>{nbLow}</span>
-                          <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "var(--warn)" }}>Faibles</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1 rounded-xl py-3" style={{ background: "var(--crit-tint)" }}>
-                          <span className="num font-bold text-2xl" style={{ color: "var(--crit)" }}>{nbEmpty}</span>
-                          <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "var(--crit)" }}>Rupture</span>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
+              {/* Groupes par famille */}
+              <div className="space-y-3">
+                <BloodFamily
+                  family="A"
+                  idealStock={idealStock}
+                  lowThreshold={lowThreshold}
+                  groups={[
+                    { type: "A+" as BloodGroup, count: stockByGroup["A+" as BloodGroup] },
+                    { type: "A-" as BloodGroup, count: stockByGroup["A-" as BloodGroup] },
+                  ]}
+                />
+                <BloodFamily
+                  family="B"
+                  idealStock={idealStock}
+                  lowThreshold={lowThreshold}
+                  groups={[
+                    { type: "B+" as BloodGroup, count: stockByGroup["B+" as BloodGroup] },
+                    { type: "B-" as BloodGroup, count: stockByGroup["B-" as BloodGroup] },
+                  ]}
+                />
+                <BloodFamily
+                  family="AB"
+                  idealStock={idealStock}
+                  lowThreshold={lowThreshold}
+                  groups={[
+                    { type: "AB+" as BloodGroup, count: stockByGroup["AB+" as BloodGroup] },
+                    { type: "AB-" as BloodGroup, count: stockByGroup["AB-" as BloodGroup] },
+                  ]}
+                />
+                <BloodFamily
+                  family="O"
+                  idealStock={idealStock}
+                  lowThreshold={lowThreshold}
+                  groups={[
+                    { type: "O+" as BloodGroup, count: stockByGroup["O+" as BloodGroup] },
+                    { type: "O-" as BloodGroup, count: stockByGroup["O-" as BloodGroup] },
+                  ]}
+                />
               </div>
             </div>
           )}
@@ -311,6 +433,24 @@ export default function MedicalDashboard() {
 
         {/* ── Colonne droite : demandes + actions rapides ── */}
         <div className="lg:col-span-2 space-y-6">
+
+          {/* ── Actions rapides (déplacées en haut pour plus de visibilité) ── */}
+          <Card title="Actions prioritaires" subtitle="Accès direct aux tâches courantes">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Button onClick={() => navigate("/medical/register")} variant="blood" className="justify-center py-3">
+                <Droplet size={18} className="mr-2" />
+                <span className="text-sm font-medium">Nouvelle poche</span>
+              </Button>
+              <Button onClick={() => navigate("/medical/validity")} variant="outline" className="justify-center py-3">
+                <ShieldCheck size={18} className="mr-2" />
+                <span className="text-sm font-medium">Vérifier UID</span>
+              </Button>
+              <Button onClick={() => navigate("/medical/request")} variant="secondary" className="justify-center py-3">
+                <Syringe size={18} className="mr-2" />
+                <span className="text-sm font-medium">Demande sang</span>
+              </Button>
+            </div>
+          </Card>
 
           {/* ── Demandes urgentes ── */}
           <Card
@@ -364,24 +504,6 @@ export default function MedicalDashboard() {
                 })}
               </div>
             )}
-          </Card>
-
-          {/* ── Actions rapides ── */}
-          <Card title="Actions rapides" subtitle="Accès direct">
-            <div className="flex flex-col gap-3">
-              <Button onClick={() => navigate("/medical/register")} variant="blood" className="w-full justify-start py-3">
-                <Droplet size={18} />
-                Nouvelle poche (Enregistrement)
-              </Button>
-              <Button onClick={() => navigate("/medical/validity")} variant="outline" className="w-full justify-start py-3">
-                <ShieldCheck size={18} />
-                Vérifier UID (Contrôle)
-              </Button>
-              <Button onClick={() => navigate("/medical/request")} variant="secondary" className="w-full justify-start py-3">
-                <Syringe size={18} />
-                Demande de sang (Urgences)
-              </Button>
-            </div>
           </Card>
 
         </div>
