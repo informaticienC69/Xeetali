@@ -1,18 +1,4 @@
-import {
-  type ComponentType,
-  type InputHTMLAttributes,
-  type ReactNode,
-  type SelectHTMLAttributes,
-  useEffect,
-  useRef,
-  useState,
-  Children,
-  type ReactElement,
-} from "react";
-import { createPortal } from "react-dom";
-import type { LucideProps } from "lucide-react";
-import { CheckCircle, Info, XCircle, ChevronDown, Check } from "lucide-react";
-import { BLOOD_GROUPS as BG_LIST, type BloodGroup as BG } from "../../lib/api";
+import { type ReactNode } from "react";
 
 import { Spinner } from "./Spinner";
 // ── Button ────────────────────────────────────────────────────────
@@ -56,7 +42,7 @@ export function Button({
         type={type}
         onClick={onClick}
         disabled={disabled || loading}
-        className={`${base} border font-mono text-[11px] uppercase tracking-wider ${className}`}
+        className={`${base} border font-mono text-[11px] uppercase tracking-wider hover:border-(--txt-mute) hover:text-(--txt) ${className}`}
         style={{
           borderColor: "var(--line)",
           color: "var(--txt-dim)",
@@ -74,7 +60,7 @@ export function Button({
         type={type}
         onClick={onClick}
         disabled={disabled || loading}
-        className={`${base} border mono text-[11px] uppercase tracking-wider ${className}`}
+        className={`${base} border mono text-[11px] uppercase tracking-wider hover:border-(--txt-mute) hover:text-(--txt) ${className}`}
         style={{ borderColor: "var(--line)", color: "var(--txt-dim)", background: "var(--surface-2)" }}
       >
         {loading && <Spinner size={15} />}
@@ -88,7 +74,7 @@ export function Button({
         type={type}
         onClick={onClick}
         disabled={disabled || loading}
-        className={`${base} border mono text-[11px] uppercase tracking-wider ${className}`}
+        className={`${base} border mono text-[11px] uppercase tracking-wider hover:bg-[rgba(230,57,70,0.15)] ${className}`}
         style={{ borderColor: "rgba(230,57,70,0.35)", color: "var(--blood)", background: "rgba(230,57,70,0.08)" }}
       >
         {loading && <Spinner size={15} />}
@@ -101,7 +87,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`${base} ${className}`}
+      className={`${base} hover:text-(--txt) hover:bg-(--surface-2) ${className}`}
       style={{ color: "var(--txt-dim)", background: "transparent" }}
     >
       {loading && <Spinner size={15} />}

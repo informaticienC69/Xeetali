@@ -1,18 +1,4 @@
-import {
-  type ComponentType,
-  type InputHTMLAttributes,
-  type ReactNode,
-  type SelectHTMLAttributes,
-  useEffect,
-  useRef,
-  useState,
-  Children,
-  type ReactElement,
-} from "react";
-import { createPortal } from "react-dom";
-import type { LucideProps } from "lucide-react";
-import { CheckCircle, Info, XCircle, ChevronDown, Check } from "lucide-react";
-import { BLOOD_GROUPS as BG_LIST, type BloodGroup as BG } from "../../lib/api";
+import { type ReactNode } from "react";
 
 // ── Card ──────────────────────────────────────────────────────────
 export function Card({
@@ -30,7 +16,7 @@ export function Card({
 }) {
   return (
     <section 
-      className={`card-in relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 ${className}`} 
+      className={`card-in relative overflow-hidden transition-all duration-300 ${className}`} 
       style={{ 
         padding: 24, 
         borderRadius: 24,
@@ -40,9 +26,9 @@ export function Card({
       }}
     >
       <div className="absolute -top-32 -right-32 w-64 h-64 rounded-full pointer-events-none opacity-20" style={{ background: "radial-gradient(circle, var(--blood-glow) 0%, transparent 70%)", filter: "blur(40px)" }} />
-      <div className="relative z-10">
+      <div className="relative z-10 flex flex-col h-full">
         {(title || subtitle || action) && (
-          <header className="flex items-start justify-between mb-6">
+          <header className="flex items-start justify-between mb-6 shrink-0">
             <div>
               {subtitle && (
                 <div className="mono uppercase text-[10px] tracking-[0.14em] mb-1" style={{ color: "var(--txt-mute)" }}>
@@ -58,7 +44,9 @@ export function Card({
             {action}
           </header>
         )}
-        {children}
+        <div className="flex-1 flex flex-col">
+          {children}
+        </div>
       </div>
     </section>
   );

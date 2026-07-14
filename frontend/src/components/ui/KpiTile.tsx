@@ -93,7 +93,7 @@ export function KpiTile({
 
   return (
     <div
-      className={`card-in surface relative overflow-hidden chart-card-hover kpi-tile-${tone}-${delay} perspective-container tilt-card hover:-translate-y-2`}
+      className={`card-in surface relative overflow-hidden chart-card-hover kpi-tile-${tone}-${delay} perspective-container tilt-card`}
       style={{
         padding: 18,
         paddingTop: 22,

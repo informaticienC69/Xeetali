@@ -13,7 +13,8 @@ from uuid import uuid4
 
 import qrcode
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.models.hospital import Hospital
 from app.models.pouch import BloodPouch
@@ -24,12 +25,12 @@ from app.services.exceptions import HospitalNotFoundError, NotFoundError
 logger = logging.getLogger("xeetali.pouch")
 
 
-def _generate_uid() -> str:
+async def _generate_uid() -> str:
     """UID lisible et unique pour une poche."""
     return f"XEE-{uuid4().hex[:12].upper()}"
 
 
-def _qr_data_uri(uid: str) -> str:
+async def _qr_data_uri(uid: str) -> str:
     """Génère un QR Code encodant l'UID, en PNG base64 (data-URI)."""
     img = qrcode.make(uid)
     buffer = io.BytesIO()
@@ -38,9 +39,9 @@ def _qr_data_uri(uid: str) -> str:
     return f"data:image/png;base64,{encoded}"
 
 
-def register_pouch(db: Session, payload: PouchCreate) -> BloodPouch:
+async def register_pouch(db: AsyncSession, payload: PouchCreate) -> BloodPouch:
     """UC-08 : enregistre une poche ``DISPONIBLE`` avec UID + QR (atomique)."""
-    if db.get(Hospital, payload.hospital_id) is None:
+    if await db.get(Hospital, payload.hospital_id) is None:
         raise HospitalNotFoundError(f"Hôpital {payload.hospital_id} introuvable.")
     try:
         uid = _generate_uid()
@@ -54,34 +55,39 @@ def register_pouch(db: Session, payload: PouchCreate) -> BloodPouch:
             qr_code_b64=_qr_data_uri(uid),
         )
         db.add(pouch)
-        db.commit()
-        db.refresh(pouch)
+        await db.commit()
+        await db.refresh(pouch)
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise
     logger.info("Poche %s enregistrée (%s) hôpital %s.", pouch.uid, pouch.groupe_sanguin, pouch.hospital_id)
     return pouch
 
 
-def update_status(db: Session, uid: str, new_status: PouchStatus) -> BloodPouch:
+async def update_status(db: AsyncSession, uid: str, new_status: PouchStatus) -> BloodPouch:
     """Change le statut d'une poche (atomique, journalisé)."""
-    pouch = db.scalars(select(BloodPouch).where(BloodPouch.uid == uid)).one_or_none()
+    result = await db.scalars(
+        select(BloodPouch)
+        .where(BloodPouch.uid == uid)
+        .with_for_update()
+    )
+    pouch = result.one_or_none()
     if pouch is None:
         raise NotFoundError(f"Poche {uid} introuvable.")
     try:
         ancien = pouch.statut
         pouch.statut = new_status.value
-        db.commit()
-        db.refresh(pouch)
+        await db.commit()
+        await db.refresh(pouch)
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise
     logger.info("Poche %s statut %s -> %s.", uid, ancien, pouch.statut)
     return pouch
 
 
-def search_pouches(
-    db: Session,
+async def search_pouches(
+    db: AsyncSession,
     groupe_sanguin: str | None = None,
     hospital_id: int | None = None,
     statut: str | None = None,
@@ -94,12 +100,12 @@ def search_pouches(
         stmt = stmt.where(BloodPouch.hospital_id == hospital_id)
     if statut is not None:
         stmt = stmt.where(BloodPouch.statut == statut)
-    return list(db.scalars(stmt.order_by(BloodPouch.date_peremption)).all())
+    return list((await db.scalars(stmt.order_by(BloodPouch.date_peremption))).all())
 
 
-def check_validity(db: Session, uid: str) -> PouchValidity:
+async def check_validity(db: AsyncSession, uid: str) -> PouchValidity:
     """Vérifie l'existence en base + péremption d'une poche par UID."""
-    pouch = db.scalars(select(BloodPouch).where(BloodPouch.uid == uid)).one_or_none()
+    pouch = (await db.scalars(select(BloodPouch).where(BloodPouch.uid == uid))).one_or_none()
     if pouch is None:
         return PouchValidity(uid=uid, existe=False, valide=False, motif="UID inconnu en base.")
 
@@ -123,5 +129,5 @@ def check_validity(db: Session, uid: str) -> PouchValidity:
     )
 
 
-def _now() -> datetime:  # pragma: no cover - utilitaire
+async def _now() -> datetime:  # pragma: no cover - utilitaire
     return datetime.now(timezone.utc)

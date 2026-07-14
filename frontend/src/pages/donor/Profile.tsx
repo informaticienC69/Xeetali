@@ -370,7 +370,7 @@ export default function Profile() {
         
         <FloatingInput label="DATE DERNIER DON (OPTIONNEL)" type="date" value={form.date_dernier_don} onChange={(e: any) => setForm({ ...form, date_dernier_don: e.target.value })} />
         
-        <Button type="submit" loading={saving} className="w-full mt-10 h-14 text-lg rounded-2xl shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
+        <Button type="submit" loading={saving} className="w-full mt-10 h-14 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
           Synchroniser l'Identité
         </Button>
       </form>

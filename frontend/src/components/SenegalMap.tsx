@@ -174,7 +174,7 @@ function DetailPanel({region,onClose}:{region:RegionData;onClose:()=>void}) {
         </div>
         <div className="space-y-2 pt-1">
           <button onClick={() => navigate("/admin/campaign")} className="btn-blood w-full py-2.5 text-sm flex items-center justify-center gap-2 cursor-pointer transition-all hover:opacity-90" style={{opacity:region.alertes>0||region.stockPct<40?1:0.5}}><Zap size={14}/> Lancer alerte urgence</button>
-          <button onClick={() => navigate("/admin/transfer")} className="w-full py-2.5 text-sm flex items-center justify-center gap-2 rounded-xl border mono text-[11px] uppercase tracking-wider cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-sm" style={{borderColor:"var(--line)",color:"var(--txt-dim)",background:"var(--surface-2)"}} onMouseEnter={(e) => { e.currentTarget.style.borderColor="var(--txt-mute)"; e.currentTarget.style.color="var(--txt)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor="var(--line)"; e.currentTarget.style.color="var(--txt-dim)"; }}><ChevronRight size={14}/> Commander approvisionnement</button>
+          <button onClick={() => navigate("/admin/transfer")} className="w-full py-2.5 text-sm flex items-center justify-center gap-2 rounded-xl border mono text-[11px] uppercase tracking-wider cursor-pointer transition-all hover:shadow-sm" style={{borderColor:"var(--line)",color:"var(--txt-dim)",background:"var(--surface-2)"}} onMouseEnter={(e) => { e.currentTarget.style.borderColor="var(--txt-mute)"; e.currentTarget.style.color="var(--txt)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor="var(--line)"; e.currentTarget.style.color="var(--txt-dim)"; }}><ChevronRight size={14}/> Commander approvisionnement</button>
         </div>
       </div>
     </div>

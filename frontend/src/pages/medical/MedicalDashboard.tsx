@@ -1,6 +1,6 @@
 // MedicalDashboard.tsx — Tableau de bord Personnel Médical "World-Class"
 // Landing page /medical — Vision en temps réel de l'hôpital
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -9,10 +9,9 @@ import {
   ClipboardList,
   Clock,
   Droplet,
-  FileCheck,
   ShieldCheck,
   Syringe,
-  TrendingDown,
+  ChevronRight,
   Zap,
 } from "lucide-react";
 import { api, BLOOD_GROUPS, type BloodGroup, type HospitalInventory } from "../../lib/api";
@@ -20,95 +19,168 @@ import { useApi } from "../../lib/hooks";
 import { useAuth } from "../../lib/auth";
 import { Card, KpiTile, GroupBadge, UrgencyBadge, Skeleton } from "../../components/ui";
 
-// ── Mini barre de stock par groupe sanguin ─────────────────────────
-function BloodStockBar({
+// ── Animation des nombres (CountUp) ──────────────────────────────────
+function CountUp({ end, delay }: { end: number; delay: number }) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (end === 0) return;
+    let start: number | null = null;
+    let req: number;
+    const duration = 1200; // 1.2s
+    const step = (ts: number) => {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const easeOut = 1 - Math.pow(1 - progress, 4); // Quartic ease out
+      setVal(Math.floor(easeOut * end));
+      if (progress < 1) req = requestAnimationFrame(step);
+      else setVal(end);
+    };
+    const t = setTimeout(() => {
+      req = requestAnimationFrame(step);
+    }, delay + 50);
+    return () => {
+      clearTimeout(t);
+      if (req) cancelAnimationFrame(req);
+    };
+  }, [end, delay]);
+  return <>{val}</>;
+}
+
+// ── Carte hexagonale de stock par groupe sanguin (arc SVG) ────────────
+const IDEAL_STOCK = 50; // seuil de stock idéal (= barre pleine à 100%)
+
+function BloodGroupCard({
   groupe,
   count,
-  max,
   delay,
 }: {
   groupe: BloodGroup;
   count: number;
-  max: number;
   delay: number;
 }) {
-  const pct = max > 0 ? Math.round((count / max) * 100) : 0;
-  // Couleur = signal uniquement, pas décoration
-  const tone =
-    count === 0 ? "var(--blood)" : count <= 3 ? "var(--warn)" : "var(--txt-dim)";
-  const bgTone =
-    count === 0
-      ? "rgba(230,57,70,0.08)"
-      : count <= 3
-        ? "rgba(217,119,6,0.07)"
-        : "var(--surface-2)";
-  const borderTone =
-    count === 0
-      ? "rgba(230,57,70,0.30)"
-      : count <= 3
-        ? "rgba(217,119,6,0.25)"
-        : "var(--line)";
-  const barColor =
-    count === 0
-      ? "linear-gradient(90deg, var(--blood), rgba(230,57,70,0.4))"
-      : count <= 3
-        ? "linear-gradient(90deg, var(--warn), rgba(217,119,6,0.5))"
-        : "linear-gradient(90deg, #94a3b8, #64748b88)";
+  const pct = Math.min(Math.round((count / IDEAL_STOCK) * 100), 100);
+  const state = count === 0 ? "empty" : count <= 5 ? "low" : "ok";
+
+  const theme = {
+    empty: {
+      stroke: "#E63946",
+      textColor: "#E63946",
+      bg: "rgba(230,57,70,0.08)",
+      border: "rgba(230,57,70,0.35)",
+      label: "RUPTURE",
+      labelBg: "rgba(230,57,70,0.15)",
+    },
+    low: {
+      stroke: "#d97706",
+      textColor: "#d97706",
+      bg: "rgba(217,119,6,0.06)",
+      border: "rgba(217,119,6,0.25)",
+      label: "FAIBLE",
+      labelBg: "rgba(217,119,6,0.12)",
+    },
+    ok: {
+      stroke: "#16a34a",
+      textColor: "var(--ok)",
+      bg: "var(--surface-2)",
+      border: "var(--line)",
+      label: "OK",
+      labelBg: "rgba(22,163,74,0.10)",
+    },
+  }[state];
+
+  // Arc SVG (demi-cercle) : viewBox=" 0 0 60 34" — tracez un arc dans la partie supérieure
+  const R = 24;
+  const CX = 30;
+  const CY = 30;
+  const fullArc = Math.PI * R;           // périmètre demi-cercle
+  const filled = (pct / 100) * fullArc;  // longueur remplie
+
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setIsMounted(true), delay + 50);
+    return () => clearTimeout(t);
+  }, [delay]);
+
+  const currentFilled = isMounted ? filled : 0;
 
   return (
     <div
-      className="card-in flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:-translate-y-0.5"
+      className="card-in flex flex-col items-center gap-1.5 rounded-2xl px-3 pt-3 pb-2.5 cursor-default transition-all duration-200 hover:scale-[1.03] hover:shadow-md relative overflow-hidden"
       style={{
         animationDelay: `${delay}ms`,
-        background: bgTone,
-        border: `1px solid ${borderTone}`,
+        background: theme.bg,
+        border: `1px solid ${theme.border}`,
       }}
     >
-      {/* Badge groupe */}
+      {/* Pulsation pour rupture */}
+      {state === "empty" && (
+        <span className="absolute inset-0 rounded-2xl pulse-blood pointer-events-none" style={{ opacity: 0.4 }} />
+      )}
+
+      {/* Arc de jauge SVG */}
+      <div className="relative" style={{ width: 60, height: 34 }}>
+        <svg viewBox="0 0 60 34" width="60" height="34" style={{ overflow: "visible" }}>
+          {/* Piste de fond */}
+          <path
+            d={`M ${CX - R},${CY} A ${R},${R} 0 0,1 ${CX + R},${CY}`}
+            fill="none"
+            stroke="rgba(148,163,184,0.2)"
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+          {/* Arc rempli */}
+          {pct > 0 && (
+            <path
+              d={`M ${CX - R},${CY} A ${R},${R} 0 0,1 ${CX + R},${CY}`}
+              fill="none"
+              stroke={theme.stroke}
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeDasharray={`${currentFilled} ${fullArc}`}
+              style={{
+                filter: state === "empty" ? `drop-shadow(0 0 4px ${theme.stroke})` : "none",
+                transition: "stroke-dasharray 1.2s cubic-bezier(0.165, 0.84, 0.44, 1)",
+              }}
+            />
+          )}
+        </svg>
+        {/* Pourcentage centré dans l'arc */}
+        <span
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 mono font-bold text-[10px] leading-none"
+          style={{ color: "var(--txt-mute)" }}
+        >
+          {state === "empty" ? "0%" : <><CountUp end={pct} delay={delay} />%</>}
+        </span>
+      </div>
+
+      {/* Nom du groupe */}
       <span
-        className="syne font-black text-sm w-9 shrink-0 text-center rounded-lg py-1"
-        style={{
-          background: count === 0 ? "rgba(230,57,70,0.12)" : "var(--surface)",
-          color: tone,
-        }}
+        className="syne font-black text-xl leading-none tracking-tight"
+        style={{ color: theme.textColor }}
       >
         {groupe}
       </span>
 
-      {/* Barre de progression */}
-      <div className="flex-1 flex flex-col gap-1">
-        <div
-          className="rounded-full overflow-hidden"
-          style={{ height: 4, background: "rgba(148,163,184,0.15)" }}
-        >
-          <div
-            className="h-full rounded-full progress-fill"
-            style={{
-              width: `${pct}%`,
-              background: barColor,
-              boxShadow: count === 0 ? "0 0 6px rgba(230,57,70,0.5)" : "none",
-              animationDelay: `${delay + 200}ms`,
-            }}
-          />
-        </div>
-      </div>
+      {/* Quantité */}
+      <span
+        className="syne font-black text-3xl leading-none"
+        style={{ color: theme.textColor }}
+      >
+        <CountUp end={count} delay={delay} />
+      </span>
+      <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
+        {count <= 1 ? "poche" : "poches"}
+      </span>
 
-      {/* Compteur */}
-      <div className="flex items-center gap-2 shrink-0">
-        <span
-          className="syne font-black text-lg w-8 text-right leading-none"
-          style={{ color: tone }}
-        >
-          {count}
-        </span>
-        {count === 0 ? (
-          <TrendingDown size={12} className="pulse-soft" style={{ color: "var(--blood)" }} />
-        ) : (
-          <span className="mono text-[9px] w-6 text-right" style={{ color: "var(--txt-mute)" }}>
-            {pct}%
-          </span>
-        )}
-      </div>
+      {/* Badge d'état */}
+      <span
+        className="mono text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1"
+        style={{ color: theme.stroke, background: theme.labelBg }}
+      >
+        {state === "empty" && <AlertTriangle size={9} />}
+        {state === "low" && <Zap size={9} />}
+        {theme.label}
+      </span>
     </div>
   );
 }
@@ -149,12 +221,10 @@ function QuickActionCard({
       }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.background = c.hover;
-        (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
         (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 24px ${c.color}22`;
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLElement).style.background = c.bg;
-        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
         (e.currentTarget as HTMLElement).style.boxShadow = "none";
       }}
     >
@@ -172,7 +242,10 @@ function QuickActionCard({
           {sub}
         </div>
       </div>
-      <Zap size={14} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: c.color }} />
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0">
+        <span className="mono text-[10px] uppercase font-bold" style={{ color: c.color }}>Accéder</span>
+        <ChevronRight size={14} className="shrink-0" style={{ color: c.color }} />
+      </div>
     </button>
   );
 }
@@ -202,7 +275,8 @@ export default function MedicalDashboard() {
   }, [myHospital]);
 
   const maxStock = useMemo(
-    () => Math.max(...Object.values(stockByGroup), 1),
+    // 50 poches = objectif de stock idéal. La barre sera calculée par rapport à ça (ou plus si surplus).
+    () => Math.max(...Object.values(stockByGroup), 50),
     [stockByGroup],
   );
 
@@ -319,7 +393,7 @@ export default function MedicalDashboard() {
         <Card
           title="Stock · Hôpital"
           subtitle="Poches disponibles par groupe"
-          className="lg:col-span-1"
+          className="lg:col-span-1 h-full"
           action={
             groupsAlerts.length > 0 ? (
               <span
@@ -343,31 +417,81 @@ export default function MedicalDashboard() {
           }
         >
           {inv.loading ? (
-            <div className="space-y-2">
-              {BLOOD_GROUPS.map((g) => <Skeleton key={g} className="h-10 rounded-xl" />)}
+            <div className="flex-1 flex flex-col justify-between gap-4">
+              {/* Squelette de la grille 4x2 */}
+              <div className="grid grid-cols-4 gap-2">
+                {BLOOD_GROUPS.map((g) => (
+                  <Skeleton key={g} className="h-[148px] rounded-2xl" />
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {/* Squelette des totaux */}
+                <Skeleton className="h-[52px] rounded-2xl" />
+
+                {/* Squelette de la synthèse */}
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="h-[12px] w-24 rounded-md opacity-50" />
+                  <div className="grid grid-cols-3 gap-2">
+                    <Skeleton className="h-[72px] rounded-xl" />
+                    <Skeleton className="h-[72px] rounded-xl" />
+                    <Skeleton className="h-[72px] rounded-xl" />
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              {BLOOD_GROUPS.map((g, i) => (
-                <BloodStockBar
-                  key={g}
-                  groupe={g}
-                  count={stockByGroup[g]}
-                  max={maxStock}
-                  delay={i * 50}
-                />
-              ))}
+            <div className="flex-1 flex flex-col justify-between gap-4">
+              {/* Grille 4x2 de cartes */}
+              <div className="grid grid-cols-4 gap-2">
+                {BLOOD_GROUPS.map((g, i) => (
+                  <BloodGroupCard
+                    key={g}
+                    groupe={g}
+                    count={stockByGroup[g]}
+                    delay={i * 40}
+                  />
+                ))}
+              </div>
 
-              {/* Totaux */}
-              <div
-                className="mt-2 flex items-center justify-between px-3 py-2 rounded-xl"
-                style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}
-              >
-                <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>Total disponible</span>
-                <span className="syne font-black text-xl" style={{ color: totalDispo === 0 ? "var(--blood)" : totalDispo <= 10 ? "var(--warn)" : "var(--ok)" }}>
-                  {totalDispo}
-                  <span className="syne font-normal text-xs ml-1" style={{ color: "var(--txt-mute)" }}>poches</span>
-                </span>
+              <div className="flex flex-col gap-3">
+                {/* Totaux */}
+                <div
+                  className="flex items-center justify-between px-4 py-3 rounded-2xl"
+                  style={{ background: "var(--surface-2)" }}
+                >
+                  <span className="mono text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--txt-dim)" }}>Total disponible</span>
+                  <span className="syne font-black text-2xl" style={{ color: totalDispo === 0 ? "var(--blood)" : totalDispo <= 10 ? "var(--warn)" : "var(--ok)" }}>
+                    {totalDispo}
+                    <span className="syne font-semibold text-sm ml-1.5" style={{ color: "var(--txt-mute)" }}>poches</span>
+                  </span>
+                </div>
+
+                {/* Synthèse de santé du stock */}
+                <div className="flex flex-col gap-2">
+                  <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>Santé du stock</span>
+                  {(() => {
+                    const nbOk    = BLOOD_GROUPS.filter(g => stockByGroup[g] > 5).length;
+                    const nbLow   = BLOOD_GROUPS.filter(g => stockByGroup[g] > 0 && stockByGroup[g] <= 5).length;
+                    const nbEmpty = BLOOD_GROUPS.filter(g => stockByGroup[g] === 0).length;
+                    return (
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="flex flex-col items-center gap-1 rounded-xl py-3" style={{ background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.2)" }}>
+                          <span className="syne font-black text-2xl" style={{ color: "var(--ok)" }}>{nbOk}</span>
+                          <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "#16a34a" }}>OK</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1 rounded-xl py-3" style={{ background: "rgba(217,119,6,0.08)", border: "1px solid rgba(217,119,6,0.2)" }}>
+                          <span className="syne font-black text-2xl" style={{ color: "var(--warn)" }}>{nbLow}</span>
+                          <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "var(--warn)" }}>Faibles</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1 rounded-xl py-3" style={{ background: "rgba(230,57,70,0.08)", border: `1px solid ${nbEmpty > 0 ? "rgba(230,57,70,0.35)" : "rgba(230,57,70,0.1)"}` }}>
+                          <span className={`syne font-black text-2xl ${nbEmpty > 0 ? "pulse-soft" : ""}`} style={{ color: "var(--blood)" }}>{nbEmpty}</span>
+                          <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "var(--blood)" }}>Rupture</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
           )}
@@ -469,15 +593,10 @@ export default function MedicalDashboard() {
         </div>
       </div>
 
-      {/* ── Footer statut ── */}
       <div className="flex items-center gap-4 py-2">
         <span className="h-1.5 w-1.5 rounded-full pulse-soft" style={{ background: "var(--ok)", boxShadow: "0 0 8px var(--ok)" }} />
         <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
           Données actualisées · {new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-        </span>
-        <span className="ml-auto mono text-[10px]" style={{ color: "var(--txt-mute)" }}>
-          <FileCheck size={10} className="inline mr-1" style={{ color: "var(--ok)" }} />
-          Hyperledger SYNC
         </span>
       </div>
     </div>

@@ -322,7 +322,7 @@ export default function Appointments() {
               return (
                 <div
                   key={a.id}
-                  className="flex items-center gap-4 rounded-[24px] p-3 pr-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group border shadow-sm"
+                  className="flex items-center gap-4 rounded-[24px] p-3 pr-5 transition-all duration-300 hover:shadow-lg group border shadow-sm"
                   style={{ 
                     background: "var(--surface)", 
                     borderColor: "var(--line)",

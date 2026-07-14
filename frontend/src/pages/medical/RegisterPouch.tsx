@@ -83,7 +83,7 @@ export default function RegisterPouch() {
         {/* ── COLONNE GAUCHE : FORMULAIRE PREMIUM ── */}
         <div className="grow w-full xl:w-[60%] flex flex-col gap-6 relative group perspective-container card-in">
           <div className="absolute -inset-2 bg-linear-to-r from-red-500/10 via-transparent to-red-500/5 rounded-[40px] blur-xl opacity-60 pointer-events-none holo-shimmer"></div>
-          <form onSubmit={submit} className="relative h-full flex flex-col p-8 rounded-[32px] transition-all duration-500 tilt-card hover:-translate-y-1 hover:shadow-[0_30px_60px_rgba(230,57,70,0.08)]" style={{ background: "linear-gradient(145deg, var(--surface) 0%, var(--surface-2) 100%)", border: "1px solid color-mix(in srgb, var(--line) 40%, transparent)", boxShadow: "0 20px 50px rgba(0,0,0,0.05), inset 0 2px 0 rgba(255,255,255,0.4)" }}>
+          <form onSubmit={submit} className="relative h-full flex flex-col p-8 rounded-[32px] transition-all duration-500 tilt-card hover:shadow-[0_30px_60px_rgba(230,57,70,0.08)]" style={{ background: "linear-gradient(145deg, var(--surface) 0%, var(--surface-2) 100%)", border: "1px solid color-mix(in srgb, var(--line) 40%, transparent)", boxShadow: "0 20px 50px rgba(0,0,0,0.05), inset 0 2px 0 rgba(255,255,255,0.4)" }}>
             
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -219,17 +219,13 @@ export default function RegisterPouch() {
 
         {/* ── COLONNE DROITE : DIGITAL TWIN (Dernière Poche) ── */}
         <div className="w-full xl:w-[40%] shrink-0 flex flex-col gap-6 relative group perspective-container card-in delay-120">
-          <div className="absolute -inset-2 bg-linear-to-tr from-rose-100 to-teal-50 rounded-[40px] blur-xl opacity-60 pointer-events-none holo-shimmer"></div>
-          <div className="relative h-full p-8 rounded-[32px] flex flex-col items-center justify-center overflow-hidden transition-all duration-500 backdrop-blur-xl bg-white/60 tilt-card hover:-translate-y-1 hover:shadow-[0_30px_60px_rgba(0,0,0,0.1)]" style={{ border: "1px solid rgba(255,255,255,0.8)", minHeight: "420px", boxShadow: "0 20px 40px rgba(0,0,0,0.05)" }}>
+          <div className="absolute -inset-2 bg-linear-to-tr from-rose-500/10 to-teal-500/10 rounded-[40px] blur-xl opacity-60 pointer-events-none holo-shimmer"></div>
+          <div className="relative h-full p-8 rounded-[32px] flex flex-col items-center justify-center overflow-hidden transition-all duration-500 bg-transparent tilt-card hover:shadow-2xl" style={{ border: "1px dashed var(--line)", minHeight: "420px" }}>
             
             {/* Background design elements & Particles */}
             <Droplet size={300} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(230,57,70,0.03)" }} />
             
-            {/* Particules flottantes "Holographiques" */}
-            <div className="absolute top-12 left-12 w-2 h-2 rounded-full bg-red-400 particle" style={{ "--dur": "4s", "--delay": "0s" } as any} />
-            <div className="absolute bottom-24 right-12 w-3 h-3 rounded-full bg-teal-400 particle" style={{ "--dur": "6s", "--delay": "1s" } as any} />
-            <div className="absolute top-1/2 left-8 w-1 h-1 rounded-full bg-yellow-400 particle" style={{ "--dur": "3s", "--delay": "0.5s" } as any} />
-            <div className="absolute top-1/4 right-1/4 w-2 h-2 rounded-full bg-purple-400 particle" style={{ "--dur": "5s", "--delay": "2s" } as any} />
+
 
             {!last ? (
               <div className="relative z-10 flex flex-col items-center text-center opacity-60">
@@ -242,7 +238,7 @@ export default function RegisterPouch() {
                 </p>
               </div>
             ) : (
-              <div className="relative z-10 flex flex-col items-center w-full max-w-[340px] p-8 rounded-[32px] bounce-in-scale" style={{ background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)", boxShadow: "0 24px 48px rgba(0,0,0,0.08), inset 0 2px 0 rgba(255,255,255,1), 0 0 0 1px rgba(0,0,0,0.05)" }}>
+              <div className="relative z-10 flex flex-col items-center w-full max-w-[340px] p-8 rounded-[32px] bounce-in-scale" style={{ background: "linear-gradient(145deg, var(--surface) 0%, var(--surface-2) 100%)", border: "1px solid var(--line)", boxShadow: "var(--shadow-lg)" }}>
                 
                 <div className="w-full flex justify-between items-start mb-6">
                   <div className="flex flex-col">

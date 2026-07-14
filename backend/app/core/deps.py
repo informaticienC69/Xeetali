@@ -6,7 +6,8 @@ from collections.abc import Callable
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.core.security import decode_access_token
 from app.db.session import get_db
@@ -23,8 +24,8 @@ _CREDENTIALS_EXC = HTTPException(
 )
 
 
-def get_current_user(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+async def get_current_user(
+    token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ) -> User:
     """Résout l'utilisateur courant à partir du JWT. Lève 401 si invalide."""
     try:
@@ -35,7 +36,7 @@ def get_current_user(
     except jwt.PyJWTError:
         raise _CREDENTIALS_EXC
 
-    user = db.query(User).filter(User.email == email).one_or_none()
+    user = await db.scalar(select(User).where(User.email == email))
     if user is None:
         raise _CREDENTIALS_EXC
     return user

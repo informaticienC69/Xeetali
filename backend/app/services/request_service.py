@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.models.hospital import Hospital
 from app.models.request import BloodRequest
@@ -10,9 +11,9 @@ from app.schemas.request import RequestCreate
 from app.services.exceptions import HospitalNotFoundError
 
 
-def create_request(db: Session, payload: RequestCreate, user_id: int) -> BloodRequest:
+async def create_request(db: AsyncSession, payload: RequestCreate, user_id: int) -> BloodRequest:
     """Émet une demande de sang (atomique)."""
-    if db.get(Hospital, payload.hospital_id) is None:
+    if await db.get(Hospital, payload.hospital_id) is None:
         raise HospitalNotFoundError(f"Hôpital {payload.hospital_id} introuvable.")
     try:
         req = BloodRequest(
@@ -23,14 +24,14 @@ def create_request(db: Session, payload: RequestCreate, user_id: int) -> BloodRe
             created_by=user_id,
         )
         db.add(req)
-        db.commit()
-        db.refresh(req)
+        await db.commit()
+        await db.refresh(req)
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise
     return req
 
 
-def list_requests(db: Session) -> list[BloodRequest]:
+async def list_requests(db: AsyncSession) -> list[BloodRequest]:
     """Liste les demandes, plus récentes d'abord."""
-    return list(db.scalars(select(BloodRequest).order_by(BloodRequest.created_at.desc())).all())
+    return list((await db.scalars(select(BloodRequest).order_by(BloodRequest.created_at.desc()))).all())

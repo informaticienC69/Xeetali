@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.core.deps import get_current_user, require_role
 from app.db.session import get_db
@@ -21,29 +22,29 @@ router = APIRouter(prefix="/api/alerts", tags=["alertes"])
 
 
 @router.post("", response_model=AlertDispatchResult, status_code=status.HTTP_201_CREATED)
-def create_alert(
+async def create_alert(
     payload: AlertCreate,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current: User = Depends(require_role(UserRole.ADMIN_CNTS)),
 ) -> AlertDispatchResult:
     """UC-17 : cible les donneurs compatibles et simule l'envoi (aucun envoi réel)."""
-    return alert_service.dispatch_alert(db, payload, current.id)
+    return await alert_service.dispatch_alert(db, payload, current.id)
 
 
 @router.get("", response_model=list[AlertRead])
-def list_active_alerts(
-    db: Session = Depends(get_db), _: User = Depends(get_current_user)
+async def list_active_alerts(
+    db: AsyncSession = Depends(get_db), _: User = Depends(get_current_user)
 ) -> list[AlertRead]:
     """Liste les alertes actives (visibles par les donneurs)."""
-    return [AlertRead.model_validate(a) for a in alert_service.list_active_alerts(db)]
+    return [AlertRead.model_validate(a) for a in await alert_service.list_active_alerts(db)]
 
 
 @router.post("/{alert_id}/respond", response_model=AlertRespondResult)
-def respond_to_alert(
+async def respond_to_alert(
     alert_id: int,
     payload: AlertRespondRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current: User = Depends(require_role(UserRole.DONNEUR)),
 ) -> AlertRespondResult:
     """UC-17 (donneur) : déclare sa disponibilité → instructions logistiques."""
-    return alert_service.respond_to_alert(db, alert_id, current.id, payload.disponible)
+    return await alert_service.respond_to_alert(db, alert_id, current.id, payload.disponible)

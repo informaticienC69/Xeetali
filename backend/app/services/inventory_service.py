@@ -6,7 +6,8 @@ la cohérence (la poche est l'unique source de vérité).
 from __future__ import annotations
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.models.hospital import Hospital
 from app.models.pouch import BloodPouch
@@ -14,9 +15,9 @@ from app.schemas.enums import BloodGroup, PouchStatus
 from app.schemas.inventory import InventoryByHospital, StockLine
 
 
-def _available_counts(db: Session) -> dict[tuple[int, str], int]:
+async def _available_counts(db: AsyncSession) -> dict[tuple[int, str], int]:
     """Comptage des poches DISPONIBLE par (hospital_id, groupe_sanguin)."""
-    rows = db.execute(
+    rows = (await db.execute(
         select(
             BloodPouch.hospital_id,
             BloodPouch.groupe_sanguin,
@@ -24,14 +25,14 @@ def _available_counts(db: Session) -> dict[tuple[int, str], int]:
         )
         .where(BloodPouch.statut == PouchStatus.DISPONIBLE.value)
         .group_by(BloodPouch.hospital_id, BloodPouch.groupe_sanguin)
-    ).all()
+    )).all()
     return {(hid, groupe): count for hid, groupe, count in rows}
 
 
-def inventory_by_hospital(db: Session, skip: int = 0, limit: int = 100) -> list[InventoryByHospital]:
+async def inventory_by_hospital(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[InventoryByHospital]:
     """État des stocks de tous les hôpitaux, une ligne par groupe présent."""
-    counts = _available_counts(db)
-    hospitals = db.scalars(select(Hospital).order_by(Hospital.id).offset(skip).limit(limit)).all()
+    counts = await _available_counts(db)
+    hospitals = (await db.scalars(select(Hospital).order_by(Hospital.id).offset(skip).limit(limit))).all()
 
     result: list[InventoryByHospital] = []
     for hospital in hospitals:
@@ -52,10 +53,10 @@ def inventory_by_hospital(db: Session, skip: int = 0, limit: int = 100) -> list[
     return result
 
 
-def available_count(db: Session, hospital_id: int, groupe_sanguin: str) -> int:
+async def available_count(db: AsyncSession, hospital_id: int, groupe_sanguin: str) -> int:
     """Nombre de poches DISPONIBLE pour un (hôpital, groupe)."""
     return int(
-        db.scalar(
+        await db.scalar(
             select(func.count(BloodPouch.id)).where(
                 BloodPouch.hospital_id == hospital_id,
                 BloodPouch.groupe_sanguin == groupe_sanguin,

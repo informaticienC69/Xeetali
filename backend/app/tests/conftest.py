@@ -5,13 +5,13 @@ isolée en mémoire, créée puis détruite autour du test.
 """
 from __future__ import annotations
 
-from collections.abc import Callable, Generator
+from collections.abc import AsyncGenerator, Callable
 from datetime import date, timedelta
 
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+import pytest_asyncio
+from httpx import AsyncClient, ASGITransport
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.security import hash_password
@@ -27,41 +27,45 @@ from app.models.user import User
 from app.schemas.enums import BloodGroup, PouchStatus, UserRole
 
 
-@pytest.fixture()
-def db_session() -> Generator[Session, None, None]:
+@pytest_asyncio.fixture()
+async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """Session sur une base SQLite en mémoire, partagée via ``StaticPool``."""
-    engine = create_engine(
-        "sqlite://",
+    engine = create_async_engine(
+        "sqlite+aiosqlite://",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
         future=True,
     )
-    Base.metadata.create_all(bind=engine)
-    TestingSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        
+    TestingSessionLocal = async_sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
     session = TestingSessionLocal()
     try:
         yield session
     finally:
-        session.close()
-        Base.metadata.drop_all(bind=engine)
-        engine.dispose()
+        await session.close()
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
+        await engine.dispose()
 
 
-@pytest.fixture()
-def client(db_session: Session) -> Generator[TestClient, None, None]:
-    """TestClient avec ``get_db`` surchargé vers la base en mémoire."""
+@pytest_asyncio.fixture()
+async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+    """AsyncClient avec ``get_db`` surchargé vers la base en mémoire."""
 
-    def _override_get_db() -> Generator[Session, None, None]:
+    async def _override_get_db() -> AsyncGenerator[AsyncSession, None]:
         yield db_session
 
     app.dependency_overrides[get_db] = _override_get_db
     try:
-        yield TestClient(app)
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            yield ac
     finally:
         app.dependency_overrides.clear()
 
 
-def _make_user(db: Session, email: str, role: UserRole, hospital_id: int | None = None) -> User:
+async def _make_user(db: AsyncSession, email: str, role: UserRole, hospital_id: int | None = None) -> User:
     user = User(
         nom=email.split("@")[0].title(),
         email=email,
@@ -70,27 +74,21 @@ def _make_user(db: Session, email: str, role: UserRole, hospital_id: int | None 
         hospital_id=hospital_id,
     )
     db.add(user)
-    db.flush()
+    await db.flush()
     return user
 
 
-@pytest.fixture()
-def seeded(db_session: Session) -> dict[str, int]:
-    """Deux hôpitaux, un point de collecte, un utilisateur par rôle, un donneur.
-
-    Stocks (poches DISPONIBLE) à la source :
-      - O+ = 5 poches (péremptions échelonnées)
-      - A+ = 3 poches
-    Cible : aucune poche.
-    """
+@pytest_asyncio.fixture()
+async def seeded(db_session: AsyncSession) -> dict[str, int]:
+    """Deux hôpitaux, un point de collecte, un utilisateur par rôle, un donneur."""
     source = Hospital(nom="Hôpital Source", localisation="Dakar", type="Hôpital")
     target = Hospital(nom="Hôpital Cible", localisation="Thiès", type="CHR")
     db_session.add_all([source, target])
-    db_session.flush()
+    await db_session.flush()
 
-    admin = _make_user(db_session, "admin@cnts.sn", UserRole.ADMIN_CNTS)
-    medic = _make_user(db_session, "medic@cnts.sn", UserRole.PERSONNEL_MEDICAL, source.id)
-    donor_user = _make_user(db_session, "donor@cnts.sn", UserRole.DONNEUR)
+    admin = await _make_user(db_session, "admin@cnts.sn", UserRole.ADMIN_CNTS)
+    medic = await _make_user(db_session, "medic@cnts.sn", UserRole.PERSONNEL_MEDICAL, source.id)
+    donor_user = await _make_user(db_session, "donor@cnts.sn", UserRole.DONNEUR)
 
     donor = DonorProfile(
         user_id=donor_user.id,
@@ -116,7 +114,7 @@ def seeded(db_session: Session) -> dict[str, int]:
             statut=PouchStatus.DISPONIBLE.value, date_prelevement=today,
             date_peremption=today + timedelta(days=20 + i), qr_code_b64="data:image/png;base64,TEST",
         ))
-    db_session.commit()
+    await db_session.commit()
 
     return {
         "source_id": source.id,
@@ -130,14 +128,11 @@ def seeded(db_session: Session) -> dict[str, int]:
 
 
 @pytest.fixture()
-def auth(client: TestClient) -> Callable[[str], dict[str, str]]:
-    """Retourne une fabrique d'en-têtes Authorization pour un email donné.
-
-    Tous les utilisateurs de ``seeded`` partagent le mot de passe ``Password123!``.
-    """
-
-    def _headers(email: str) -> dict[str, str]:
-        resp = client.post("/api/auth/login", json={"email": email, "password": "Password123!"})
+def auth(client: AsyncClient) -> Callable[[str], dict[str, str]]:
+    """Retourne une fabrique d'en-têtes Authorization pour un email donné."""
+    # This must be async to use AsyncClient
+    async def _headers(email: str) -> dict[str, str]:
+        resp = await client.post("/api/auth/login", json={"email": email, "password": "Password123!"})
         assert resp.status_code == 200, resp.text
         return {"Authorization": f"Bearer {resp.json()['access_token']}"}
 
