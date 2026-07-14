@@ -92,22 +92,19 @@ function SideNavItem({ item }: { item: NavItem }) {
     >
       {({ isActive }) => (
         <>
-          {/* Barre latérale rouge active (maquette) */}
+          {/* Barre latérale active (sobre, bleu clinique) */}
           {isActive && (
             <span
               className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r"
-              style={{
-                background: "var(--blood)",
-                boxShadow: "0 0 12px var(--blood)",
-              }}
+              style={{ background: "var(--clinic)" }}
             />
           )}
           <item.icon
             size={17}
-            style={{ color: isActive ? "var(--blood)" : "var(--txt-mute)", flexShrink: 0 }}
+            style={{ color: isActive ? "var(--clinic)" : "var(--txt-mute)", flexShrink: 0 }}
           />
           <div className="flex-1 min-w-0">
-            <div className="syne font-semibold text-sm leading-none truncate"
+            <div className="font-semibold text-sm leading-none truncate"
                  style={{ color: isActive ? "var(--txt)" : "var(--txt-dim)" }}>
               {item.label}
             </div>
@@ -145,41 +142,24 @@ export default function Layout({ children }: { children: ReactNode }) {
         }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-4 px-5 py-6 relative overflow-hidden" style={{ borderBottom: "1px solid var(--line)" }}>
-          {/* Subtle background glow behind the logo */}
-          <div className="absolute left-0 top-0 w-32 h-32 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(230,57,70,0.15) 0%, transparent 70%)", filter: "blur(20px)" }} />
-
-          {/* Icône logo premium */}
-          <div className="relative group cursor-pointer">
-            <div
-              className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-[0_0_30px_rgba(230,57,70,0.3)] backdrop-blur-md"
-              style={{
-                background: "linear-gradient(135deg, rgba(230,57,70,0.2) 0%, rgba(230,57,70,0.02) 100%)",
-                boxShadow: "0 8px 24px rgba(230,57,70,0.15), inset 0 1px 1px rgba(255,255,255,0.1)",
-                border: "1px solid rgba(230,57,70,0.3)"
-              }}
-            >
-              <Droplet size={22} strokeWidth={2} className="text-red-500" style={{ fill: "rgba(230,57,70,0.25)", filter: "drop-shadow(0 2px 4px rgba(230,57,70,0.4))" }} />
-            </div>
-            {/* Point pulsant (laser style) */}
-            <div className="absolute -right-1 -top-1">
-              <span className="absolute inline-flex h-3.5 w-3.5 animate-ping rounded-full bg-red-400 opacity-80" />
-              <span className="relative inline-flex h-3.5 w-3.5 rounded-full" style={{ background: "var(--blood)", border: "2px solid var(--surface)", boxShadow: "0 0 10px var(--blood)" }} />
-            </div>
+        <div className="flex items-center gap-3 px-5 py-6" style={{ borderBottom: "1px solid var(--line)" }}>
+          {/* Icône logo — pastille sobre */}
+          <div
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+            style={{ background: "var(--blood)", boxShadow: "var(--shadow-sm)" }}
+          >
+            <Droplet size={22} strokeWidth={2} style={{ color: "#fff", fill: "rgba(255,255,255,0.25)" }} />
           </div>
 
-          <div className="relative z-10 flex flex-col justify-center">
-            <div className="syne font-black tracking-[0.2em] text-[16px] leading-none flex items-center">
+          <div className="flex flex-col justify-center">
+            {/* Mot-marque : seule place où Syne est conservée (branding) */}
+            <div className="font-bold tracking-[0.14em] text-[16px] leading-none">
               <span style={{ color: "var(--txt)" }}>X</span>
-              <span className="relative inline-block" style={{ color: "var(--blood)", textShadow: "0 0 16px var(--blood-glow)" }}>
-                É
-                <div className="absolute -inset-1 animate-pulse opacity-50" style={{ background: "radial-gradient(circle, var(--blood-glow) 0%, transparent 70%)", filter: "blur(4px)", zIndex: -1 }} />
-              </span>
+              <span style={{ color: "var(--blood)" }}>É</span>
               <span style={{ color: "var(--txt)" }}>ÉTALI</span>
             </div>
-            <div className="mono text-[8.5px] uppercase tracking-[0.25em] mt-1.5 flex items-center gap-1.5 opacity-80" style={{ color: "var(--txt-mute)" }}>
-              <span className="w-1 h-1 rounded-sm animate-pulse" style={{ background: "var(--blood)", boxShadow: "0 0 6px var(--blood)" }} />
-              SYS.DÉLIVRANCE
+            <div className="mono text-[8.5px] uppercase tracking-[0.22em] mt-1.5" style={{ color: "var(--txt-mute)" }}>
+              Node Central · CNTS
             </div>
           </div>
         </div>
@@ -187,9 +167,9 @@ export default function Layout({ children }: { children: ReactNode }) {
         {/* Statut système */}
         <div className="px-4 py-2 flex items-center justify-between" style={{ borderBottom: "1px solid var(--line)" }}>
           <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full pulse-soft" style={{ background: "var(--ok)", boxShadow: "0 0 8px var(--ok)" }} />
+            <span className="status-dot" style={{ background: "var(--ok)" }} />
             <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
-              SYS <span style={{ color: "var(--ok)" }}>OPÉRATIONNEL</span>
+              Système <span style={{ color: "var(--ok)" }}>opérationnel</span>
             </span>
           </div>
         </div>
@@ -216,19 +196,17 @@ export default function Layout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2.5 px-4 py-3">
             {/* Avatar initiales */}
             <div
-              className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl syne font-bold text-[13px] backdrop-blur-md transition-all duration-300 hover:shadow-[0_0_15px_rgba(230,57,70,0.2)]"
-              style={{ 
-                background: "linear-gradient(135deg, rgba(230,57,70,0.15) 0%, rgba(230,57,70,0.02) 100%)",
-                boxShadow: "inset 0 1px 1px rgba(255,255,255,0.1)",
-                border: "1px solid rgba(230,57,70,0.25)",
-                color: "var(--blood)",
-                textShadow: "0 0 12px rgba(230,57,70,0.5)"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-bold text-[13px]"
+              style={{
+                background: "var(--surface-2)",
+                border: "1px solid var(--line)",
+                color: "var(--txt-dim)",
               }}
             >
               {role ? ROLE_ACRONYM[role] : "?"}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="syne font-semibold text-sm truncate" style={{ color: "var(--txt)" }}>
+              <div className="font-semibold text-sm truncate" style={{ color: "var(--txt)" }}>
                 {prenom || "Utilisateur"}
               </div>
               <div className="mono text-[9px] uppercase tracking-wider truncate" style={{ color: "var(--txt-mute)" }}>
@@ -256,7 +234,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               aria-label="Déconnexion"
               className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
               style={{ color: "var(--txt-mute)" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--blood)"; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--crit)"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--txt-mute)"; }}
             >
               <LogOut size={15} />
@@ -278,7 +256,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           style={{ borderBottom: "1px solid var(--line)", background: "var(--surface)" }}
         >
           <div className="mono text-[11px] uppercase tracking-wider flex items-center gap-3" style={{ color: "var(--txt-mute)" }}>
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--blood)", boxShadow: "0 0 8px var(--blood)" }} />
+            <span className="status-dot" style={{ background: "var(--ok)" }} />
             v1.4.0
           </div>
           <div className="flex items-center gap-3 mono text-[11px]" style={{ color: "var(--txt-mute)" }}>

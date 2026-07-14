@@ -82,7 +82,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               <div className="flex h-6 w-6 items-center justify-center rounded-full shrink-0" style={{ background: `color-mix(in srgb, ${s.icon} 10%, transparent)` }}>
                 <s.Icon size={14} style={{ color: s.icon }} />
               </div>
-              <span className="syne font-semibold tracking-wide">{message}</span>
+              <span className="font-semibold tracking-wide">{message}</span>
               <button 
                 onClick={() => dismiss(id)} 
                 className="shrink-0 ml-1 flex h-6 w-6 items-center justify-center rounded-full transition-colors hover:bg-black/5 dark:hover:bg-white/10" 

@@ -48,8 +48,8 @@ const URGENCY_CONFIG = [
     sub: "Intervention immédiate",
     color: "var(--blood)",
     bg: "var(--surface-2)",
-    bgActive: "rgba(230,57,70,0.12)",
-    borderActive: "rgba(230,57,70,0.55)",
+    bgActive: "rgba(206,51,65,0.12)",
+    borderActive: "rgba(206,51,65,0.55)",
     colorActive: "var(--blood)",
   },
 ] as const;
@@ -86,13 +86,13 @@ function RequestCard({ r }: { r: BloodRequest }) {
       <div className="relative shrink-0 ml-1">
         <GroupBadge groupe={r.groupe_sanguin} />
         {isCrit && (
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-(--blood) pulse-soft" />
+          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-(--blood)" />
         )}
       </div>
 
       {/* Quantité */}
       <div className="flex flex-col shrink-0 min-w-[32px] items-center justify-center">
-        <span className="syne font-black text-xl leading-none" style={{ color: "var(--txt)" }}>
+        <span className="font-black text-xl leading-none" style={{ color: "var(--txt)" }}>
           {r.quantite}
         </span>
         <span className="mono text-[9px] uppercase tracking-wider mt-0.5" style={{ color: "var(--txt-mute)" }}>
@@ -185,10 +185,10 @@ export default function Request() {
         action={
           critCount > 0 ? (
             <div
-              className="flex items-center gap-2 rounded-xl px-3 py-1.5 pulse-blood"
-              style={{ background: "rgba(230,57,70,0.10)", border: "1px solid rgba(230,57,70,0.40)" }}
+              className="flex items-center gap-2 rounded-xl px-3 py-1.5"
+              style={{ background: "rgba(206,51,65,0.10)", border: "1px solid rgba(206,51,65,0.40)" }}
             >
-              <AlertTriangle size={13} className="pulse-soft" style={{ color: "var(--blood)" }} />
+              <AlertTriangle size={13} style={{ color: "var(--blood)" }} />
               <span className="mono text-[11px] font-bold" style={{ color: "var(--blood)" }}>
                 {critCount} CRITIQUE{critCount > 1 ? "S" : ""}
               </span>
@@ -205,28 +205,19 @@ export default function Request() {
           <form
             onSubmit={submit}
             className="flex flex-col gap-6 p-6 rounded-3xl relative overflow-hidden"
-            style={{ 
-              background: "var(--surface)", 
-              border: "1px solid var(--line)", 
-              boxShadow: "0 10px 30px rgba(0,0,0,0.02)" 
-            }}
+            style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
           >
-            {/* Effet lumineux subtil en fond */}
-            <div 
-              className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl pointer-events-none opacity-20"
-              style={{ background: "var(--blood)", transform: "translate(30%, -30%)" }}
-            />
 
             {/* En-tête form */}
             <div className="flex items-center gap-4 relative z-10">
               <div
                 className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
-                style={{ background: "rgba(230,57,70,0.1)", border: "1px solid rgba(230,57,70,0.2)" }}
+                style={{ background: "rgba(206,51,65,0.1)", border: "1px solid rgba(206,51,65,0.2)" }}
               >
                 <Droplets size={20} style={{ color: "var(--blood)" }} />
               </div>
               <div>
-                <h2 className="syne font-bold text-xl" style={{ color: "var(--txt)" }}>Nouvelle demande</h2>
+                <h2 className="font-bold text-xl" style={{ color: "var(--txt)" }}>Nouvelle demande</h2>
                 <p className="mono text-[11px] uppercase tracking-wider mt-1" style={{ color: "var(--txt-mute)" }}>
                   Renseignez les critères de la demande
                 </p>
@@ -263,7 +254,7 @@ export default function Request() {
                       key={g}
                       type="button"
                       onClick={() => setGroupe(g)}
-                      className="relative syne font-bold text-base py-2.5 rounded-xl transition-all duration-200 overflow-hidden"
+                      className="relative font-bold text-base py-2.5 rounded-xl transition-all duration-200 overflow-hidden"
                       style={{
                         background: groupe === g ? "var(--blood)" : "var(--surface-2)",
                         color: groupe === g ? "#fff" : "var(--txt-dim)",
@@ -297,7 +288,7 @@ export default function Request() {
                     >
                       <Minus size={16} />
                     </button>
-                    <div className="flex-1 text-center syne font-bold text-lg" style={{ color: "var(--txt)" }}>
+                    <div className="flex-1 text-center font-bold text-lg" style={{ color: "var(--txt)" }}>
                       {quantite}
                     </div>
                     <button
@@ -330,7 +321,7 @@ export default function Request() {
                             boxShadow: isSelected ? `inset 0 0 0 1px ${u.borderActive}` : "none",
                           }}
                         >
-                          <span className="syne font-bold text-[13px]" style={{ color: isSelected ? u.colorActive : "var(--txt-mute)" }}>
+                          <span className="font-bold text-[13px]" style={{ color: isSelected ? u.colorActive : "var(--txt-mute)" }}>
                             {u.label}
                           </span>
                         </button>
@@ -343,10 +334,10 @@ export default function Request() {
               {/* Avertissement CRITIQUE */}
               {urgence === "CRITIQUE" && (
                 <div
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl mt-2 animate-in fade-in slide-in-from-top-2"
-                  style={{ background: "rgba(230,57,70,0.08)", border: "1px solid rgba(230,57,70,0.2)" }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl mt-2"
+                  style={{ background: "rgba(206,51,65,0.08)", border: "1px solid rgba(206,51,65,0.2)" }}
                 >
-                  <AlertTriangle size={16} className="pulse-soft shrink-0" style={{ color: "var(--blood)" }} />
+                  <AlertTriangle size={16} className="shrink-0" style={{ color: "var(--blood)" }} />
                   <p className="mono text-[11px]" style={{ color: "var(--blood)" }}>
                     Alerte immédiate au réseau hospitalier.
                   </p>
@@ -362,7 +353,7 @@ export default function Request() {
               >
                 <div className="mt-0.5"><Activity size={16} style={{ color: "var(--txt-mute)" }} /></div>
                 <div>
-                  <h4 className="syne font-bold text-sm mb-1" style={{ color: "var(--txt)" }}>Protocole de transfusion</h4>
+                  <h4 className="font-bold text-sm mb-1" style={{ color: "var(--txt)" }}>Protocole de transfusion</h4>
                   <p className="mono text-[11px]" style={{ color: "var(--txt-dim)" }}>
                     Si le groupe <strong style={{ color: "var(--blood)" }}>{groupe}</strong> est indisponible, accepter les groupes : <span className="font-bold">{COMPATIBILITY[groupe]}</span>.
                   </p>
@@ -386,7 +377,7 @@ export default function Request() {
         <div className="grow w-full flex flex-col gap-4 min-h-0">
           <div
             className="p-4 lg:p-5 rounded-3xl flex flex-col gap-4"
-            style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}
+            style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -394,7 +385,7 @@ export default function Request() {
                   <Activity size={18} style={{ color: "var(--txt)" }} />
                 </div>
                 <div>
-                  <h2 className="syne font-bold text-lg" style={{ color: "var(--txt)" }}>Activité en cours</h2>
+                  <h2 className="font-bold text-lg" style={{ color: "var(--txt)" }}>Activité en cours</h2>
                   <div className="mono text-[10px] text-(--txt-mute) flex items-center gap-1.5 mt-0.5">
                     <Clock size={10} />
                     {requests.data ? `${filtered.length} demandes filtrées sur ${requests.data.length}` : "Chargement..."}

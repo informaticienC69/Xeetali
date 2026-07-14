@@ -208,7 +208,7 @@ export default function InteractiveMap({ userPos, points, selectedPointId, onSel
             eventHandlers={{ click: () => onSelectPoint(p.id) }}
           >
             <Popup className="custom-popup" closeButton={false} offset={[0, -12]}>
-              <div className="syne font-bold text-[15px] text-black mb-1.5">{p.nom}</div>
+              <div className="font-bold text-[15px] text-black mb-1.5">{p.nom}</div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="mono text-[10px] font-bold" style={{ color: "var(--txt-dim)" }}>{p.distance.toFixed(1)} km</span>
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.status === "Ouvert" ? "#10b981" : "#f59e0b", boxShadow: p.status === "Ouvert" ? "0 0 8px #10b981" : "none" }} />

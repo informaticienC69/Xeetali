@@ -61,11 +61,11 @@ function HeroCard({ s }: { s: DonorStats }) {
       <div
         className="relative overflow-hidden"
         style={{
-          borderRadius: 20,
+          borderRadius: "var(--radius)",
           padding: "22px 20px",
-          background: `linear-gradient(135deg, ${color}28 0%, var(--surface) 55%, ${color}10 100%)`,
-          border: `1px solid ${color}50`,
-          boxShadow: `0 8px 32px ${color}25, 0 2px 8px rgba(0,0,0,0.08)`,
+          background: "var(--surface)",
+          border: `1px solid ${color}33`,
+          boxShadow: "var(--shadow-sm)",
         }}
       >
         {/* Header : niveau + points */}
@@ -74,9 +74,8 @@ function HeroCard({ s }: { s: DonorStats }) {
           <div
             className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
             style={{
-              background: `linear-gradient(135deg, ${color}30 0%, ${color}15 100%)`,
-              border: `1.5px solid ${color}60`,
-              boxShadow: `0 0 20px ${color}30`,
+              background: `${color}1a`,
+              border: `1px solid ${color}44`,
             }}
           >
             <Medal size={26} style={{ color }} />
@@ -87,7 +86,7 @@ function HeroCard({ s }: { s: DonorStats }) {
               Votre niveau
             </div>
             <div
-              className="syne font-extrabold text-2xl neon-blood-text"
+              className="font-extrabold text-2xl neon-blood-text"
               style={{ color: "var(--txt)", lineHeight: 1.1 }}
             >
               {s.niveau}
@@ -100,7 +99,7 @@ function HeroCard({ s }: { s: DonorStats }) {
           {/* Points */}
           <div className="text-right shrink-0">
             <div
-              className="syne font-extrabold text-3xl tabular-nums neon-gold-text"
+              className="font-extrabold text-3xl tabular-nums neon-gold-text"
               style={{ color }}
             >
               <CountUp value={s.points} duration={1600} />
@@ -117,15 +116,14 @@ function HeroCard({ s }: { s: DonorStats }) {
         {/* Streak */}
         {streak > 0 && (
           <div
-            className="relative mt-4 flex items-center gap-2 rounded-xl px-3 py-2 bounce-in-scale"
+            className="relative mt-4 flex items-center gap-2 rounded-xl px-3 py-2"
             style={{
-              background: "linear-gradient(90deg, rgba(239,58,72,0.12) 0%, rgba(234,179,8,0.08) 100%)",
-              border: "1px solid rgba(239,58,72,0.25)",
-              animationDelay: "300ms",
+              background: "var(--warn-tint)",
+              border: "1px solid transparent",
             }}
           >
-            <Flame size={14} style={{ color: "#f97316" }} />
-            <span className="syne font-bold text-sm" style={{ color: "var(--txt)" }}>
+            <Flame size={14} style={{ color: "var(--warn)" }} />
+            <span className="font-bold text-sm" style={{ color: "var(--txt)" }}>
               {streak} {streak === 1 ? "an" : "ans"} de suite
             </span>
             <span className="mono text-[10px] flex items-center gap-1" style={{ color: "var(--txt-mute)" }}>· Série active <Flame size={10} style={{ color: "#f97316" }} /></span>
@@ -142,8 +140,7 @@ function HeroCard({ s }: { s: DonorStats }) {
               className="h-full rounded-full progress-fill"
               style={{
                 width: `${pct}%`,
-                background: `linear-gradient(90deg, ${color} 0%, ${color}cc 100%)`,
-                boxShadow: `0 0 10px ${color}80`,
+                background: color,
                 "--target-width": `${pct}%`,
               } as React.CSSProperties}
             />
@@ -169,58 +166,46 @@ function PulseAction({ s }: { s: DonorStats }) {
       <div
         className="card-in relative overflow-hidden"
         style={{
-          borderRadius: 20,
+          borderRadius: "var(--radius)",
           padding: "24px 20px",
-          background: "linear-gradient(135deg, rgba(230,57,70,0.15) 0%, rgba(230,57,70,0.06) 50%, rgba(139,92,246,0.06) 100%)",
-          border: "1px solid rgba(230,57,70,0.40)",
-          boxShadow: "0 0 0 1px rgba(230,57,70,0.20), 0 8px 32px rgba(230,57,70,0.20)",
+          background: "var(--blood-tint)",
+          border: "1px solid color-mix(in srgb, var(--blood) 28%, transparent)",
+          boxShadow: "var(--shadow-sm)",
           animationDelay: "80ms",
         }}
       >
-        {/* Badge "Héros Requis" */}
+        {/* Badge "Éligible" */}
         <div className="relative flex items-center gap-2 mb-4">
           <div
-            className="bounce-in-scale flex items-center gap-1.5 rounded-full px-3 py-1"
-            style={{ background: "rgba(230,57,70,0.15)", border: "1px solid rgba(230,57,70,0.40)" }}
+            className="flex items-center gap-1.5 rounded-full px-3 py-1"
+            style={{ background: "var(--blood-tint)", border: "1px solid color-mix(in srgb, var(--blood) 35%, transparent)" }}
           >
-            <Zap size={11} style={{ color: "var(--blood)" }} />
-            <span className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--blood)" }}>
-              Héros Requis
+            <Zap size={11} style={{ color: "var(--blood-dim)" }} />
+            <span className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--blood-dim)" }}>
+              Don possible
             </span>
           </div>
-          <span className="pulse-soft mono text-[10px]" style={{ color: "var(--txt-mute)" }}>MAINTENANT</span>
         </div>
 
         <div className="relative">
-          <p className="syne font-extrabold text-xl leading-tight" style={{ color: "var(--txt)" }}>
+          <p className="font-bold text-xl leading-tight" style={{ color: "var(--txt)", letterSpacing: "-0.01em" }}>
             Le Sénégal a besoin<br />
-            <span className="pulse-text" style={{ color: "var(--blood)" }}>de vous aujourd'hui</span>
+            <span style={{ color: "var(--blood-dim)" }}>de vous aujourd'hui</span>
           </p>
-          <p className="mono text-[11px] mt-2" style={{ color: "var(--txt-dim)" }}>
+          <p className="text-[12px] mt-2" style={{ color: "var(--txt-dim)" }}>
             Un don de votre sang peut sauver jusqu'à 3 vies. Vous êtes éligible maintenant.
           </p>
         </div>
 
-        {/* CTA principal avec ondes */}
+        {/* CTA principal */}
         <div className="relative mt-5 flex justify-center">
-          {/* Ondes concentriques */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            {["ring-expand-1", "ring-expand-2", "ring-expand-3"].map((cls) => (
-              <div
-                key={cls}
-                className={`${cls} absolute w-14 h-14 rounded-full`}
-                style={{ border: "2px solid rgba(230,57,70,0.35)" }}
-              />
-            ))}
-          </div>
-
           <Link
             to="/donor/appointments"
-            className="heartbeat btn-blood relative inline-flex items-center gap-2.5 px-6 py-3.5 text-base"
-            style={{ borderRadius: 50, zIndex: 1, fontSize: 15 }}
+            className="btn-blood relative inline-flex items-center justify-center gap-2.5 px-6 py-3.5 w-full"
+            style={{ borderRadius: "var(--radius-sm)", fontSize: 15 }}
           >
             <Heart size={18} fill="white" />
-            Sauver une vie maintenant
+            Prendre rendez-vous
           </Link>
         </div>
       </div>
@@ -260,15 +245,15 @@ function PulseAction({ s }: { s: DonorStats }) {
             <circle cx="32" cy="32" r="28" fill="none" strokeWidth="4" stroke="var(--line)" />
             <circle
               cx="32" cy="32" r="28" fill="none" strokeWidth="4"
-              stroke="var(--blood)"
+              stroke="var(--clinic)"
               strokeLinecap="round"
               strokeDasharray={`${2 * Math.PI * 28}`}
               strokeDashoffset={`${2 * Math.PI * 28 * (1 - pct / 100)}`}
-              style={{ transition: "stroke-dashoffset 1.5s ease", filter: "drop-shadow(0 0 4px var(--blood))" }}
+              style={{ transition: "stroke-dashoffset 1.5s ease" }}
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="syne font-extrabold text-sm" style={{ color: "var(--blood)" }}>{pct}%</span>
+            <span className="font-bold text-sm" style={{ color: "var(--clinic-dim)" }}>{pct}%</span>
           </div>
         </div>
 
@@ -276,9 +261,9 @@ function PulseAction({ s }: { s: DonorStats }) {
           <div className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
             Prochain don possible dans
           </div>
-          <div className="syne font-extrabold text-3xl tabular-nums mt-0.5 mb-1" style={{ color: "var(--txt)" }}>
+          <div className="font-extrabold text-3xl tabular-nums mt-0.5 mb-1" style={{ color: "var(--txt)" }}>
             <CountUp value={jours} duration={1200} />
-            <span className="syne font-semibold text-base ml-1.5" style={{ color: "var(--txt-dim)" }}>jours</span>
+            <span className="font-semibold text-base ml-1.5" style={{ color: "var(--txt-dim)" }}>jours</span>
           </div>
           
           {/* Phase de récupération (Coaching) */}
@@ -293,15 +278,15 @@ function PulseAction({ s }: { s: DonorStats }) {
 
       <Link
         to="/donor/appointments"
-        className="mt-4 flex items-center gap-2 rounded-xl px-4 py-2.5 transition-all"
+        className="mt-4 flex items-center gap-2 rounded-xl px-4 py-2.5 transition-colors"
         style={{
-          background: "rgba(230,57,70,0.07)",
-          border: "1px solid rgba(230,57,70,0.20)",
+          background: "var(--clinic-tint)",
+          border: "1px solid transparent",
           textDecoration: "none",
         }}
       >
-        <Calendar size={14} style={{ color: "var(--blood)" }} />
-        <span className="syne font-semibold text-sm flex-1" style={{ color: "var(--txt)" }}>
+        <Calendar size={14} style={{ color: "var(--clinic)" }} />
+        <span className="font-semibold text-sm flex-1" style={{ color: "var(--txt)" }}>
           Planifier mon prochain don
         </span>
         <ChevronRight size={14} style={{ color: "var(--txt-mute)" }} />
@@ -324,23 +309,19 @@ function NationalEmergencyBanner() {
     <div
       className="card-in relative overflow-hidden"
       style={{
-        borderRadius: 24,
-        padding: "24px",
-        background: "linear-gradient(135deg, rgba(230,57,70,0.12) 0%, rgba(139,0,0,0.20) 100%)",
-        border: "1px solid rgba(230,57,70,0.4)",
-        boxShadow: "0 8px 32px rgba(230,57,70,0.15)",
+        borderRadius: "var(--radius)",
+        padding: "22px",
+        background: "var(--crit-tint)",
+        border: "1px solid color-mix(in srgb, var(--crit) 30%, transparent)",
+        boxShadow: "var(--shadow-sm)",
         animationDelay: "120ms",
       }}
     >
-      {/* Background Glow */}
-      <div className="absolute top-0 right-0 w-48 h-48 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(230,57,70,0.2) 0%, transparent 70%)", filter: "blur(40px)" }} />
-
       <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-5">
-        {/* Pulsing Icon */}
+        {/* Icône urgence */}
         <div className="shrink-0 relative">
-          <div className="absolute inset-0 rounded-full animate-ping opacity-40" style={{ background: "var(--blood)" }} />
-          <div className="relative flex h-14 w-14 items-center justify-center rounded-full" style={{ background: "rgba(230,57,70,0.15)", border: "1px solid rgba(230,57,70,0.3)" }}>
-            <Activity size={26} style={{ color: "var(--blood)" }} />
+          <div className="relative flex h-14 w-14 items-center justify-center rounded-full" style={{ background: "var(--crit)" }}>
+            <Activity size={26} style={{ color: "#fff" }} />
           </div>
         </div>
 
@@ -354,7 +335,7 @@ function NationalEmergencyBanner() {
             </span>
           </div>
           
-          <div className="syne font-extrabold text-xl leading-tight mt-1" style={{ color: "var(--txt)" }}>
+          <div className="font-extrabold text-xl leading-tight mt-1" style={{ color: "var(--txt)" }}>
             Pénurie critique de sang <span className="neon-blood-text" style={{ color: "var(--blood)" }}>{groupe_critique}</span>
           </div>
           
@@ -373,7 +354,7 @@ function NationalEmergencyBanner() {
           <div className="h-1.5 w-full sm:w-24 overflow-hidden rounded-full" style={{ background: "var(--line)" }}>
             <div
               className="h-full rounded-full"
-              style={{ width: `${capacite_pct}%`, background: "var(--blood)", boxShadow: "0 0 10px var(--blood-glow)" }}
+              style={{ width: `${capacite_pct}%`, background: "var(--crit)" }}
             />
           </div>
         </div>
@@ -385,7 +366,7 @@ function NationalEmergencyBanner() {
 /* ─── ImpactVisualizer ───────────────────────────────────────── */
 function ImpactVisualizer({ s }: { s: DonorStats }) {
   const stats = [
-    { v: s.nb_dons,           label: "Dons réalisés",   info: "Merci pour votre geste", icon: Droplet,    bgClass: "bg-red-50 dark:bg-red-500/15", textClass: "text-[#ef3a48] dark:text-red-400" },
+    { v: s.nb_dons,           label: "Dons réalisés",   info: "Merci pour votre geste", icon: Droplet,    bgClass: "bg-red-50 dark:bg-red-500/15", textClass: "text-(--blood) dark:text-red-400" },
     { v: s.vies_potentielles, label: "Vies touchées",   info: "1 don ≈ 3 vies sauvées", icon: Heart,      bgClass: "bg-rose-50 dark:bg-rose-500/15", textClass: "text-rose-500 dark:text-rose-400" },
     { v: Math.round(s.total_volume_ml ?? s.nb_dons * 450), label: "Volume (mL)", info: "~450 mL par poche",    icon: HeartPulse, bgClass: "bg-violet-50 dark:bg-violet-500/15", textClass: "text-violet-500 dark:text-violet-400" },
   ];
@@ -401,7 +382,7 @@ function ImpactVisualizer({ s }: { s: DonorStats }) {
     >
       <div className="flex items-center justify-between mb-6">
         <div className="mono text-[11px] font-bold uppercase tracking-[0.2em] flex items-center gap-2" style={{ color: "var(--txt-mute)" }}>
-          <Globe2 size={14} className="text-[#ef3a48]" /> Votre Impact Réel
+          <Globe2 size={14} className="text-(--blood)" /> Votre Impact Réel
         </div>
       </div>
 
@@ -418,14 +399,14 @@ function ImpactVisualizer({ s }: { s: DonorStats }) {
             
             <div className="flex-1 flex items-center justify-between">
               <div className="flex flex-col">
-                <span className="syne font-semibold tracking-wide text-[14.5px]" style={{ color: "var(--txt)" }}>
+                <span className="font-semibold tracking-wide text-[14.5px]" style={{ color: "var(--txt)" }}>
                   {label}
                 </span>
                 <span className="text-[11px] mt-0.5" style={{ color: "var(--txt-mute)" }}>
                   {info}
                 </span>
               </div>
-              <div className="syne font-bold text-2xl tabular-nums tracking-tight" style={{ color: "var(--txt)" }}>
+              <div className="font-bold text-2xl tabular-nums tracking-tight" style={{ color: "var(--txt)" }}>
                 <CountUp value={v} duration={1400} delay={i * 100} />
               </div>
             </div>
@@ -485,7 +466,7 @@ function BadgeVault({ badges }: { badges: BadgeStatus[] }) {
               <div
                 className={`relative flex items-center justify-center w-[52px] h-[52px] rounded-[16px] mb-3 transition-transform duration-300 ${
                   isObtained 
-                    ? "bg-red-50 dark:bg-red-500/15 text-[#ef3a48] dark:text-red-400 group-hover:-translate-y-1" 
+                    ? "bg-red-50 dark:bg-red-500/15 text-(--blood) dark:text-red-400 group-hover:-translate-y-1" 
                     : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-500"
                 }`}
               >
@@ -496,7 +477,7 @@ function BadgeVault({ badges }: { badges: BadgeStatus[] }) {
                 )}
               </div>
 
-              <div className={`syne tracking-wide text-[13px] leading-tight text-center z-10 ${isObtained ? 'font-semibold' : 'font-medium'}`} style={{ color: isObtained ? "var(--txt)" : "var(--txt-mute)" }}>
+              <div className={`tracking-wide text-[13px] leading-tight text-center z-10 ${isObtained ? 'font-semibold' : 'font-medium'}`} style={{ color: isObtained ? "var(--txt)" : "var(--txt-mute)" }}>
                 {b.label}
               </div>
               
@@ -529,7 +510,7 @@ function EpicLeaderboard({ rows }: { rows: LeaderboardEntry[] }) {
     >
       {/* Leaderboard header */}
       <div className="flex items-center gap-2 mb-6">
-        <Trophy size={16} className="text-[#ef3a48]" />
+        <Trophy size={16} className="text-(--blood)" />
         <div className="mono text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: "var(--txt-mute)" }}>
           Classement des donneurs
         </div>
@@ -558,12 +539,12 @@ function EpicLeaderboard({ rows }: { rows: LeaderboardEntry[] }) {
               >
                 {e.rang <= 3
                   ? <Crown size={20} strokeWidth={2.5} />
-                  : <span className="syne font-bold text-[15px]">{e.rang}</span>}
+                  : <span className="font-bold text-[15px]">{e.rang}</span>}
               </div>
 
               {/* Avatar */}
               <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full syne font-bold text-[13px]"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold text-[13px]"
                 style={{ background: bgCol, color: "#fff" }}
               >
                 {initials}
@@ -572,11 +553,11 @@ function EpicLeaderboard({ rows }: { rows: LeaderboardEntry[] }) {
               {/* Name */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2.5">
-                  <div className="syne font-semibold text-[15px] truncate" style={{ color: "var(--txt)" }}>
+                  <div className="font-semibold text-[15px] truncate" style={{ color: "var(--txt)" }}>
                     {e.nom_affiche}
                   </div>
                   {e.is_me && (
-                    <span className="mono text-[9px] rounded-full px-2 py-0.5 bg-red-50 text-[#ef3a48] dark:bg-red-500/15 dark:text-red-400 font-bold tracking-wider">
+                    <span className="mono text-[9px] rounded-full px-2 py-0.5 bg-red-50 text-(--blood) dark:bg-red-500/15 dark:text-red-400 font-bold tracking-wider">
                       VOUS
                     </span>
                   )}
@@ -589,7 +570,7 @@ function EpicLeaderboard({ rows }: { rows: LeaderboardEntry[] }) {
               <GroupBadge groupe={e.groupe_sanguin} />
 
               <div className="flex items-baseline gap-1 shrink-0 ml-2">
-                <span className="syne font-bold text-[18px] tabular-nums" style={{ color: "var(--txt)" }}>
+                <span className="font-bold text-[18px] tabular-nums" style={{ color: "var(--txt)" }}>
                   {e.nb_dons}
                 </span>
                 <span className="text-[11px]" style={{ color: "var(--txt-mute)" }}>
@@ -613,17 +594,17 @@ function QuickLinks({ s }: { s: DonorStats }) {
     <div className="grid grid-cols-2 gap-3 card-in" style={{ animationDelay: "280ms" }}>
       <Link
         to="/donor/appointments"
-        className="surface flex items-center gap-3 px-4 py-3 rounded-2xl transition-all"
-        style={{ textDecoration: "none", border: "1px solid rgba(230,57,70,0.25)" }}
+        className="surface flex items-center gap-3 px-4 py-3 rounded-2xl transition-colors"
+        style={{ textDecoration: "none", border: "1px solid var(--line)" }}
       >
         <div
           className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0"
-          style={{ background: "rgba(230,57,70,0.12)", border: "1px solid rgba(230,57,70,0.30)" }}
+          style={{ background: "var(--clinic-tint)", border: "1px solid transparent" }}
         >
-          <Calendar size={18} style={{ color: "var(--blood)" }} />
+          <Calendar size={18} style={{ color: "var(--clinic)" }} />
         </div>
         <div className="min-w-0">
-          <div className="syne font-semibold text-sm" style={{ color: "var(--txt)" }}>Mon RDV</div>
+          <div className="font-semibold text-sm" style={{ color: "var(--txt)" }}>Mon RDV</div>
           <div className="mono text-[9px]" style={{ color: "var(--txt-mute)" }}>
             {s.prochain_don_eligible
               ? `J−${s.jours_avant_eligibilite}`
@@ -644,7 +625,7 @@ function QuickLinks({ s }: { s: DonorStats }) {
           <QrCode size={18} style={{ color: "var(--txt-mute)" }} />
         </div>
         <div className="min-w-0">
-          <div className="syne font-semibold text-sm" style={{ color: "var(--txt)" }}>QR Donneur</div>
+          <div className="font-semibold text-sm" style={{ color: "var(--txt)" }}>QR Donneur</div>
           <div className="mono text-[9px]" style={{ color: "var(--txt-mute)" }}>Accueil clinique</div>
         </div>
       </button>
@@ -656,11 +637,8 @@ function QuickLinks({ s }: { s: DonorStats }) {
             Présentez ce QR Code à l'accueil pour vous identifier instantanément.
           </div>
           
-          <div className="relative group">
-            {/* Effet de lueur en arrière-plan */}
-            <div className="absolute -inset-1 bg-linear-to-r from-red-500 to-rose-400 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-            
-            <div className="relative p-6 bg-white rounded-3xl border border-gray-100" style={{ boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }}>
+          <div className="relative">
+            <div className="relative p-6 bg-white rounded-2xl border border-gray-100" style={{ boxShadow: "var(--shadow-md)" }}>
               <QRCode 
                 value={`XEETALI:DONOR:${userId}`} 
                 size={220}
@@ -678,7 +656,7 @@ function QuickLinks({ s }: { s: DonorStats }) {
           
           <div className="mt-8 flex flex-col items-center gap-1">
             <span className="text-[10px] uppercase font-bold text-gray-400 tracking-[0.2em]">Identifiant Unique</span>
-            <div className="px-5 py-2 bg-gray-50 rounded-full border border-gray-100 syne font-bold tracking-widest text-lg text-gray-800 shadow-sm">
+            <div className="px-5 py-2 bg-gray-50 rounded-full border border-gray-100 font-bold tracking-widest text-lg text-gray-800 shadow-sm">
               DON-{userId?.toString().padStart(5, '0')}
             </div>
           </div>
@@ -722,12 +700,11 @@ function MobileDashboard({ s, board }: { s: DonorStats, board: any }) {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-3 text-[11px] font-bold syne uppercase tracking-wider rounded-full transition-all duration-300 ease-out z-10 ${
-              activeTab === tab 
-                ? 'bg-(--blood) text-white scale-[1.02]' 
-                : 'text-(--txt-mute) hover:text-(--txt) scale-100'
+            className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider rounded-full transition-colors z-10 ${
+              activeTab === tab
+                ? 'bg-(--clinic) text-white'
+                : 'text-(--txt-mute) hover:text-(--txt)'
             }`}
-            style={activeTab === tab ? { boxShadow: '0 4px 16px rgba(230,57,70,0.4)' } : {}}
           >
             {tab === 'leaderboard' ? 'Classement' : tab}
           </button>

@@ -42,7 +42,7 @@ function GlobalImpact({ donations }: { donations: any[] }) {
             minWidth: "90px"
           }}
         >
-          <span className="syne font-extrabold" style={{ fontSize: "44px", color: "var(--txt)", lineHeight: 1 }}>
+          <span className="font-extrabold" style={{ fontSize: "44px", color: "var(--txt)", lineHeight: 1 }}>
             {livesSaved}
           </span>
           <span className="mono text-[9px] mt-2 text-center uppercase tracking-widest" style={{ color: "var(--blood)" }}>
@@ -57,11 +57,11 @@ function GlobalImpact({ donations }: { donations: any[] }) {
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl p-3" style={{ background: "var(--bg-2)", border: "1px solid var(--line)" }}>
               <p className="mono text-[9px] uppercase tracking-widest mb-1" style={{ color: "var(--txt-mute)" }}>Dons</p>
-              <p className="syne font-bold text-lg leading-none" style={{ color: "var(--txt)" }}>{donations.length}</p>
+              <p className="font-bold text-lg leading-none" style={{ color: "var(--txt)" }}>{donations.length}</p>
             </div>
             <div className="rounded-xl p-3" style={{ background: "var(--bg-2)", border: "1px solid var(--line)" }}>
               <p className="mono text-[9px] uppercase tracking-widest mb-1" style={{ color: "var(--txt-mute)" }}>Volume</p>
-              <p className="syne font-bold text-lg leading-none" style={{ color: "var(--txt)" }}>
+              <p className="font-bold text-lg leading-none" style={{ color: "var(--txt)" }}>
                 {(totalVolume / 1000).toFixed(1)}
                 <span className="text-sm font-normal" style={{ color: "var(--txt-mute)" }}>L</span>
               </p>
@@ -164,10 +164,10 @@ export default function History() {
                       boxShadow: "var(--shadow-md)",
                     }}
                   >
-                    <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700" style={{ background: "radial-gradient(circle at top right, rgba(230,57,70,0.08) 0%, transparent 60%)" }} />
+                    <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700" style={{ background: "radial-gradient(circle at top right, rgba(206,51,65,0.08) 0%, transparent 60%)" }} />
 
                     <div className="flex items-center justify-between gap-2 mb-3 relative z-10">
-                      <div className="syne font-bold text-[15px] tracking-wide" style={{ color: "var(--txt)" }}>
+                      <div className="font-bold text-[15px] tracking-wide" style={{ color: "var(--txt)" }}>
                         {new Date(d.date).toLocaleDateString("fr-FR", {
                           weekday: "long", day: "2-digit", month: "long", year: "numeric"
                         })}
@@ -183,7 +183,7 @@ export default function History() {
                       <div className="w-px h-8" style={{ background: "var(--line)" }} />
                       <div className="flex flex-col">
                         <span className="mono text-[9px] uppercase tracking-widest mb-1" style={{ color: "var(--txt-mute)" }}>Impact Estimé</span>
-                        <span className="syne font-bold text-sm" style={{ color: "var(--blood)" }}>~3 vies touchées</span>
+                        <span className="font-bold text-sm" style={{ color: "var(--blood)" }}>~3 vies touchées</span>
                       </div>
                     </div>
                   </div>

@@ -12,38 +12,38 @@ import type { LabeledCount, TimePoint } from "../lib/api";
 // ── Palette Command Center ─────────────────────────────────────
 const PALETTE = {
   light: {
-    series:  { red: "#E63946", blue: "#2563eb", violet: "#7c3aed", aqua: "#0891b2", orange: "#ea580c" },
-    status:  { DISPONIBLE: "#16a34a", RESERVEE: "#d97706", UTILISEE: "#6b7280", PERIMEE: "#E63946" },
-    urgence: { NORMALE: "#6b7280", URGENTE: "#d97706", CRITIQUE: "#E63946" },
-    grid: "rgba(29,53,87,0.10)",
-    axis: "#8a96b8",
+    series:  { red: "#ce3341", blue: "#2e6fb0", violet: "#7c5cc4", aqua: "#2a8fa8", orange: "#c9741f" },
+    status:  { DISPONIBLE: "#1f9d63", RESERVEE: "#b0710f", UTILISEE: "#8996a8", PERIMEE: "#c42b39" },
+    urgence: { NORMALE: "#8996a8", URGENTE: "#b0710f", CRITIQUE: "#c42b39" },
+    grid: "rgba(18,27,42,0.08)",
+    axis: "#8996a8",
     tooltipBg: "#ffffff",
-    tooltipBorder: "rgba(29,53,87,0.15)",
-    tooltipTitle: "#0f1629",
-    tooltipValue: "#4a5578",
-    cursor: "rgba(29,53,87,0.04)",
-    donutStroke: "#f0f2f8",
-    label: "#8a96b8",
-    hbarLabel: "#4a5578",
-    trackBg: "rgba(29,53,87,0.08)",
-    refLine: "rgba(29,53,87,0.25)",
+    tooltipBorder: "#e4eaef",
+    tooltipTitle: "#121b2a",
+    tooltipValue: "#55627a",
+    cursor: "rgba(18,27,42,0.04)",
+    donutStroke: "#f1f5f8",
+    label: "#8996a8",
+    hbarLabel: "#55627a",
+    trackBg: "rgba(18,27,42,0.06)",
+    refLine: "rgba(18,27,42,0.22)",
   },
   dark: {
-    series:  { red: "#E63946", blue: "#60a5fa", violet: "#a78bfa", aqua: "#34d399", orange: "#fb923c" },
-    status:  { DISPONIBLE: "#4ade80", RESERVEE: "#f59e0b", UTILISEE: "#94a3b8", PERIMEE: "#E63946" },
-    urgence: { NORMALE: "#94a3b8", URGENTE: "#f59e0b", CRITIQUE: "#E63946" },
-    grid: "rgba(31,42,74,0.60)",
-    axis: "#5b6685",
-    tooltipBg: "#0e1428",
-    tooltipBorder: "#2a3863",
-    tooltipTitle: "#E6ECF5",
-    tooltipValue: "#93a0bf",
+    series:  { red: "#e4606f", blue: "#5b9bd8", violet: "#a78bfa", aqua: "#3fb884", orange: "#e0954a" },
+    status:  { DISPONIBLE: "#3fb884", RESERVEE: "#d69a3b", UTILISEE: "#66728a", PERIMEE: "#e4606f" },
+    urgence: { NORMALE: "#66728a", URGENTE: "#d69a3b", CRITIQUE: "#e4606f" },
+    grid: "rgba(46,59,82,0.55)",
+    axis: "#66728a",
+    tooltipBg: "#161e2c",
+    tooltipBorder: "#2e3b52",
+    tooltipTitle: "#e7ecf3",
+    tooltipValue: "#9ba8bc",
     cursor: "rgba(255,255,255,0.03)",
-    donutStroke: "#0A0F1E",
-    label: "#5b6685",
-    hbarLabel: "#93a0bf",
+    donutStroke: "#0e1420",
+    label: "#66728a",
+    hbarLabel: "#9ba8bc",
     trackBg: "rgba(255,255,255,0.04)",
-    refLine: "rgba(255,255,255,0.18)",
+    refLine: "rgba(255,255,255,0.16)",
   },
 };
 
@@ -168,7 +168,7 @@ export function ChartCard({
               </span>
             )}
           </div>
-          <h3 className="syne font-bold text-lg leading-tight" style={{ color: "var(--txt)" }}>{title}</h3>
+          <h3 className="font-bold text-lg leading-tight" style={{ color: "var(--txt)" }}>{title}</h3>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {badge}
@@ -214,7 +214,6 @@ export function VBarChart({ data, color, unit, height = 240 }: { data: LabeledCo
               <Cell
                 key={i}
                 fill={`url(#vbar-${color.replace("#","")}-${i})`}
-                style={d.value === maxVal ? { filter: `drop-shadow(0 0 6px ${color}80)` } : undefined}
               />
             ))}
             <LabelList
@@ -336,11 +335,7 @@ export function DonutChart({ data, colors, centerLabel, height = 220 }: { data: 
                     key={d.label}
                     fill={col}
                     opacity={hovered ? (isHov ? 1 : 0.45) : (isDominant ? 1 : 0.82)}
-                    style={
-                      isHov || isDominant
-                        ? { filter: `drop-shadow(0 0 8px ${col}90)`, cursor: "pointer" }
-                        : { cursor: "pointer" }
-                    }
+                    style={{ cursor: "pointer" }}
                   />
                 );
               })}
@@ -360,7 +355,7 @@ export function DonutChart({ data, colors, centerLabel, height = 220 }: { data: 
                 {centerTop}
               </span>
               <span
-                className="syne text-3xl font-extrabold tabular-nums leading-none transition-all duration-150"
+                className="text-3xl font-extrabold tabular-nums leading-none transition-all duration-150"
                 style={{ color: centerColor }}
               >
                 {hoveredEntry.value.toLocaleString("fr-FR")}
@@ -375,7 +370,7 @@ export function DonutChart({ data, colors, centerLabel, height = 220 }: { data: 
           ) : (
             <>
               <span
-                className="syne text-3xl font-extrabold tabular-nums leading-none"
+                className="text-3xl font-extrabold tabular-nums leading-none"
                 style={{ color: "var(--txt)" }}
               >
                 {total.toLocaleString("fr-FR")}
@@ -433,7 +428,7 @@ export function DonutChart({ data, colors, centerLabel, height = 220 }: { data: 
                 {d.label}
               </span>
               <span
-                className="tabular-nums syne font-bold text-sm"
+                className="tabular-nums font-bold text-sm"
                 style={{ color: isHov || isDominant ? "var(--txt)" : "var(--txt-dim)" }}
               >
                 {d.value}
@@ -503,7 +498,6 @@ export function TrendAreaChart({ data, color, unit, tickFormatter, height = 240 
             fill={`url(#${gid})`}
             dot={false}
             activeDot={<GlowDot fill={color} stroke="var(--surface)" r={5} />}
-            style={{ filter: `drop-shadow(0 2px 6px ${color}55)` }}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -538,7 +532,6 @@ export function TrendLineChart({ data, color, unit, tickFormatter, height = 240 
             strokeWidth={3}
             dot={<GlowDot fill={color} stroke="var(--surface)" r={4} />}
             activeDot={<GlowDot fill={color} stroke="var(--surface)" r={6} />}
-            style={{ filter: `drop-shadow(0 2px 6px ${color}55)` }}
           />
         </LineChart>
       </ResponsiveContainer>

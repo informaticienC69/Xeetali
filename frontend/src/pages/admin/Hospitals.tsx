@@ -101,7 +101,7 @@ export default function Hospitals() {
                       <div className="flex items-center gap-2 mb-1">
                         <span className="mono text-[9px] uppercase tracking-wider opacity-50" style={{ color: "var(--txt-mute)" }}>ID-{String(h.id).padStart(4, '0')}</span>
                       </div>
-                      <h3 className="syne font-bold text-[15px] tracking-wide leading-tight" style={{ color: "var(--txt)" }}>{h.nom}</h3>
+                      <h3 className="font-bold text-[15px] tracking-wide leading-tight" style={{ color: "var(--txt)" }}>{h.nom}</h3>
                       <div className="flex items-center gap-1.5 mono text-[10px] mt-1.5 uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
                         <MapPin size={12} strokeWidth={1.5} className="opacity-70" /> {h.localisation}
                       </div>

@@ -135,7 +135,7 @@ export default function Appointments() {
       >
         <button
           onClick={() => setActiveTab("book")}
-          className="flex-1 py-2.5 rounded-xl syne font-bold text-[13px] tracking-wide transition-all flex justify-center items-center gap-2"
+          className="flex-1 py-2.5 rounded-xl font-bold text-[13px] tracking-wide transition-all flex justify-center items-center gap-2"
           style={{
             background: activeTab === "book" ? "var(--bg)" : "transparent",
             color: activeTab === "book" ? "var(--txt)" : "var(--txt-mute)",
@@ -146,7 +146,7 @@ export default function Appointments() {
         </button>
         <button
           onClick={() => setActiveTab("list")}
-          className="flex-1 py-2.5 rounded-xl syne font-bold text-[13px] tracking-wide transition-all flex justify-center items-center gap-2 relative"
+          className="flex-1 py-2.5 rounded-xl font-bold text-[13px] tracking-wide transition-all flex justify-center items-center gap-2 relative"
           style={{
             background: activeTab === "list" ? "var(--bg)" : "transparent",
             color: activeTab === "list" ? "var(--txt)" : "var(--txt-mute)",
@@ -155,7 +155,7 @@ export default function Appointments() {
         >
           <CalendarDays size={16} /> Mes Dons
           {apptsApi.data && apptsApi.data.length > 0 && (
-            <span className="absolute top-2.5 right-4 w-2 h-2 rounded-full animate-pulse" style={{ background: "var(--blood)" }} />
+            <span className="absolute top-2.5 right-4 w-2 h-2 rounded-full" style={{ background: "var(--crit)" }} />
           )}
         </button>
       </div>
@@ -186,7 +186,7 @@ export default function Appointments() {
             // CAROUSEL
             <div className="w-full">
               <div className="flex items-center justify-between mb-4 px-1">
-                <h2 className="syne font-bold text-xl" style={{ color: "var(--txt)" }}>Centres à proximité</h2>
+                <h2 className="font-bold text-xl" style={{ color: "var(--txt)" }}>Centres à proximité</h2>
                 <span className="mono text-[10px] uppercase font-bold tracking-widest" style={{ color: "var(--txt-mute)" }}>Swipez &rarr;</span>
               </div>
               
@@ -209,12 +209,12 @@ export default function Appointments() {
                         </div>
                       </div>
                       
-                      <h3 className="syne font-extrabold text-[15px] leading-tight mb-1 truncate px-1" style={{ color: "var(--txt)" }}>{p.nom}</h3>
+                      <h3 className="font-extrabold text-[15px] leading-tight mb-1 truncate px-1" style={{ color: "var(--txt)" }}>{p.nom}</h3>
                       <p className="mono text-[10px] mb-4 flex items-center gap-2 px-1" style={{ color: "var(--txt-mute)" }}>
                         <Clock size={10} /> {p.hours} <span style={{ color: "var(--ok)", fontWeight: "bold" }}>• {p.status}</span>
                       </p>
                       
-                      <button className="w-full py-3 rounded-xl syne font-bold text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
+                      <button className="w-full py-3 rounded-xl font-bold text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
                               style={{ background: "var(--bg)", color: "var(--txt)", border: "1px solid var(--line)" }}>
                         Y aller <ArrowRight size={14} />
                       </button>
@@ -249,7 +249,7 @@ export default function Appointments() {
                 </span>
               </div>
               
-              <h2 className="syne font-extrabold text-2xl leading-tight mb-6" style={{ color: "var(--txt)" }}>{selectedPoint.nom}</h2>
+              <h2 className="font-extrabold text-2xl leading-tight mb-6" style={{ color: "var(--txt)" }}>{selectedPoint.nom}</h2>
 
               {/* Form Grid */}
               <div className="rounded-[20px] p-1.5 flex gap-1.5 mb-6 border shadow-inner" style={{ background: "var(--bg)", borderColor: "var(--line)" }}>
@@ -260,7 +260,7 @@ export default function Appointments() {
                    </div>
                    <input 
                       type="date" min={todayStr} value={dateStr} onChange={e => setDateStr(e.target.value)}
-                      className="bg-transparent syne font-bold text-sm outline-none w-full appearance-none cursor-pointer"
+                      className="bg-transparent font-bold text-sm outline-none w-full appearance-none cursor-pointer"
                       style={{ color: "var(--txt)" }}
                    />
                  </div>
@@ -272,7 +272,7 @@ export default function Appointments() {
                    </div>
                    <input 
                       type="time" value={timeStr} onChange={e => setTimeStr(e.target.value)}
-                      className="bg-transparent syne font-bold text-sm outline-none w-full appearance-none cursor-pointer"
+                      className="bg-transparent font-bold text-sm outline-none w-full appearance-none cursor-pointer"
                       style={{ color: "var(--txt)" }}
                    />
                  </div>
@@ -281,12 +281,12 @@ export default function Appointments() {
               <button 
                 onClick={submit} 
                 disabled={saving || !isComplete}
-                className="w-full h-14 rounded-[16px] syne font-extrabold uppercase text-[11px] tracking-widest transition-all flex items-center justify-center gap-2"
+                className="w-full h-14 rounded-[16px] font-extrabold uppercase text-[11px] tracking-widest transition-all flex items-center justify-center gap-2"
                 style={{
                   background: isComplete ? "var(--blood)" : "var(--bg)",
                   color: isComplete ? "white" : "var(--txt-mute)",
                   border: isComplete ? "none" : `1px dashed var(--line)`,
-                  boxShadow: isComplete ? "0 8px 25px rgba(230,57,70,0.3)" : "none",
+                  boxShadow: isComplete ? "0 8px 25px rgba(206,51,65,0.3)" : "none",
                   opacity: saving ? 0.7 : 1,
                   transform: saving ? "scale(0.98)" : "scale(1)"
                 }}
@@ -334,13 +334,13 @@ export default function Appointments() {
                     <span className="mono text-[9px] uppercase font-bold tracking-widest" style={{ color: "var(--blood)" }}>
                       {dateObj.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}
                     </span>
-                    <span className="syne text-[22px] font-extrabold leading-none mt-1" style={{ color: "var(--txt)" }}>
+                    <span className="text-[22px] font-extrabold leading-none mt-1" style={{ color: "var(--txt)" }}>
                       {dateObj.getDate()}
                     </span>
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="syne font-bold text-[15px] truncate mb-1" style={{ color: "var(--txt)" }}>
+                    <div className="font-bold text-[15px] truncate mb-1" style={{ color: "var(--txt)" }}>
                       {pointName(a.collection_point_id)}
                     </div>
                     <div className="flex items-center gap-1.5">

@@ -67,7 +67,7 @@ function AlertRow({ a, onRouted }: { a: any, onRouted: () => void }) {
       className="alert-item px-4 py-3 flex items-center gap-4 rounded-xl mx-0 cursor-default mb-2"
       style={{
         border: "1px solid var(--line)",
-        background: isCrit ? "rgba(230,57,70,0.03)" : "var(--surface)",
+        background: isCrit ? "rgba(206,51,65,0.03)" : "var(--surface)",
       }}
     >
       {/* Indicateur urgence */}
@@ -77,14 +77,14 @@ function AlertRow({ a, onRouted }: { a: any, onRouted: () => void }) {
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="syne font-semibold text-sm truncate" style={{ color: "var(--txt)" }}>{a.nom_hopital || "Hôpital inconnu"}</span>
+          <span className="font-semibold text-sm truncate" style={{ color: "var(--txt)" }}>{a.nom_hopital || "Hôpital inconnu"}</span>
           {/* Badge groupe + urgence */}
           <span
             className="mono text-[10px] px-1.5 py-0.5 rounded-md border shrink-0"
             style={{
-              background: isCrit ? "rgba(230,57,70,0.12)" : "rgba(245,158,11,0.10)",
+              background: isCrit ? "rgba(206,51,65,0.12)" : "rgba(245,158,11,0.10)",
               color: isCrit ? "var(--blood)" : "var(--warn)",
-              borderColor: isCrit ? "rgba(230,57,70,0.4)" : "rgba(245,158,11,0.35)",
+              borderColor: isCrit ? "rgba(206,51,65,0.4)" : "rgba(245,158,11,0.35)",
             }}
           >
             {a.groupe_sanguin}
@@ -92,7 +92,7 @@ function AlertRow({ a, onRouted }: { a: any, onRouted: () => void }) {
           <span
             className="mono text-[9px] px-1.5 py-0.5 rounded-md shrink-0"
             style={{
-              background: isCrit ? "rgba(230,57,70,0.08)" : "rgba(245,158,11,0.08)",
+              background: isCrit ? "rgba(206,51,65,0.08)" : "rgba(245,158,11,0.08)",
               color: isCrit ? "var(--blood)" : "var(--warn)",
             }}
           >
@@ -108,9 +108,9 @@ function AlertRow({ a, onRouted }: { a: any, onRouted: () => void }) {
         disabled={routed}
         className="mono text-[10px] uppercase tracking-wider px-4 py-2 rounded-lg border transition-all duration-150 shrink-0 cursor-pointer hover:shadow-sm"
         style={{
-          borderColor: routed ? "var(--ok)" : isCrit ? "rgba(230,57,70,0.5)" : "var(--line)",
+          borderColor: routed ? "var(--ok)" : isCrit ? "rgba(206,51,65,0.5)" : "var(--line)",
           color: routed ? "var(--ok)" : isCrit ? "var(--blood)" : "var(--txt)",
-          background: routed ? "rgba(74,222,128,0.08)" : isCrit ? "rgba(230,57,70,0.06)" : "var(--surface-2)",
+          background: routed ? "rgba(74,222,128,0.08)" : isCrit ? "rgba(206,51,65,0.06)" : "var(--surface-2)",
         }}
       >
         {routed ? <><Check size={12} className="mr-1 inline-block" /> Routé</> : "Router →"}
@@ -136,8 +136,8 @@ function AlertCenter({ alertCount }: { alertCount: number }) {
       style={{
         padding: 20,
         minHeight: 340,
-        borderColor: hasAlerts ? "rgba(230,57,70,0.35)" : undefined,
-        background: hasAlerts ? "rgba(230,57,70,0.02)" : undefined,
+        borderColor: hasAlerts ? "rgba(206,51,65,0.35)" : undefined,
+        background: hasAlerts ? "rgba(206,51,65,0.02)" : undefined,
       }}
     >
       {/* Header */}
@@ -148,13 +148,13 @@ function AlertCenter({ alertCount }: { alertCount: number }) {
             {hasAlerts && (
               <span
                 className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md mono text-[9px] font-bold pulse-soft"
-                style={{ background: "rgba(230,57,70,0.15)", color: "var(--blood)" }}
+                style={{ background: "rgba(206,51,65,0.15)", color: "var(--blood)" }}
               >
                 ● {alertCount} ACTIVE{alertCount > 1 ? "S" : ""}
               </span>
             )}
           </div>
-          <div className="syne text-lg font-bold mt-0.5" style={{ color: "var(--txt)" }}>Demandes Entrantes</div>
+          <div className="text-lg font-bold mt-0.5" style={{ color: "var(--txt)" }}>Demandes Entrantes</div>
         </div>
         <span className="mono text-[10px] flex items-center gap-1" style={{ color: "var(--txt-mute)" }}>
           <span className="pulse-soft h-1.5 w-1.5 rounded-full" style={{ background: "var(--ok)", boxShadow: "0 0 5px var(--ok)" }} />
@@ -187,7 +187,7 @@ function AlertCenter({ alertCount }: { alertCount: number }) {
       </div>
 
       {alertCount > 0 && (
-        <div className="mt-4 mono text-[10px] text-center py-2 rounded-lg" style={{ color: "var(--blood)", background: "rgba(230,57,70,0.06)" }}>
+        <div className="mt-4 mono text-[10px] text-center py-2 rounded-lg" style={{ color: "var(--blood)", background: "rgba(206,51,65,0.06)" }}>
             <X size={14} className="mr-1 inline-block" /> {alertCount} alerte(s) active(s) dans le système
         </div>
       )}
@@ -218,7 +218,7 @@ export default function Dashboard() {
         <div className="flex-1 overflow-auto no-scrollbar relative z-10">
         {error && (
           <div className="mx-5 mt-4 rounded-xl px-4 py-3 mono text-[12px]"
-               style={{ background: "rgba(230,57,70,0.08)", border: "1px solid rgba(230,57,70,0.35)", color: "var(--blood)" }}>
+               style={{ background: "rgba(206,51,65,0.08)", border: "1px solid rgba(206,51,65,0.35)", color: "var(--blood)" }}>
             {error}
           </div>
         )}

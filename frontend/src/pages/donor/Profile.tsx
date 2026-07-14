@@ -76,11 +76,11 @@ function HolographicID({ form }: { form: any }) {
              style={{ 
                background: "radial-gradient(circle at 30% 30%, #ff4b5c, var(--blood-dim))",
                boxShadow: isDarkMode 
-                 ? "inset -10px -10px 20px rgba(0,0,0,0.5), inset 10px 10px 20px rgba(255,255,255,0.4), 0 0 40px rgba(230,57,70,0.5)"
-                 : "inset -10px -10px 20px rgba(0,0,0,0.2), inset 10px 10px 20px rgba(255,255,255,0.9), 0 10px 30px rgba(230,57,70,0.35)",
+                 ? "inset -10px -10px 20px rgba(0,0,0,0.5), inset 10px 10px 20px rgba(255,255,255,0.4), 0 0 40px rgba(206,51,65,0.5)"
+                 : "inset -10px -10px 20px rgba(0,0,0,0.2), inset 10px 10px 20px rgba(255,255,255,0.9), 0 10px 30px rgba(206,51,65,0.35)",
                transform: "translateZ(40px)"
              }}>
-             <div className="absolute inset-0 flex items-center justify-center syne font-black text-4xl text-white drop-shadow-lg" style={{ transform: "translateZ(20px)" }}>
+             <div className="absolute inset-0 flex items-center justify-center font-black text-4xl text-white drop-shadow-lg" style={{ transform: "translateZ(20px)" }}>
                {form.groupe_sanguin}
              </div>
         </div>
@@ -105,7 +105,7 @@ function HolographicID({ form }: { form: any }) {
            <div className="flex flex-col gap-4 mt-2 pr-36">
              <div>
                <div className="mono text-[9px] tracking-[0.15em] opacity-50 mb-0.5 font-bold">NOM COMPLET</div>
-               <div className={`syne font-bold text-xl tracking-wide uppercase bg-clip-text text-transparent ${isDarkMode ? "bg-linear-to-r from-white to-white/70" : "bg-linear-to-r from-slate-900 to-slate-600"}`}>
+               <div className={`font-bold text-xl tracking-wide uppercase bg-clip-text text-transparent ${isDarkMode ? "bg-linear-to-r from-white to-white/70" : "bg-linear-to-r from-slate-900 to-slate-600"}`}>
                   {nom || "DONNEUR ANONYME"}
                </div>
              </div>
@@ -140,7 +140,7 @@ function FloatingInput({ value, onChange, label, type="text", required=false }: 
          onChange={onChange}
          required={required}
          placeholder=" "
-         className="peer w-full bg-transparent border-b-2 border-transparent py-2 text-lg syne transition-colors focus:outline-none focus:border-(--blood)"
+         className="peer w-full bg-transparent border-b-2 border-transparent py-2 text-lg transition-colors focus:outline-none focus:border-(--blood)"
          style={{ color: "var(--txt)", borderBottomColor: "var(--line)" }}
       />
       <label className="absolute left-0 top-3 text-(--txt-mute) mono text-sm transition-all pointer-events-none peer-focus:-top-4 peer-focus:text-[10px] peer-focus:text-(--blood) peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-(--txt-mute) peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-[10px] peer-not-placeholder-shown:text-(--txt-dim)">
@@ -164,7 +164,7 @@ function FloatingCustomSelect({ value, onChange, label, options }: any) {
     <>
       <div className="relative group mt-8 cursor-pointer" onClick={() => setOpen(true)}>
         <div 
-           className="peer w-full bg-transparent border-b-2 py-2 text-lg syne transition-colors flex items-center justify-between hover:border-(--blood)"
+           className="peer w-full bg-transparent border-b-2 py-2 text-lg transition-colors flex items-center justify-between hover:border-(--blood)"
            style={{ color: "var(--txt)", borderBottomColor: open ? "var(--blood)" : "var(--line)" }}
         >
           {value}
@@ -209,7 +209,7 @@ function FloatingCustomSelect({ value, onChange, label, options }: any) {
                 <div className="mono text-[9px] uppercase tracking-[0.2em] mb-0.5" style={{ color: "var(--blood)" }}>
                   Sélection
                 </div>
-                <div className="syne font-bold text-[17px]" style={{ color: "var(--txt)" }}>
+                <div className="font-bold text-[17px]" style={{ color: "var(--txt)" }}>
                   Choisir une option
                 </div>
               </div>
@@ -223,8 +223,8 @@ function FloatingCustomSelect({ value, onChange, label, options }: any) {
                   color: "var(--txt-mute)",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(230,57,70,0.15)";
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(230,57,70,0.4)";
+                  (e.currentTarget as HTMLElement).style.background = "rgba(206,51,65,0.15)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(206,51,65,0.4)";
                   (e.currentTarget as HTMLElement).style.color = "var(--blood)";
                 }}
                 onMouseLeave={(e) => {
@@ -253,9 +253,9 @@ function FloatingCustomSelect({ value, onChange, label, options }: any) {
                     style={{
                       padding: "11px 14px",
                       background: isSelected
-                        ? "linear-gradient(90deg, rgba(230,57,70,0.15) 0%, rgba(230,57,70,0.05) 100%)"
+                        ? "linear-gradient(90deg, rgba(206,51,65,0.15) 0%, rgba(206,51,65,0.05) 100%)"
                         : "transparent",
-                      border: `1px solid ${isSelected ? "rgba(230,57,70,0.3)" : "transparent"}`,
+                      border: `1px solid ${isSelected ? "rgba(206,51,65,0.3)" : "transparent"}`,
                     }}
                     onMouseEnter={(e) => {
                       if (!isSelected) {
@@ -281,7 +281,7 @@ function FloatingCustomSelect({ value, onChange, label, options }: any) {
                         }}
                       />
                       <span
-                        className="syne font-semibold text-[14px] truncate"
+                        className="font-semibold text-[14px] truncate"
                         style={{ color: isSelected ? "var(--txt)" : "var(--txt-dim)" }}
                       >
                         {opt}
@@ -294,8 +294,8 @@ function FloatingCustomSelect({ value, onChange, label, options }: any) {
                         style={{
                           width: 20,
                           height: 20,
-                          background: "rgba(230,57,70,0.2)",
-                          border: "1px solid rgba(230,57,70,0.4)",
+                          background: "rgba(206,51,65,0.2)",
+                          border: "1px solid rgba(206,51,65,0.4)",
                         }}
                       >
                         <Check size={11} style={{ color: "var(--blood)" }} />
@@ -359,7 +359,7 @@ export default function Profile() {
       <HolographicID form={form} />
 
       <form onSubmit={submit} className="card-in relative px-6 py-8 rounded-3xl" style={{ background: "linear-gradient(145deg, var(--surface) 0%, var(--bg-2) 100%)", border: "1px solid var(--line)" }}>
-        <h3 className="syne font-bold text-xl mb-6" style={{ color: "var(--txt)" }}>Mettre à jour</h3>
+        <h3 className="font-bold text-xl mb-6" style={{ color: "var(--txt)" }}>Mettre à jour</h3>
         
         <div className="grid grid-cols-2 gap-4">
           <FloatingCustomSelect label="GROUPE SANGUIN" value={form.groupe_sanguin} onChange={(v: any) => setForm({ ...form, groupe_sanguin: v as BloodGroup })} options={BLOOD_GROUPS} />

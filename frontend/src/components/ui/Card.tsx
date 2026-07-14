@@ -15,28 +15,26 @@ export function Card({
   className?: string;
 }) {
   return (
-    <section 
-      className={`card-in relative overflow-hidden transition-all duration-300 ${className}`} 
-      style={{ 
-        padding: 24, 
-        borderRadius: 24,
-        background: "linear-gradient(145deg, var(--surface) 0%, var(--bg-2) 100%)",
+    <section
+      className={`relative overflow-hidden ${className}`}
+      style={{
+        padding: 22,
+        borderRadius: "var(--radius)",
+        background: "var(--surface)",
         border: "1px solid var(--line)",
-        boxShadow: "var(--shadow-lg)"
       }}
     >
-      <div className="absolute -top-32 -right-32 w-64 h-64 rounded-full pointer-events-none opacity-20" style={{ background: "radial-gradient(circle, var(--blood-glow) 0%, transparent 70%)", filter: "blur(40px)" }} />
-      <div className="relative z-10 flex flex-col h-full">
+      <div className="relative flex flex-col h-full">
         {(title || subtitle || action) && (
-          <header className="flex items-start justify-between mb-6 shrink-0">
+          <header className="flex items-start justify-between mb-5 shrink-0">
             <div>
               {subtitle && (
-                <div className="mono uppercase text-[10px] tracking-[0.14em] mb-1" style={{ color: "var(--txt-mute)" }}>
+                <div className="mono uppercase text-[10px] tracking-[0.12em] mb-1" style={{ color: "var(--txt-mute)" }}>
                   {subtitle}
                 </div>
               )}
               {title && (
-                <h3 className="syne font-bold text-lg leading-tight tracking-wide" style={{ color: "var(--txt)" }}>
+                <h3 className="font-semibold text-lg leading-tight" style={{ color: "var(--txt)", letterSpacing: "-0.01em" }}>
                   {title}
                 </h3>
               )}

@@ -29,7 +29,7 @@ export default function CollectionPoints() {
           placeholder="Rechercher une localité, un hôpital..." 
           value={q} 
           onChange={(e) => setQ(e.target.value)} 
-          className="w-full h-16 pl-14 pr-6 rounded-[24px] text-lg syne transition-all duration-300 focus:outline-none"
+          className="w-full h-16 pl-14 pr-6 rounded-[24px] text-lg transition-all duration-300 focus:outline-none"
           style={{ 
             background: "linear-gradient(145deg, var(--surface) 0%, var(--bg) 100%)", 
             border: "2px solid var(--line)",
@@ -80,7 +80,7 @@ export default function CollectionPoints() {
               </div>
               
               <div className="relative z-10 mt-6">
-                <h3 className="syne font-bold text-2xl tracking-wide mb-1" style={{ color: "var(--txt)" }}>{p.nom}</h3>
+                <h3 className="font-bold text-2xl tracking-wide mb-1" style={{ color: "var(--txt)" }}>{p.nom}</h3>
                 <p className="mono text-[11px] uppercase tracking-widest mb-4" style={{ color: "var(--txt-mute)" }}>{p.localisation}</p>
                 
                 <div className="flex items-center gap-2 mono text-sm font-bold w-fit px-4 py-2 rounded-xl backdrop-blur-sm" style={{ color: "var(--blood)", background: "color-mix(in srgb, var(--surface-2) 50%, transparent)", border: "1px solid var(--line)" }}>
