@@ -24,7 +24,7 @@ from app.services.exceptions import NotFoundError
 from app.models.request import BloodRequest
 
 
-async def _display_name(nom: str) -> str:
+def _display_name(nom: str) -> str:
     """Nom abrégé pour le classement (confidentialité) : « Awa N. »."""
     parts = nom.split()
     if len(parts) >= 2:
@@ -34,9 +34,10 @@ async def _display_name(nom: str) -> str:
 
 async def get_profile(db: AsyncSession, user_id: int) -> DonorProfile:
     """Récupère le profil donneur d'un utilisateur, ou lève 404."""
-    profile = await db.scalars(
+    result = await db.scalars(
         select(DonorProfile).where(DonorProfile.user_id == user_id)
-    ).one_or_none()
+    )
+    profile = result.one_or_none()
     if profile is None:
         raise NotFoundError("Profil donneur introuvable. Créez-le d'abord.")
     return profile
@@ -67,21 +68,21 @@ async def upsert_profile(db: AsyncSession, user_id: int, payload: DonorProfileUp
 
 async def list_donations(db: AsyncSession, user_id: int) -> list[Donation]:
     """Historique des dons du donneur courant (UC-18)."""
-    profile = get_profile(db, user_id)
-    return list(
-        await db.scalars(
-            select(Donation).where(Donation.donor_id == profile.id).order_by(Donation.date.desc())
-        ).all()
+    profile = await get_profile(db, user_id)
+    result = await db.scalars(
+        select(Donation).where(Donation.donor_id == profile.id).order_by(Donation.date.desc())
     )
+    return list(result.all())
 
 
 async def get_stats(db: AsyncSession, user_id: int) -> DonorStats:
     """Statistiques gamifiées du donneur, entièrement dérivées de la base."""
-    profile = get_profile(db, user_id)
+    profile = await get_profile(db, user_id)
 
-    donations = await db.scalars(
+    donations_result = await db.scalars(
         select(Donation).where(Donation.donor_id == profile.id)
-    ).all()
+    )
+    donations = donations_result.all()
     nb_dons = len(donations)
     total_volume = sum(d.volume for d in donations)
     dernier_don = max((d.date for d in donations), default=None)
@@ -139,7 +140,7 @@ async def get_stats(db: AsyncSession, user_id: int) -> DonorStats:
 
 async def leaderboard(db: AsyncSession, user_id: int, limit: int = 10) -> list[LeaderboardEntry]:
     """Classement des meilleurs donneurs (noms abrégés)."""
-    me = get_profile_or_none(db, user_id)
+    me = await get_profile_or_none(db, user_id)
     rows = (await db.execute(
         select(
             DonorProfile.id,
@@ -169,11 +170,12 @@ async def leaderboard(db: AsyncSession, user_id: int, limit: int = 10) -> list[L
 
 async def get_urgency_stats(db: AsyncSession) -> UrgencyStats:
     """Calcule les stats d'urgence nationale en temps réel."""
-    requests = await db.scalars(
+    requests_result = await db.scalars(
         select(BloodRequest).where(
             BloodRequest.statut == RequestStatus.OUVERTE.value
         )
-    ).all()
+    )
+    requests = requests_result.all()
     
     # 1 poche = 3 vies (hypothèse métier du composant React)
     poches_en_attente = sum(r.quantite for r in requests)

@@ -115,10 +115,9 @@ async def respond_to_alert(
 
 async def list_active_alerts(db: AsyncSession) -> list[Alert]:
     """Alertes actives (pour l'espace donneur)."""
-    return list(
-        await db.scalars(
-            select(Alert)
-            .where(Alert.statut == AlertStatus.ACTIVE.value)
-            .order_by(Alert.created_at.desc())
-        ).all()
+    result = await db.scalars(
+        select(Alert)
+        .where(Alert.statut == AlertStatus.ACTIVE.value)
+        .order_by(Alert.created_at.desc())
     )
+    return list(result.all())

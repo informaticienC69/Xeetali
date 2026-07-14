@@ -66,11 +66,12 @@ async def register_pouch(db: AsyncSession, payload: PouchCreate) -> BloodPouch:
 
 async def update_status(db: AsyncSession, uid: str, new_status: PouchStatus) -> BloodPouch:
     """Change le statut d'une poche (atomique, journalisé)."""
-    pouch = await db.scalars(
+    result = await db.scalars(
         select(BloodPouch)
         .where(BloodPouch.uid == uid)
         .with_for_update()
-    ).one_or_none()
+    )
+    pouch = result.one_or_none()
     if pouch is None:
         raise NotFoundError(f"Poche {uid} introuvable.")
     try:

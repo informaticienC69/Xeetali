@@ -34,9 +34,8 @@ async def create_appointment(db: AsyncSession, user_id: int, payload: Appointmen
 
 async def list_appointments(db: AsyncSession, user_id: int) -> list[Appointment]:
     """Rendez-vous du donneur courant."""
-    profile = get_profile(db, user_id)
-    return list(
-        await db.scalars(
-            select(Appointment).where(Appointment.donor_id == profile.id).order_by(Appointment.date)
-        ).all()
+    profile = await get_profile(db, user_id)
+    result = await db.scalars(
+        select(Appointment).where(Appointment.donor_id == profile.id).order_by(Appointment.date)
     )
+    return list(result.all())

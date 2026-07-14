@@ -41,19 +41,18 @@ async def execute_transfer(db: AsyncSession, payload: TransferCreate, user_id: i
         _get_hospital(db, payload.target_hospital_id)
 
         # Poches disponibles à la source, FIFO par péremption (plus proche d'abord).
-        pouches = list(
-            await db.scalars(
-                select(BloodPouch)
-                .where(
-                    BloodPouch.hospital_id == payload.source_hospital_id,
-                    BloodPouch.groupe_sanguin == groupe,
-                    BloodPouch.statut == PouchStatus.DISPONIBLE.value,
-                )
-                .with_for_update(skip_locked=True)
-                .order_by(BloodPouch.date_peremption)
-                .limit(payload.quantite)
-            ).all()
+        result = await db.scalars(
+            select(BloodPouch)
+            .where(
+                BloodPouch.hospital_id == payload.source_hospital_id,
+                BloodPouch.groupe_sanguin == groupe,
+                BloodPouch.statut == PouchStatus.DISPONIBLE.value,
+            )
+            .with_for_update(skip_locked=True)
+            .order_by(BloodPouch.date_peremption)
+            .limit(payload.quantite)
         )
+        pouches = list(result.all())
         if len(pouches) < payload.quantite:
             raise InsufficientStockError(
                 f"Stock insuffisant à la source pour {groupe} "
