@@ -107,22 +107,22 @@ export function Select({
           background: "var(--surface)",
           color: "var(--txt)",
           height: "100%",
-          borderColor: open ? "var(--blood)" : undefined,
-          boxShadow: open ? "0 0 0 2px var(--blood-glow)" : undefined,
+          borderColor: open ? "var(--clinic)" : undefined,
+          boxShadow: open ? "0 0 0 3px var(--clinic-tint)" : undefined,
         }}
       >
-        <span className="truncate syne font-medium">{selectedOption?.label || "Sélectionner..."}</span>
+        <span className="truncate font-medium">{selectedOption?.label || "Sélectionner..."}</span>
         <ChevronDown
           size={14}
           className={`chevron-rotate shrink-0 transition-all ${open ? "open" : ""}`}
-          style={{ color: open ? "var(--blood)" : "var(--txt-mute)" }}
+          style={{ color: open ? "var(--clinic)" : "var(--txt-mute)" }}
         />
       </button>
 
       {open && createPortal(
         <div
           className="fixed inset-0 z-120 flex items-center justify-center p-6"
-          style={{ background: "rgba(0,0,0,0.72)", backdropFilter: "blur(8px)" }}
+          style={{ background: "rgba(15,22,41,0.5)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
         >
           <div
@@ -130,10 +130,10 @@ export function Select({
             style={{
               maxWidth: 360,
               maxHeight: "75vh",
-              borderRadius: 20,
-              border: "1px solid var(--blood-glow)",
+              borderRadius: "var(--radius)",
+              border: "1px solid var(--line)",
               background: "var(--surface)",
-              boxShadow: "0 0 0 1px var(--line), 0 32px 64px rgba(0,0,0,0.35), 0 0 60px var(--blood-glow)",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
             {/* Header */}
@@ -141,16 +141,11 @@ export function Select({
               className="relative px-5 pt-5 pb-4 flex items-center justify-between"
               style={{ borderBottom: "1px solid var(--line)" }}
             >
-              {/* Top accent line */}
-              <div
-                className="absolute top-0 left-6 right-6 rounded-b-full"
-                style={{ height: 2, background: "linear-gradient(90deg, transparent, var(--blood) 40%, transparent)" }}
-              />
               <div>
-                <div className="mono text-[9px] uppercase tracking-[0.2em] mb-0.5" style={{ color: "var(--blood)" }}>
+                <div className="mono text-[9px] uppercase tracking-[0.18em] mb-0.5" style={{ color: "var(--txt-mute)" }}>
                   Sélection
                 </div>
-                <div className="syne font-bold text-[17px]" style={{ color: "var(--txt)" }}>
+                <div className="font-semibold text-[17px]" style={{ color: "var(--txt)" }}>
                   Choisir une option
                 </div>
               </div>
@@ -164,9 +159,9 @@ export function Select({
                   color: "var(--txt-mute)",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(230,57,70,0.15)";
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(230,57,70,0.4)";
-                  (e.currentTarget as HTMLElement).style.color = "var(--blood)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--clinic-tint)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--clinic)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--clinic)";
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
@@ -194,10 +189,8 @@ export function Select({
                     className="group w-full text-left flex items-center justify-between gap-3 rounded-xl transition-all cursor-pointer mb-1"
                     style={{
                       padding: "11px 14px",
-                      background: isSelected
-                        ? "linear-gradient(90deg, rgba(230,57,70,0.15) 0%, rgba(230,57,70,0.05) 100%)"
-                        : "transparent",
-                      border: `1px solid ${isSelected ? "rgba(230,57,70,0.3)" : "transparent"}`,
+                      background: isSelected ? "var(--clinic-tint)" : "transparent",
+                      border: `1px solid ${isSelected ? "color-mix(in srgb, var(--clinic) 30%, transparent)" : "transparent"}`,
                       opacity: opt.disabled ? 0.4 : 1,
                       cursor: opt.disabled ? "not-allowed" : "pointer",
                     }}
@@ -221,12 +214,11 @@ export function Select({
                         style={{
                           width: 6,
                           height: 6,
-                          background: isSelected ? "var(--blood)" : "var(--txt-mute)",
-                          boxShadow: isSelected ? "0 0 8px var(--blood-glow)" : "none",
+                          background: isSelected ? "var(--clinic)" : "var(--txt-mute)",
                         }}
                       />
                       <span
-                        className="syne font-semibold text-[14px] truncate"
+                        className="font-semibold text-[14px] truncate"
                         style={{ color: isSelected ? "var(--txt)" : "var(--txt-dim)" }}
                       >
                         {opt.label}
@@ -239,11 +231,11 @@ export function Select({
                         style={{
                           width: 20,
                           height: 20,
-                          background: "rgba(230,57,70,0.2)",
-                          border: "1px solid rgba(230,57,70,0.4)",
+                          background: "var(--clinic-tint)",
+                          border: "1px solid color-mix(in srgb, var(--clinic) 40%, transparent)",
                         }}
                       >
-                        <Check size={11} style={{ color: "var(--blood)" }} />
+                        <Check size={11} style={{ color: "var(--clinic)" }} />
                       </div>
                     )}
                   </button>

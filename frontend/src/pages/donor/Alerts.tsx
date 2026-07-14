@@ -32,7 +32,7 @@ function UrgencyBanner({ u }: { u: UrgencyStats | null }) {
             <AlertTriangle size={12} className="pulse-soft" />
             <span>Alerte nationale · {GROUPE} critique</span>
           </div>
-          <div className="syne font-extrabold text-xl mt-1 leading-tight" style={{ color: "var(--txt)" }}>
+          <div className="font-extrabold text-xl mt-1 leading-tight" style={{ color: "var(--txt)" }}>
             <span className="pulse-text" style={{ color: "var(--blood)" }}>{LIVES} vies</span>{" "}
             en attente aujourd'hui
           </div>
@@ -52,25 +52,10 @@ function UrgencyBanner({ u }: { u: UrgencyStats | null }) {
               className="absolute bottom-0 left-0 right-0 drop-fill rounded-full"
               style={{
                 height: `${CAPACITY}%`,
-                background: "linear-gradient(180deg, rgba(230,57,70,0.85) 0%, var(--blood) 100%)",
+                background: "linear-gradient(180deg, rgba(206,51,65,0.85) 0%, var(--blood) 100%)",
                 boxShadow: "0 0 8px var(--blood)",
               }}
             />
-            {/* Bubbles */}
-            {[20, 50, 75].map((b, i) => (
-              <div
-                key={i}
-                className="particle absolute rounded-full"
-                style={{
-                  width: 4, height: 4,
-                  left: `${25 + i * 18}%`,
-                  bottom: `${b}%`,
-                  background: "rgba(230,57,70,0.6)",
-                  "--dur": `${1.8 + i * 0.5}s`,
-                  "--delay": `${i * 0.4}s`,
-                } as React.CSSProperties}
-              />
-            ))}
           </div>
           {/* Pourcentage */}
           <div
@@ -139,11 +124,11 @@ export default function Alerts() {
           {alerts.data.map((a) => (
             <div
               key={a.id}
-              className="card-in relative overflow-hidden flex flex-col p-6 rounded-[32px] transition-all duration-500 hover:-translate-y-2 group"
+              className="card-in relative overflow-hidden flex flex-col p-6 rounded-[32px] transition-all duration-500 group"
               style={{
                 background: "linear-gradient(145deg, var(--surface) 0%, var(--bg-2) 100%)",
                 border: "1px solid color-mix(in srgb, var(--blood) 30%, var(--line))",
-                boxShadow: "0 20px 40px rgba(230,57,70,0.15)",
+                boxShadow: "0 20px 40px rgba(206,51,65,0.15)",
                 marginBottom: "24px"
               }}
             >
@@ -166,7 +151,7 @@ export default function Alerts() {
                 
                 <div className="flex-1 min-w-0 mt-0.5">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="syne font-bold text-xl tracking-wide" style={{ color: "var(--txt)" }}>Urgence Sang</span>
+                    <span className="font-bold text-xl tracking-wide" style={{ color: "var(--txt)" }}>Urgence Sang</span>
                     <div className="scale-90 origin-left"><GroupBadge groupe={a.groupe_sanguin} /></div>
                   </div>
                   <div className="mono text-[10px] tracking-[0.2em] uppercase font-bold px-3 py-1.5 rounded-full w-fit" style={{ background: "color-mix(in srgb, var(--blood) 10%, transparent)", color: "var(--blood)", border: "1px solid color-mix(in srgb, var(--blood) 20%, transparent)" }}>
@@ -182,7 +167,7 @@ export default function Alerts() {
               <div className="relative z-10 flex flex-col gap-3 mt-auto">
                 <button 
                   onClick={() => respond(a.id, true)} 
-                  className="w-full h-16 rounded-[24px] flex items-center justify-center gap-2 syne font-bold text-lg text-white shadow-2xl transition-all duration-300 hover:scale-[1.02]"
+                  className="w-full h-16 rounded-[24px] flex items-center justify-center gap-2 font-bold text-lg text-white shadow-2xl transition-all duration-300 hover:scale-[1.02]"
                   style={{ background: "linear-gradient(135deg, var(--blood) 0%, var(--blood-dim) 100%)" }}
                 >
                   <HeartPulse size={20} className="pulse-soft" />

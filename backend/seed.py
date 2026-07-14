@@ -21,6 +21,7 @@ import app.models  # noqa: F401
 from app.models.alert import Alert, AlertResponse
 from app.models.appointment import Appointment
 from app.models.collection_point import CollectionPoint
+from app.models.configuration import Configuration
 from app.models.donation import Donation
 from app.models.donor_profile import DonorProfile
 from app.models.hospital import Hospital
@@ -73,7 +74,7 @@ def seed() -> None:
     try:
         # Réinitialisation idempotente (ordre respectant les FK).
         for model in (AlertResponse, Alert, TransferOrder, BloodRequest, Donation,
-                      Appointment, BloodPouch, CollectionPoint, DonorProfile, User, Hospital):
+                      Appointment, BloodPouch, CollectionPoint, DonorProfile, User, Hospital, Configuration):
             db.query(model).delete()
         db.commit()
 
@@ -205,6 +206,19 @@ def seed() -> None:
                 statut=rng.choice(statuts).value, created_by=medic_user.id,
                 created_at=datetime.now(timezone.utc) - timedelta(days=rng.randint(0, 20)),
             ))
+
+        # Configuration par défaut
+        from app.services.configuration_service import DEFAULT_CONFIGS
+        for key, config_data in DEFAULT_CONFIGS.items():
+            existing = db.query(Configuration).filter(Configuration.key == key).first()
+            if existing is None:
+                config = Configuration(
+                    key=key,
+                    value=config_data["value"],
+                    description=config_data["description"],
+                    category=config_data["category"],
+                )
+                db.add(config)
 
         db.commit()
 

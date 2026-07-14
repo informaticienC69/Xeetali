@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.core.deps import get_current_user, require_role
 from app.db.session import get_db
@@ -17,23 +18,23 @@ _medical = require_role(UserRole.PERSONNEL_MEDICAL, UserRole.ADMIN_CNTS)
 
 
 @router.post("", response_model=PouchRead, status_code=status.HTTP_201_CREATED)
-def register_pouch(
-    payload: PouchCreate, db: Session = Depends(get_db), _: User = Depends(_medical)
+async def register_pouch(
+    payload: PouchCreate, db: AsyncSession = Depends(get_db), _: User = Depends(_medical)
 ) -> PouchRead:
     """UC-08 : enregistre une poche (UID + QR générés)."""
-    return PouchRead.model_validate(pouch_service.register_pouch(db, payload))
+    return PouchRead.model_validate(await pouch_service.register_pouch(db, payload))
 
 
 @router.get("/search", response_model=list[PouchRead])
-def search_pouches(
+async def search_pouches(
     groupe_sanguin: BloodGroup | None = None,
     hospital_id: int | None = None,
     statut: PouchStatus | None = None,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_user),
 ) -> list[PouchRead]:
     """Recherche de poches (urgence) par groupe / hôpital / statut."""
-    pouches = pouch_service.search_pouches(
+    pouches = await pouch_service.search_pouches(
         db,
         groupe_sanguin=groupe_sanguin.value if groupe_sanguin else None,
         hospital_id=hospital_id,
@@ -43,19 +44,19 @@ def search_pouches(
 
 
 @router.get("/{uid}/validity", response_model=PouchValidity)
-def check_validity(
-    uid: str, db: Session = Depends(get_db), _: User = Depends(get_current_user)
+async def check_validity(
+    uid: str, db: AsyncSession = Depends(get_db), _: User = Depends(get_current_user)
 ) -> PouchValidity:
     """Vérifie l'existence en base + péremption d'une poche."""
-    return pouch_service.check_validity(db, uid)
+    return await pouch_service.check_validity(db, uid)
 
 
 @router.patch("/{uid}/status", response_model=PouchRead)
-def update_status(
+async def update_status(
     uid: str,
     payload: PouchStatusUpdate,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     _: User = Depends(_medical),
 ) -> PouchRead:
     """Change le statut d'une poche (journalisé)."""
-    return PouchRead.model_validate(pouch_service.update_status(db, uid, payload.statut))
+    return PouchRead.model_validate(await pouch_service.update_status(db, uid, payload.statut))

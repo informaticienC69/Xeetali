@@ -58,9 +58,9 @@ function ToastItem({ entry, onDone }: { entry: ToastEntry; onDone: () => void })
   useEffect(() => { const t = setTimeout(onDone, 3500); return () => clearTimeout(t); }, [onDone]);
   const icons = { success: CheckCircle, error: XCircle, info: Info };
   const colors = {
-    success: { bg: "rgba(22,163,74,0.10)", border: "rgba(22,163,74,0.35)", color: "var(--ok)" },
-    error:   { bg: "rgba(230,57,70,0.10)", border: "rgba(230,57,70,0.40)", color: "var(--blood)" },
-    info:    { bg: "rgba(29,53,87,0.10)",  border: "var(--line)",          color: "var(--txt-dim)" },
+    success: { bg: "var(--ok-tint)",   border: "transparent", color: "var(--ok)" },
+    error:   { bg: "var(--crit-tint)", border: "transparent", color: "var(--crit)" },
+    info:    { bg: "var(--clinic-tint)", border: "transparent", color: "var(--clinic-dim)" },
   };
   const Icon = icons[entry.type];
   const c = colors[entry.type];

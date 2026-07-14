@@ -65,17 +65,17 @@ export default function Campaign() {
               </div>
               <div className="flex items-center gap-2 surface-2 rounded-lg px-3 py-2">
                 <span className="mono text-[10px] uppercase" style={{ color: "var(--txt-mute)" }}>Portée :</span>
-                <span className="syne font-bold" style={{ color: "var(--txt)" }}>{result.portee}</span>
+                <span className="font-bold" style={{ color: "var(--txt)" }}>{result.portee}</span>
               </div>
               <div className="flex items-center gap-2 surface-2 rounded-lg px-3 py-2">
                 <span className="mono text-[10px] uppercase" style={{ color: "var(--txt-mute)" }}>Canal :</span>
-                <span className="syne font-bold" style={{ color: "var(--txt)" }}>{result.canal}</span>
+                <span className="font-bold" style={{ color: "var(--txt)" }}>{result.canal}</span>
               </div>
             </div>
             <div className="rounded-xl px-4 py-3"
-                 style={{ background: "rgba(230,57,70,0.08)", border: "1px solid rgba(230,57,70,0.25)" }}>
+                 style={{ background: "rgba(206,51,65,0.08)", border: "1px solid rgba(206,51,65,0.25)" }}>
               <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>Donneurs notifiés : </span>
-              <span className="syne font-extrabold text-xl" style={{ color: "var(--blood)" }}>{result.donneurs_notifies}</span>
+              <span className="font-extrabold text-xl" style={{ color: "var(--blood)" }}>{result.donneurs_notifies}</span>
             </div>
             <div>
               <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>Groupes compatibles :{" "}</span>

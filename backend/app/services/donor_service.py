@@ -4,13 +4,15 @@ from __future__ import annotations
 from datetime import date, timedelta
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.core.gamification import (
     DELAI_ELIGIBILITE_JOURS,
     VIES_PAR_DON,
     evaluate_badges,
     level_for,
+    load_gamification_config,
     points_for,
 )
 from app.models.alert import AlertResponse
@@ -31,21 +33,22 @@ def _display_name(nom: str) -> str:
     return parts[0] if parts else "Donneur"
 
 
-def get_profile(db: Session, user_id: int) -> DonorProfile:
+async def get_profile(db: AsyncSession, user_id: int) -> DonorProfile:
     """Récupère le profil donneur d'un utilisateur, ou lève 404."""
-    profile = db.scalars(
+    result = await db.scalars(
         select(DonorProfile).where(DonorProfile.user_id == user_id)
-    ).one_or_none()
+    )
+    profile = result.one_or_none()
     if profile is None:
         raise NotFoundError("Profil donneur introuvable. Créez-le d'abord.")
     return profile
 
 
-def get_profile_or_none(db: Session, user_id: int) -> DonorProfile | None:
-    return db.scalars(select(DonorProfile).where(DonorProfile.user_id == user_id)).one_or_none()
+async def get_profile_or_none(db: AsyncSession, user_id: int) -> DonorProfile | None:
+    return (await db.scalars(select(DonorProfile).where(DonorProfile.user_id == user_id))).one_or_none()
 
 
-def upsert_profile(db: Session, user_id: int, payload: DonorProfileUpsert) -> DonorProfile:
+async def upsert_profile(db: AsyncSession, user_id: int, payload: DonorProfileUpsert) -> DonorProfile:
     """Crée ou met à jour le profil donneur de l'utilisateur courant (atomique)."""
     try:
         profile = get_profile_or_none(db, user_id)
@@ -56,44 +59,47 @@ def upsert_profile(db: Session, user_id: int, payload: DonorProfileUpsert) -> Do
         profile.telephone = payload.telephone
         profile.localisation = payload.localisation
         profile.date_dernier_don = payload.date_dernier_don
-        db.commit()
-        db.refresh(profile)
+        await db.commit()
+        await db.refresh(profile)
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise
     return profile
 
 
-def list_donations(db: Session, user_id: int) -> list[Donation]:
+async def list_donations(db: AsyncSession, user_id: int) -> list[Donation]:
     """Historique des dons du donneur courant (UC-18)."""
-    profile = get_profile(db, user_id)
-    return list(
-        db.scalars(
-            select(Donation).where(Donation.donor_id == profile.id).order_by(Donation.date.desc())
-        ).all()
+    profile = await get_profile(db, user_id)
+    result = await db.scalars(
+        select(Donation).where(Donation.donor_id == profile.id).order_by(Donation.date.desc())
     )
+    return list(result.all())
 
 
-def get_stats(db: Session, user_id: int) -> DonorStats:
+async def get_stats(db: AsyncSession, user_id: int) -> DonorStats:
     """Statistiques gamifiées du donneur, entièrement dérivées de la base."""
-    profile = get_profile(db, user_id)
+    # Charger la configuration de gamification depuis la base
+    await load_gamification_config(db)
+    
+    profile = await get_profile(db, user_id)
 
-    donations = db.scalars(
+    donations_result = await db.scalars(
         select(Donation).where(Donation.donor_id == profile.id)
-    ).all()
+    )
+    donations = donations_result.all()
     nb_dons = len(donations)
     total_volume = sum(d.volume for d in donations)
     dernier_don = max((d.date for d in donations), default=None)
     nb_reponses = int(
-        db.scalar(select(func.count(AlertResponse.id)).where(AlertResponse.donor_id == profile.id))
+        await db.scalar(select(func.count(AlertResponse.id)).where(AlertResponse.donor_id == profile.id))
         or 0
     )
 
     # Classement : nombre de dons par donneur (donneurs sans don inclus, à 0).
     counts = dict(
-        db.execute(select(Donation.donor_id, func.count(Donation.id)).group_by(Donation.donor_id)).all()
+        (await db.execute(select(Donation.donor_id, func.count(Donation.id)).group_by(Donation.donor_id))).all()
     )
-    all_ids = list(db.scalars(select(DonorProfile.id)).all())
+    all_ids = list((await db.scalars(select(DonorProfile.id))).all())
     ranking = sorted(all_ids, key=lambda pid: counts.get(pid, 0), reverse=True)
     rang = ranking.index(profile.id) + 1
 
@@ -136,10 +142,13 @@ def get_stats(db: Session, user_id: int) -> DonorStats:
     )
 
 
-def leaderboard(db: Session, user_id: int, limit: int = 10) -> list[LeaderboardEntry]:
+async def leaderboard(db: AsyncSession, user_id: int, limit: int = 10) -> list[LeaderboardEntry]:
     """Classement des meilleurs donneurs (noms abrégés)."""
-    me = get_profile_or_none(db, user_id)
-    rows = db.execute(
+    # Charger la configuration de gamification depuis la base
+    await load_gamification_config(db)
+    
+    me = await get_profile_or_none(db, user_id)
+    rows = (await db.execute(
         select(
             DonorProfile.id,
             DonorProfile.groupe_sanguin,
@@ -151,7 +160,7 @@ def leaderboard(db: Session, user_id: int, limit: int = 10) -> list[LeaderboardE
         .group_by(DonorProfile.id)
         .order_by(func.count(Donation.id).desc(), DonorProfile.id)
         .limit(limit)
-    ).all()
+    )).all()
 
     return [
         LeaderboardEntry(
@@ -166,13 +175,14 @@ def leaderboard(db: Session, user_id: int, limit: int = 10) -> list[LeaderboardE
     ]
 
 
-def get_urgency_stats(db: Session) -> UrgencyStats:
+async def get_urgency_stats(db: AsyncSession) -> UrgencyStats:
     """Calcule les stats d'urgence nationale en temps réel."""
-    requests = db.scalars(
+    requests_result = await db.scalars(
         select(BloodRequest).where(
             BloodRequest.statut == RequestStatus.OUVERTE.value
         )
-    ).all()
+    )
+    requests = requests_result.all()
     
     # 1 poche = 3 vies (hypothèse métier du composant React)
     poches_en_attente = sum(r.quantite for r in requests)

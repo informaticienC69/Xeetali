@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.models.appointment import Appointment
 from app.models.collection_point import CollectionPoint
@@ -11,10 +12,10 @@ from app.services.donor_service import get_profile
 from app.services.exceptions import NotFoundError
 
 
-def create_appointment(db: Session, user_id: int, payload: AppointmentCreate) -> Appointment:
+async def create_appointment(db: AsyncSession, user_id: int, payload: AppointmentCreate) -> Appointment:
     """Prend un rendez-vous pour le donneur courant (atomique)."""
     profile = get_profile(db, user_id)
-    if db.get(CollectionPoint, payload.collection_point_id) is None:
+    if await db.get(CollectionPoint, payload.collection_point_id) is None:
         raise NotFoundError(f"Point de collecte {payload.collection_point_id} introuvable.")
     try:
         appt = Appointment(
@@ -23,19 +24,18 @@ def create_appointment(db: Session, user_id: int, payload: AppointmentCreate) ->
             date=payload.date,
         )
         db.add(appt)
-        db.commit()
-        db.refresh(appt)
+        await db.commit()
+        await db.refresh(appt)
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise
     return appt
 
 
-def list_appointments(db: Session, user_id: int) -> list[Appointment]:
+async def list_appointments(db: AsyncSession, user_id: int) -> list[Appointment]:
     """Rendez-vous du donneur courant."""
-    profile = get_profile(db, user_id)
-    return list(
-        db.scalars(
-            select(Appointment).where(Appointment.donor_id == profile.id).order_by(Appointment.date)
-        ).all()
+    profile = await get_profile(db, user_id)
+    result = await db.scalars(
+        select(Appointment).where(Appointment.donor_id == profile.id).order_by(Appointment.date)
     )
+    return list(result.all())

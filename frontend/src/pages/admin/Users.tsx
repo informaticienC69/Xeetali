@@ -8,12 +8,12 @@ import { Button, Card, EmptyState, Field, FilterSelect, Input, Modal, SearchInpu
 
 const ROLES: Role[] = ["ADMIN_CNTS", "PERSONNEL_MEDICAL", "DONNEUR"];
 const ROLE_COLOR: Record<Role, string> = {
-  ADMIN_CNTS:        "rgba(230,57,70,0.12)",
+  ADMIN_CNTS:        "rgba(206,51,65,0.12)",
   PERSONNEL_MEDICAL: "rgba(29,53,87,0.20)",
   DONNEUR:           "rgba(22,163,74,0.10)",
 };
 const ROLE_BORDER: Record<Role, string> = {
-  ADMIN_CNTS:        "rgba(230,57,70,0.35)",
+  ADMIN_CNTS:        "rgba(206,51,65,0.35)",
   PERSONNEL_MEDICAL: "rgba(29,53,87,0.40)",
   DONNEUR:           "rgba(22,163,74,0.35)",
 };
@@ -21,6 +21,11 @@ const ROLE_TEXT: Record<Role, string> = {
   ADMIN_CNTS:        "var(--blood)",
   PERSONNEL_MEDICAL: "var(--txt-dim)",
   DONNEUR:           "var(--ok)",
+};
+const ROLE_DISPLAY: Record<Role, string> = {
+  ADMIN_CNTS:        "Admin CNTS",
+  PERSONNEL_MEDICAL: "Personnel Médical",
+  DONNEUR:           "Donneur",
 };
 
 export default function Users() {
@@ -102,7 +107,7 @@ export default function Users() {
             keyExtractor={(u) => u.id}
             renderRow={(u) => (
               <>
-                <td className="px-4 py-3 syne font-semibold text-sm" style={{ color: "var(--txt)" }}>{u.nom}</td>
+                <td className="px-4 py-3 font-semibold text-sm" style={{ color: "var(--txt)" }}>{u.nom}</td>
                 <td className="px-4 py-3 mono text-[12px]" style={{ color: "var(--txt-dim)" }}>{u.email}</td>
                 <td className="px-4 py-3">
                   <span className="mono text-[10px] px-2 py-1 rounded-md border uppercase tracking-wider"
@@ -111,7 +116,7 @@ export default function Users() {
                           borderColor: ROLE_BORDER[u.role as Role] ?? "var(--line)",
                           color: ROLE_TEXT[u.role as Role] ?? "var(--txt-mute)",
                         }}>
-                    {u.role}
+                    {ROLE_DISPLAY[u.role as Role] ?? u.role}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">

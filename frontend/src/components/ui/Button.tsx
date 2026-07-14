@@ -1,26 +1,14 @@
-import {
-  type ComponentType,
-  type InputHTMLAttributes,
-  type ReactNode,
-  type SelectHTMLAttributes,
-  useEffect,
-  useRef,
-  useState,
-  Children,
-  type ReactElement,
-} from "react";
-import { createPortal } from "react-dom";
-import type { LucideProps } from "lucide-react";
-import { CheckCircle, Info, XCircle, ChevronDown, Check } from "lucide-react";
-import { BLOOD_GROUPS as BG_LIST, type BloodGroup as BG } from "../../lib/api";
+import { type ReactNode } from "react";
 
 import { Spinner } from "./Spinner";
 // ── Button ────────────────────────────────────────────────────────
-type ButtonVariant = "blood" | "ghost" | "outline" | "secondary" | "danger";
+// Défaut = "clinic" (bleu, action courante). "blood" est réservé aux actions
+// à forte charge (urgence, don) — le rouge doit rester un signal rare.
+type ButtonVariant = "clinic" | "blood" | "ghost" | "outline" | "secondary" | "danger";
 
 export function Button({
   children,
-  variant = "blood",
+  variant = "clinic",
   loading,
   className = "",
   type = "button",
@@ -35,8 +23,21 @@ export function Button({
   onClick?: () => void;
   disabled?: boolean;
 }) {
-  const base = "inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl transition-all cursor-pointer";
+  const base = "inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-colors cursor-pointer";
 
+  if (variant === "clinic") {
+    return (
+      <button
+        type={type}
+        onClick={onClick}
+        disabled={disabled || loading}
+        className={`btn-clinic ${base} ${className}`}
+      >
+        {loading && <Spinner size={15} />}
+        {children}
+      </button>
+    );
+  }
   if (variant === "blood") {
     return (
       <button
@@ -56,11 +57,11 @@ export function Button({
         type={type}
         onClick={onClick}
         disabled={disabled || loading}
-        className={`${base} border font-mono text-[11px] uppercase tracking-wider ${className}`}
+        className={`${base} border font-mono text-[11px] uppercase tracking-wider hover:border-(--txt-mute) hover:text-(--txt) hover:bg-(--surface-2) ${className}`}
         style={{
-          borderColor: "var(--line)",
+          borderColor: "var(--line-2)",
           color: "var(--txt-dim)",
-          background: "transparent",
+          background: "var(--surface)",
         }}
       >
         {loading && <Spinner size={15} />}
@@ -74,8 +75,8 @@ export function Button({
         type={type}
         onClick={onClick}
         disabled={disabled || loading}
-        className={`${base} border mono text-[11px] uppercase tracking-wider ${className}`}
-        style={{ borderColor: "var(--line)", color: "var(--txt-dim)", background: "var(--surface-2)" }}
+        className={`${base} border mono text-[11px] uppercase tracking-wider hover:border-(--line-2) hover:text-(--txt) hover:bg-(--surface) ${className}`}
+        style={{ borderColor: "transparent", color: "var(--txt-dim)", background: "var(--surface-2)" }}
       >
         {loading && <Spinner size={15} />}
         {children}
@@ -89,7 +90,7 @@ export function Button({
         onClick={onClick}
         disabled={disabled || loading}
         className={`${base} border mono text-[11px] uppercase tracking-wider ${className}`}
-        style={{ borderColor: "rgba(230,57,70,0.35)", color: "var(--blood)", background: "rgba(230,57,70,0.08)" }}
+        style={{ borderColor: "color-mix(in srgb, var(--crit) 35%, transparent)", color: "var(--crit)", background: "var(--crit-tint)" }}
       >
         {loading && <Spinner size={15} />}
         {children}
@@ -101,7 +102,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`${base} ${className}`}
+      className={`${base} hover:text-(--txt) hover:bg-(--surface-2) ${className}`}
       style={{ color: "var(--txt-dim)", background: "transparent" }}
     >
       {loading && <Spinner size={15} />}
@@ -109,5 +110,3 @@ export function Button({
     </button>
   );
 }
-
-

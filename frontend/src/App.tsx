@@ -47,39 +47,54 @@ function Protected({ roles, children }: { roles: Role[]; children: React.ReactNo
   );
 }
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 60 * 1000, // 1 minute cache par défaut
+      retry: 1,
+    },
+  },
+});
+
 export default function App() {
   const { role, isAuthenticated } = useAuth();
 
   return (
-    <Routes>
-      <Route
-        path="/login"
-        element={isAuthenticated && role ? <Navigate to={HOME[role]} replace /> : <Login />}
-      />
+    <QueryClientProvider client={queryClient}>
+      <Routes>
+        <Route
+          path="/login"
+          element={isAuthenticated && role ? <Navigate to={HOME[role]} replace /> : <Login />}
+        />
 
-      {/* Admin CNTS */}
-      <Route path="/admin" element={<Protected roles={["ADMIN_CNTS"]}><Dashboard /></Protected>} />
-      <Route path="/admin/transfer" element={<Protected roles={["ADMIN_CNTS"]}><Transfer /></Protected>} />
-      <Route path="/admin/campaign" element={<Protected roles={["ADMIN_CNTS"]}><Campaign /></Protected>} />
-      <Route path="/admin/users" element={<Protected roles={["ADMIN_CNTS"]}><Users /></Protected>} />
-      <Route path="/admin/hospitals" element={<Protected roles={["ADMIN_CNTS"]}><Hospitals /></Protected>} />
+        {/* Admin CNTS */}
+        <Route path="/admin" element={<Protected roles={["ADMIN_CNTS"]}><Dashboard /></Protected>} />
+        <Route path="/admin/transfer" element={<Protected roles={["ADMIN_CNTS"]}><Transfer /></Protected>} />
+        <Route path="/admin/campaign" element={<Protected roles={["ADMIN_CNTS"]}><Campaign /></Protected>} />
+        <Route path="/admin/users" element={<Protected roles={["ADMIN_CNTS"]}><Users /></Protected>} />
+        <Route path="/admin/hospitals" element={<Protected roles={["ADMIN_CNTS"]}><Hospitals /></Protected>} />
 
-      {/* Personnel Médical */}
-      <Route path="/medical" element={<Protected roles={["PERSONNEL_MEDICAL"]}><MedicalDashboard /></Protected>} />
-      <Route path="/medical/register" element={<Protected roles={["PERSONNEL_MEDICAL"]}><RegisterPouch /></Protected>} />
-      <Route path="/medical/stock" element={<Protected roles={["PERSONNEL_MEDICAL"]}><Stock /></Protected>} />
-      <Route path="/medical/validity" element={<Protected roles={["PERSONNEL_MEDICAL"]}><Validity /></Protected>} />
-      <Route path="/medical/request" element={<Protected roles={["PERSONNEL_MEDICAL"]}><Request /></Protected>} />
+        {/* Personnel Médical */}
+        <Route path="/medical" element={<Protected roles={["PERSONNEL_MEDICAL"]}><MedicalDashboard /></Protected>} />
+        <Route path="/medical/register" element={<Protected roles={["PERSONNEL_MEDICAL"]}><RegisterPouch /></Protected>} />
+        <Route path="/medical/stock" element={<Protected roles={["PERSONNEL_MEDICAL"]}><Stock /></Protected>} />
+        <Route path="/medical/validity" element={<Protected roles={["PERSONNEL_MEDICAL"]}><Validity /></Protected>} />
+        <Route path="/medical/request" element={<Protected roles={["PERSONNEL_MEDICAL"]}><Request /></Protected>} />
 
-      {/* Donneur */}
-      <Route path="/donor" element={<Protected roles={["DONNEUR"]}><Home /></Protected>} />
-      <Route path="/donor/profile" element={<Protected roles={["DONNEUR"]}><Profile /></Protected>} />
-      <Route path="/donor/points" element={<Protected roles={["DONNEUR"]}><CollectionPoints /></Protected>} />
-      <Route path="/donor/appointments" element={<Protected roles={["DONNEUR"]}><Appointments /></Protected>} />
-      <Route path="/donor/alerts" element={<Protected roles={["DONNEUR"]}><Alerts /></Protected>} />
-      <Route path="/donor/history" element={<Protected roles={["DONNEUR"]}><History /></Protected>} />
+        {/* Donneur */}
+        <Route path="/donor" element={<Protected roles={["DONNEUR"]}><Home /></Protected>} />
+        <Route path="/donor/profile" element={<Protected roles={["DONNEUR"]}><Profile /></Protected>} />
+        <Route path="/donor/points" element={<Protected roles={["DONNEUR"]}><CollectionPoints /></Protected>} />
+        <Route path="/donor/appointments" element={<Protected roles={["DONNEUR"]}><Appointments /></Protected>} />
+        <Route path="/donor/alerts" element={<Protected roles={["DONNEUR"]}><Alerts /></Protected>} />
+        <Route path="/donor/history" element={<Protected roles={["DONNEUR"]}><History /></Protected>} />
 
-      <Route path="*" element={<Navigate to={isAuthenticated && role ? HOME[role] : "/login"} replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to={isAuthenticated && role ? HOME[role] : "/login"} replace />} />
+      </Routes>
+    </QueryClientProvider>
   );
 }
+

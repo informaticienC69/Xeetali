@@ -2,7 +2,7 @@
 // Inspiré de maquette.html · Light + Dark · logique inchangée
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Droplet, Eye, EyeOff, Wifi } from "lucide-react";
+import { Droplet, Eye, EyeOff } from "lucide-react";
 import { ApiError, type Role } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { useTheme } from "../lib/theme";
@@ -52,16 +52,6 @@ export default function Login() {
       className="relative flex min-h-screen items-center justify-center p-4 flex-col"
       style={{ background: "var(--bg)" }}
     >
-      {/* ── Effets "Waouhh" Command Center ── */}
-      <div className="absolute inset-0 pointer-events-none scanlines opacity-30 z-0" />
-      <div className="absolute inset-0 pointer-events-none gridlines opacity-50 z-0" />
-      <div className="absolute inset-0 pointer-events-none holo-shimmer opacity-10 z-0" />
-      
-      {/* Particules d'ambiance */}
-      <div className="absolute top-[15%] left-[5%] w-2 h-2 rounded-full bg-red-500 particle pointer-events-none z-0" style={{ "--dur": "6s", "--delay": "0s" } as any} />
-      <div className="absolute top-[40%] right-[10%] w-3 h-3 rounded-full bg-blue-500 particle pointer-events-none z-0" style={{ "--dur": "8s", "--delay": "1.5s" } as any} />
-      <div className="absolute bottom-[20%] left-[25%] w-1.5 h-1.5 rounded-full bg-teal-400 particle pointer-events-none z-0" style={{ "--dur": "5s", "--delay": "0.5s" } as any} />
-      <div className="absolute top-[60%] right-[30%] w-2.5 h-2.5 rounded-full bg-purple-500 particle pointer-events-none z-0" style={{ "--dur": "7s", "--delay": "2s" } as any} />
       {/* ThemeToggle */}
       <button
         onClick={cycle}
@@ -76,50 +66,25 @@ export default function Login() {
 
         {/* ── Hero ── */}
         <div className="mb-8 text-center">
-          {/* Logo */}
-          <div className="relative mx-auto mb-5 flex h-20 w-20 items-center justify-center">
-            {/* Glow rings */}
-            <span
-              className="absolute inset-0 rounded-2xl pulse-soft"
-              style={{ background: "rgba(230,57,70,0.12)", border: "1px solid rgba(230,57,70,0.20)" }}
-            />
-            <span
-              className="absolute inset-3 rounded-xl pulse-soft"
-              style={{ background: "rgba(230,57,70,0.08)", animationDelay: "0.7s" }}
-            />
-            {/* Logo principal */}
-            <div
-              className="relative flex h-20 w-20 items-center justify-center rounded-[1.25rem] backdrop-blur-md"
-              style={{
-                background: "linear-gradient(135deg, rgba(230,57,70,0.15) 0%, rgba(230,57,70,0.02) 100%)",
-                boxShadow: "0 12px 32px rgba(230,57,70,0.2), inset 0 1px 1px rgba(255,255,255,0.1)",
-                border: "1px solid rgba(230,57,70,0.3)"
-              }}
-            >
-              <Droplet size={38} strokeWidth={2} className="text-red-500" style={{ fill: "rgba(230,57,70,0.25)", filter: "drop-shadow(0 2px 4px rgba(230,57,70,0.4))" }} />
-            </div>
-            {/* Point pulsant */}
-            <span
-              className="absolute -right-1 -top-1 h-3 w-3 rounded-full pulse-soft border-2"
-              style={{
-                background: "var(--blood)",
-                borderColor: "var(--bg)",
-                boxShadow: "0 0 10px var(--blood)",
-              }}
-            />
+          {/* Logo — pastille sobre */}
+          <div
+            className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
+            style={{ background: "var(--blood)", boxShadow: "var(--shadow-md)" }}
+          >
+            <Droplet size={32} strokeWidth={2} style={{ color: "#fff", fill: "rgba(255,255,255,0.25)" }} />
           </div>
 
-          <h1
-            className="syne font-extrabold text-4xl tracking-[0.16em]"
-            style={{ color: "var(--blood)" }}
-          >
-            XÉÉTALI
+          {/* Mot-marque (Syne = branding), un seul É accentué */}
+          <h1 className="font-bold text-4xl tracking-[0.06em]">
+            <span style={{ color: "var(--txt)" }}>X</span>
+            <span style={{ color: "var(--blood)" }}>É</span>
+            <span style={{ color: "var(--txt)" }}>ÉTALI</span>
           </h1>
-          <div className="mono text-[10px] uppercase tracking-[0.22em] mt-1" style={{ color: "var(--txt-mute)" }}>
-            DÉLIVRANCE · CNTS SN
+          <div className="mono text-[10px] uppercase tracking-[0.20em] mt-2" style={{ color: "var(--txt-mute)" }}>
+            Node Central · CNTS Sénégal
           </div>
-          <p className="mono text-[11px] italic mt-2" style={{ color: "var(--txt-mute)" }}>
-            "Joxal sa dërew, mu jox aye dund"
+          <p className="text-[12px] italic mt-2" style={{ color: "var(--txt-dim)" }}>
+            « Joxal sa dërew, mu jox aye dund »
           </p>
         </div>
 
@@ -173,11 +138,10 @@ export default function Login() {
 
             {error && (
               <div
-                className="rounded-lg px-4 py-3 mono text-[12px]"
+                className="rounded-lg px-4 py-3 text-[12px]"
                 style={{
-                  background: "rgba(230,57,70,0.08)",
-                  border: "1px solid rgba(230,57,70,0.35)",
-                  color: "var(--blood)",
+                  background: "var(--crit-tint)",
+                  color: "var(--crit)",
                 }}
               >
                 {error}
@@ -187,7 +151,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-blood w-full py-3 text-sm font-bold"
+              className="btn-blood w-full py-3 text-sm font-semibold rounded-xl"
               style={{ marginTop: 8 }}
             >
               {loading ? (
@@ -195,7 +159,7 @@ export default function Login() {
                   <Spinner size={15} /> Connexion en cours…
                 </span>
               ) : (
-                "SE CONNECTER →"
+                "Se connecter"
               )}
             </button>
           </form>
@@ -224,14 +188,12 @@ export default function Login() {
         </div>
 
         {/* Statut système */}
-        <div className="mt-4 flex items-center justify-center gap-4 mono text-[10px]" style={{ color: "var(--txt-mute)" }}>
+        <div className="mt-4 flex items-center justify-center gap-3 mono text-[10px]" style={{ color: "var(--txt-mute)" }}>
           <span className="flex items-center gap-1.5">
-            <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 9999, background: "var(--ok)", boxShadow: "0 0 8px var(--ok)" }} />
-            Hyperledger SYNC
+            <span className="status-dot" style={{ background: "var(--ok)" }} />
+            Système opérationnel
           </span>
-          <span className="flex items-center gap-1.5">
-            <Wifi size={11} /> LoRaWAN 412
-          </span>
+          <span>·</span>
           <span>v1.4.0</span>
         </div>
       </div>

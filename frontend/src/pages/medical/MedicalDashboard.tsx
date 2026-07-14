@@ -1,6 +1,6 @@
 // MedicalDashboard.tsx — Tableau de bord Personnel Médical "World-Class"
 // Landing page /medical — Vision en temps réel de l'hôpital
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -9,181 +9,163 @@ import {
   ClipboardList,
   Clock,
   Droplet,
-  FileCheck,
   ShieldCheck,
   Syringe,
-  TrendingDown,
+  ChevronRight,
   Zap,
 } from "lucide-react";
 import { api, BLOOD_GROUPS, type BloodGroup, type HospitalInventory } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useAuth } from "../../lib/auth";
-import { Card, KpiTile, GroupBadge, UrgencyBadge, Skeleton } from "../../components/ui";
+import { Card, KpiTile, GroupBadge, UrgencyBadge, Skeleton, Button } from "../../components/ui";
 
-// ── Mini barre de stock par groupe sanguin ─────────────────────────
-function BloodStockBar({
+// ── Carte de stock par groupe sanguin (design clinique) ────────────
+
+function BloodGroupCard({
   groupe,
   count,
-  max,
-  delay,
+  idealStock,
+  lowThreshold,
 }: {
   groupe: BloodGroup;
   count: number;
-  max: number;
-  delay: number;
+  idealStock: number;
+  lowThreshold: number;
 }) {
-  const pct = max > 0 ? Math.round((count / max) * 100) : 0;
-  // Couleur = signal uniquement, pas décoration
-  const tone =
-    count === 0 ? "var(--blood)" : count <= 3 ? "var(--warn)" : "var(--txt-dim)";
-  const bgTone =
-    count === 0
-      ? "rgba(230,57,70,0.08)"
-      : count <= 3
-        ? "rgba(217,119,6,0.07)"
-        : "var(--surface-2)";
-  const borderTone =
-    count === 0
-      ? "rgba(230,57,70,0.30)"
-      : count <= 3
-        ? "rgba(217,119,6,0.25)"
-        : "var(--line)";
-  const barColor =
-    count === 0
-      ? "linear-gradient(90deg, var(--blood), rgba(230,57,70,0.4))"
-      : count <= 3
-        ? "linear-gradient(90deg, var(--warn), rgba(217,119,6,0.5))"
-        : "linear-gradient(90deg, #94a3b8, #64748b88)";
+  const pct = Math.min(Math.round((count / idealStock) * 100), 100);
+  const state = count === 0 ? "empty" : count <= lowThreshold ? "low" : "ok";
+
+  const theme = {
+    empty: { stroke: "var(--crit)", label: "RUPTURE", icon: AlertTriangle },
+    low:   { stroke: "var(--warn)", label: "FAIBLE", icon: Zap },
+    ok:    { stroke: "var(--ok)",   label: "OK", icon: CheckCircle2 },
+  }[state as "empty" | "low" | "ok"];
+
+  const Icon = theme!.icon;
 
   return (
     <div
-      className="card-in flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 hover:-translate-y-0.5"
+      className="flex flex-col gap-2 rounded-xl p-3"
       style={{
-        animationDelay: `${delay}ms`,
-        background: bgTone,
-        border: `1px solid ${borderTone}`,
+        background: "var(--surface)",
+        border: "1px solid var(--line)",
       }}
     >
-      {/* Badge groupe */}
-      <span
-        className="syne font-black text-sm w-9 shrink-0 text-center rounded-lg py-1"
-        style={{
-          background: count === 0 ? "rgba(230,57,70,0.12)" : "var(--surface)",
-          color: tone,
-        }}
-      >
-        {groupe}
-      </span>
-
-      {/* Barre de progression */}
-      <div className="flex-1 flex flex-col gap-1">
-        <div
-          className="rounded-full overflow-hidden"
-          style={{ height: 4, background: "rgba(148,163,184,0.15)" }}
-        >
-          <div
-            className="h-full rounded-full progress-fill"
-            style={{
-              width: `${pct}%`,
-              background: barColor,
-              boxShadow: count === 0 ? "0 0 6px rgba(230,57,70,0.5)" : "none",
-              animationDelay: `${delay + 200}ms`,
-            }}
-          />
-        </div>
+      <div className="flex justify-between items-center">
+        <span className="font-bold text-lg leading-none" style={{ color: "var(--txt)" }}>{groupe}</span>
+        <span className="flex items-center gap-1 mono text-[9px] font-bold uppercase tracking-wider" style={{ color: theme!.stroke }}>
+          <Icon size={10} />
+          {theme!.label}
+        </span>
       </div>
 
-      {/* Compteur */}
-      <div className="flex items-center gap-2 shrink-0">
-        <span
-          className="syne font-black text-lg w-8 text-right leading-none"
-          style={{ color: tone }}
-        >
-          {count}
+      <div className="flex items-baseline gap-1 mt-1">
+        <span className="num font-bold text-2xl leading-none" style={{ color: "var(--txt)" }}>{count}</span>
+        <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
+          {count <= 1 ? "poche" : "poches"}
         </span>
-        {count === 0 ? (
-          <TrendingDown size={12} className="pulse-soft" style={{ color: "var(--blood)" }} />
-        ) : (
-          <span className="mono text-[9px] w-6 text-right" style={{ color: "var(--txt-mute)" }}>
-            {pct}%
-          </span>
-        )}
+      </div>
+      {/* Barre de progression */}
+      <div className="h-1.5 rounded-full mt-2" style={{ background: "var(--surface-2)" }}>
+        <div
+          className="h-full rounded-full transition-all duration-300"
+          style={{
+            width: `${pct}%`,
+            background: theme!.stroke
+          }}
+        />
       </div>
     </div>
   );
 }
 
-// ── Carte d'action rapide ─────────────────────────────────────────
-function QuickActionCard({
-  icon: Icon,
-  label,
-  sub,
-  to,
-  tone,
-  delay,
+// ── Composant famille de groupes sanguins ────────────────────────────
+function BloodFamily({
+  family,
+  groups,
+  idealStock,
+  lowThreshold,
 }: {
-  icon: typeof Droplet;
-  label: string;
-  sub: string;
-  to: string;
-  tone: "blood" | "ok" | "warn";
-  delay: number;
+  family: string;
+  groups: { type: BloodGroup; count: number }[];
+  idealStock: number;
+  lowThreshold: number;
 }) {
-  const navigate = useNavigate();
-  const colors = {
-    blood: { bg: "rgba(230,57,70,0.10)", border: "rgba(230,57,70,0.30)", color: "var(--blood)", hover: "rgba(230,57,70,0.18)" },
-    ok:    { bg: "rgba(22,163,74,0.10)",   border: "rgba(22,163,74,0.30)",   color: "var(--ok)",   hover: "rgba(22,163,74,0.18)"   },
-    warn:  { bg: "rgba(217,119,6,0.10)",   border: "rgba(217,119,6,0.30)",   color: "var(--warn)", hover: "rgba(217,119,6,0.18)"   },
-  };
-  const c = colors[tone];
-
   return (
-    <button
-      onClick={() => navigate(to)}
-      className="card-in w-full text-left flex items-center gap-4 rounded-xl transition-all duration-200 cursor-pointer group"
-      style={{
-        padding: "14px 18px",
-        background: c.bg,
-        border: `1px solid ${c.border}`,
-        animationDelay: `${delay}ms`,
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.background = c.hover;
-        (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-        (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 24px ${c.color}22`;
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.background = c.bg;
-        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-        (e.currentTarget as HTMLElement).style.boxShadow = "none";
-      }}
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <div className="w-1 h-4 rounded" style={{ background: "var(--accent)" }} />
+        <span className="font-semibold text-sm" style={{ color: "var(--txt)" }}>Groupe {family}</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 pl-3">
+        {groups.map((g) => (
+          <BloodGroupCard 
+            key={g.type} 
+            groupe={g.type} 
+            count={g.count} 
+            idealStock={idealStock}
+            lowThreshold={lowThreshold}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Synthèse de santé du stock ───────────────────────────────────────
+function StockHealthSummary({
+  ok,
+  low,
+  empty,
+  total,
+}: {
+  ok: number;
+  low: number;
+  empty: number;
+  total: number;
+}) {
+  return (
+    <div
+      className="rounded-xl p-4"
+      style={{ background: "var(--surface-2)" }}
     >
-      <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-        style={{ background: `${c.color}20`, border: `1px solid ${c.color}40` }}
-      >
-        <Icon size={18} style={{ color: c.color }} />
+      <div className="flex items-center justify-between mb-3">
+        <span className="mono text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--txt-dim)" }}>
+          Santé du stock
+        </span>
+        <span className="mono text-[10px]" style={{ color: "var(--txt-mute)" }}>
+          {total} poches total
+        </span>
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="syne font-bold text-sm" style={{ color: "var(--txt)" }}>
-          {label}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="flex flex-col items-center gap-1 rounded-lg py-3" style={{ background: "var(--ok-tint)" }}>
+          <span className="num font-bold text-xl" style={{ color: "var(--ok)" }}>{ok}</span>
+          <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "var(--ok)" }}>OK</span>
         </div>
-        <div className="mono text-[10px] uppercase tracking-wider mt-0.5" style={{ color: "var(--txt-mute)" }}>
-          {sub}
+        <div className="flex flex-col items-center gap-1 rounded-lg py-3" style={{ background: "var(--warn-tint)" }}>
+          <span className="num font-bold text-xl" style={{ color: "var(--warn)" }}>{low}</span>
+          <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "var(--warn)" }}>Faibles</span>
+        </div>
+        <div className="flex flex-col items-center gap-1 rounded-lg py-3" style={{ background: "var(--crit-tint)" }}>
+          <span className="num font-bold text-xl" style={{ color: "var(--crit)" }}>{empty}</span>
+          <span className="mono text-[9px] uppercase tracking-wider" style={{ color: "var(--crit)" }}>Rupture</span>
         </div>
       </div>
-      <Zap size={14} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: c.color }} />
-    </button>
+    </div>
   );
 }
 
 // ── Composant principal ────────────────────────────────────────────
 export default function MedicalDashboard() {
   const { hospitalId, nom } = useAuth();
+  const navigate = useNavigate();
   const inv = useApi(() => api.inventory(), []);
   const requests = useApi(() => api.listRequests(), []);
+  const config = useApi(() => api.publicConfig(), []);
 
   const prenom = (nom ?? "").split(" ")[0];
+  const idealStock = config.data?.ideal_stock ?? 50;
+  const lowThreshold = config.data?.low_stock_threshold ?? 5;
 
   // Stock de l'hôpital connecté
   const myHospital = useMemo<HospitalInventory | null>(() => {
@@ -202,7 +184,8 @@ export default function MedicalDashboard() {
   }, [myHospital]);
 
   const maxStock = useMemo(
-    () => Math.max(...Object.values(stockByGroup), 1),
+    // 50 poches = objectif de stock idéal. La barre sera calculée par rapport à ça (ou plus si surplus).
+    () => Math.max(...Object.values(stockByGroup), 50),
     [stockByGroup],
   );
 
@@ -243,14 +226,14 @@ export default function MedicalDashboard() {
   return (
     <div className="space-y-6">
       {/* ── En-tête salutation ── */}
-      <div className="card-in flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="mono text-[10px] uppercase tracking-[0.14em] mb-1" style={{ color: "var(--txt-mute)" }}>
             {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
           </div>
-          <h1 className="syne font-extrabold text-2xl page-title-glow" style={{ color: "var(--txt)" }}>
+          <h1 className="font-bold text-2xl" style={{ color: "var(--txt)", letterSpacing: "-0.015em" }}>
             {greeting},{" "}
-            <span style={{ color: "var(--blood)" }}>{prenom || "Docteur"}</span>
+            <span style={{ color: "var(--txt)" }}>{prenom || "Docteur"}</span>
           </h1>
           {myHospital && (
             <div className="mono text-[11px] mt-0.5" style={{ color: "var(--txt-mute)" }}>
@@ -261,18 +244,60 @@ export default function MedicalDashboard() {
 
         {criticalReqs > 0 && (
           <div
-            className="pulse-blood flex items-center gap-2 rounded-xl px-4 py-2"
+            className="flex items-center gap-2 rounded-xl px-4 py-2"
             style={{
-              background: "rgba(230,57,70,0.12)",
-              border: "1px solid rgba(230,57,70,0.45)",
+              background: "var(--crit-tint)",
+              border: "1px solid color-mix(in srgb, var(--crit) 30%, transparent)",
             }}
           >
-            <AlertTriangle size={16} className="pulse-soft" style={{ color: "var(--blood)" }} />
-            <span className="mono text-[11px] font-bold" style={{ color: "var(--blood)" }}>
+            <AlertTriangle size={16} style={{ color: "var(--crit)" }} />
+            <span className="mono text-[11px] font-bold" style={{ color: "var(--crit)" }}>
               {criticalReqs} demande{criticalReqs > 1 ? "s" : ""} CRITIQUE{criticalReqs > 1 ? "S" : ""}
             </span>
           </div>
         )}
+      </div>
+
+      {/* ── Priorités du moment ── */}
+      <div
+        className="rounded-2xl border p-4 md:p-5"
+        style={{
+          background: "linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%)",
+          borderColor: "var(--line)",
+        }}
+      >
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="mono text-[10px] uppercase tracking-[0.14em] mb-1" style={{ color: "var(--txt-mute)" }}>
+              Priorités du moment
+            </div>
+            <div className="font-semibold text-base" style={{ color: "var(--txt)" }}>
+              {criticalReqs > 0
+                ? `${criticalReqs} demande${criticalReqs > 1 ? "s" : ""} critique${criticalReqs > 1 ? "s" : ""} requiert une action immédiate`
+                : "Aucune urgence critique en cours"}
+            </div>
+            <div className="mt-1 text-sm" style={{ color: "var(--txt-dim)" }}>
+              {groupsAlerts.length > 0
+                ? `Rupture de stock sur ${groupsAlerts.join(", ")}`
+                : "Le stock est globalement stable pour les groupes principaux"}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <span
+              className="rounded-full px-3 py-1 text-[11px] font-semibold"
+              style={{ background: "var(--warn-tint)", color: "var(--warn)" }}
+            >
+              Urgence · {criticalReqs}
+            </span>
+            <span
+              className="rounded-full px-3 py-1 text-[11px] font-semibold"
+              style={{ background: "var(--crit-tint)", color: "var(--crit)" }}
+            >
+              Rupture · {groupsAlerts.length}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* ── KPIs ── */}
@@ -282,8 +307,8 @@ export default function MedicalDashboard() {
           label="Poches disponibles"
           value={totalDispo}
           sub="hôpital"
-          tone={totalDispo === 0 ? "crit" : totalDispo <= 10 ? "warn" : "ok"}
-          pulse={totalDispo <= 5}
+          tone={totalDispo === 0 ? "crit" : totalDispo <= lowThreshold * 2 ? "warn" : "ok"}
+          pulse={totalDispo <= lowThreshold}
           delay={0}
         />
         <KpiTile
@@ -315,27 +340,23 @@ export default function MedicalDashboard() {
       {/* ── Contenu principal ── */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 
-        {/* ── Stock par groupe sanguin ── */}
+        {/* ── Stock par groupe sanguin (layout amélioré) ── */}
         <Card
           title="Stock · Hôpital"
           subtitle="Poches disponibles par groupe"
-          className="lg:col-span-1"
+          className="lg:col-span-1 lg:self-start"
           action={
             groupsAlerts.length > 0 ? (
               <span
-                className="mono text-[10px] px-2 py-0.5 rounded-md border uppercase tracking-wider font-bold pulse-soft"
-                style={{
-                  color: "var(--blood)",
-                  background: "rgba(230,57,70,0.10)",
-                  borderColor: "rgba(230,57,70,0.35)",
-                }}
+                className="mono text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider font-bold"
+                style={{ color: "var(--crit)", background: "var(--crit-tint)" }}
               >
                 {groupsAlerts.length} rupture{groupsAlerts.length > 1 ? "s" : ""}
               </span>
             ) : (
               <span
-                className="mono text-[10px] px-2 py-0.5 rounded-md border uppercase tracking-wider font-bold"
-                style={{ color: "var(--ok)", background: "rgba(22,163,74,0.10)", borderColor: "rgba(22,163,74,0.35)" }}
+                className="mono text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider font-bold"
+                style={{ color: "var(--ok)", background: "var(--ok-tint)" }}
               >
                 Nominal
               </span>
@@ -343,31 +364,68 @@ export default function MedicalDashboard() {
           }
         >
           {inv.loading ? (
-            <div className="space-y-2">
-              {BLOOD_GROUPS.map((g) => <Skeleton key={g} className="h-10 rounded-xl" />)}
+            <div className="flex flex-col gap-4">
+              <Skeleton className="h-[80px] rounded-xl" />
+              <div className="space-y-3">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-[20px] w-16 rounded-md" />
+                    <div className="grid grid-cols-2 gap-2 pl-3">
+                      <Skeleton className="h-[90px] rounded-xl" />
+                      <Skeleton className="h-[90px] rounded-xl" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              {BLOOD_GROUPS.map((g, i) => (
-                <BloodStockBar
-                  key={g}
-                  groupe={g}
-                  count={stockByGroup[g]}
-                  max={maxStock}
-                  delay={i * 50}
-                />
-              ))}
+            <div className="flex flex-col gap-4">
+              {/* Synthèse de santé du stock (en haut maintenant) */}
+              <StockHealthSummary
+                ok={BLOOD_GROUPS.filter(g => stockByGroup[g] > lowThreshold).length}
+                low={BLOOD_GROUPS.filter(g => stockByGroup[g] > 0 && stockByGroup[g] <= lowThreshold).length}
+                empty={BLOOD_GROUPS.filter(g => stockByGroup[g] === 0).length}
+                total={totalDispo}
+              />
 
-              {/* Totaux */}
-              <div
-                className="mt-2 flex items-center justify-between px-3 py-2 rounded-xl"
-                style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}
-              >
-                <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>Total disponible</span>
-                <span className="syne font-black text-xl" style={{ color: totalDispo === 0 ? "var(--blood)" : totalDispo <= 10 ? "var(--warn)" : "var(--ok)" }}>
-                  {totalDispo}
-                  <span className="syne font-normal text-xs ml-1" style={{ color: "var(--txt-mute)" }}>poches</span>
-                </span>
+              {/* Groupes par famille */}
+              <div className="space-y-3">
+                <BloodFamily
+                  family="A"
+                  idealStock={idealStock}
+                  lowThreshold={lowThreshold}
+                  groups={[
+                    { type: "A+" as BloodGroup, count: stockByGroup["A+" as BloodGroup] },
+                    { type: "A-" as BloodGroup, count: stockByGroup["A-" as BloodGroup] },
+                  ]}
+                />
+                <BloodFamily
+                  family="B"
+                  idealStock={idealStock}
+                  lowThreshold={lowThreshold}
+                  groups={[
+                    { type: "B+" as BloodGroup, count: stockByGroup["B+" as BloodGroup] },
+                    { type: "B-" as BloodGroup, count: stockByGroup["B-" as BloodGroup] },
+                  ]}
+                />
+                <BloodFamily
+                  family="AB"
+                  idealStock={idealStock}
+                  lowThreshold={lowThreshold}
+                  groups={[
+                    { type: "AB+" as BloodGroup, count: stockByGroup["AB+" as BloodGroup] },
+                    { type: "AB-" as BloodGroup, count: stockByGroup["AB-" as BloodGroup] },
+                  ]}
+                />
+                <BloodFamily
+                  family="O"
+                  idealStock={idealStock}
+                  lowThreshold={lowThreshold}
+                  groups={[
+                    { type: "O+" as BloodGroup, count: stockByGroup["O+" as BloodGroup] },
+                    { type: "O-" as BloodGroup, count: stockByGroup["O-" as BloodGroup] },
+                  ]}
+                />
               </div>
             </div>
           )}
@@ -375,6 +433,24 @@ export default function MedicalDashboard() {
 
         {/* ── Colonne droite : demandes + actions rapides ── */}
         <div className="lg:col-span-2 space-y-6">
+
+          {/* ── Actions rapides (déplacées en haut pour plus de visibilité) ── */}
+          <Card title="Actions prioritaires" subtitle="Accès direct aux tâches courantes">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Button onClick={() => navigate("/medical/register")} variant="blood" className="justify-center py-3">
+                <Droplet size={18} className="mr-2" />
+                <span className="text-sm font-medium">Nouvelle poche</span>
+              </Button>
+              <Button onClick={() => navigate("/medical/validity")} variant="outline" className="justify-center py-3">
+                <ShieldCheck size={18} className="mr-2" />
+                <span className="text-sm font-medium">Vérifier UID</span>
+              </Button>
+              <Button onClick={() => navigate("/medical/request")} variant="secondary" className="justify-center py-3">
+                <Syringe size={18} className="mr-2" />
+                <span className="text-sm font-medium">Demande sang</span>
+              </Button>
+            </div>
+          </Card>
 
           {/* ── Demandes urgentes ── */}
           <Card
@@ -405,23 +481,17 @@ export default function MedicalDashboard() {
                   return (
                     <div
                       key={r.id}
-                      className="card-in flex items-center gap-3 rounded-xl px-4 py-3 transition-all"
+                      className="flex items-center gap-3 rounded-xl px-4 py-3"
                       style={{
-                        animationDelay: `${i * 60}ms`,
-                        background: isCrit
-                          ? "rgba(230,57,70,0.06)"
-                          : isUrg
-                            ? "rgba(217,119,6,0.06)"
-                            : "var(--surface-2)",
-                        border: `1px solid ${isCrit ? "rgba(230,57,70,0.25)" : isUrg ? "rgba(217,119,6,0.20)" : "var(--line)"}`,
-                        boxShadow: isCrit ? "inset 3px 0 0 var(--blood)" : isUrg ? "inset 3px 0 0 var(--warn)" : "none",
+                        background: "var(--surface)",
+                        border: "1px solid var(--line)",
                       }}
                     >
                       {isCrit && (
-                        <AlertTriangle size={14} className="shrink-0 pulse-soft" style={{ color: "var(--blood)" }} />
+                        <AlertTriangle size={14} className="shrink-0" style={{ color: "var(--crit)" }} />
                       )}
                       <GroupBadge groupe={r.groupe_sanguin} />
-                      <span className="syne font-bold text-sm" style={{ color: "var(--txt)" }}>
+                      <span className="font-bold text-sm" style={{ color: "var(--txt)" }}>
                         {r.quantite} poche{r.quantite > 1 ? "s" : ""}
                       </span>
                       <span className="flex-1" />
@@ -436,48 +506,13 @@ export default function MedicalDashboard() {
             )}
           </Card>
 
-          {/* ── Actions rapides ── */}
-          <Card title="Actions rapides" subtitle="Accès direct">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <QuickActionCard
-                icon={Droplet}
-                label="Nouvelle poche"
-                sub="Enregistrement"
-                to="/medical/register"
-                tone="blood"
-                delay={0}
-              />
-              <QuickActionCard
-                icon={ShieldCheck}
-                label="Vérifier UID"
-                sub="Contrôle qualité"
-                to="/medical/validity"
-                tone="ok"
-                delay={60}
-              />
-              <QuickActionCard
-                icon={Syringe}
-                label="Demande de sang"
-                sub="Urgences"
-                to="/medical/request"
-                tone="warn"
-                delay={120}
-              />
-            </div>
-          </Card>
-
         </div>
       </div>
 
-      {/* ── Footer statut ── */}
       <div className="flex items-center gap-4 py-2">
-        <span className="h-1.5 w-1.5 rounded-full pulse-soft" style={{ background: "var(--ok)", boxShadow: "0 0 8px var(--ok)" }} />
+        <span className="status-dot" style={{ background: "var(--ok)" }} />
         <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
           Données actualisées · {new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-        </span>
-        <span className="ml-auto mono text-[10px]" style={{ color: "var(--txt-mute)" }}>
-          <FileCheck size={10} className="inline mr-1" style={{ color: "var(--ok)" }} />
-          Hyperledger SYNC
         </span>
       </div>
     </div>

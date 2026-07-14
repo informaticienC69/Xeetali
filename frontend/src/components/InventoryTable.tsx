@@ -49,7 +49,7 @@ export default function InventoryTable({ inventory }: Props) {
               {BLOOD_GROUPS.map((g) => (
                 <th key={g} className="px-2 py-3 text-center">
                   <span className="mono text-[10px] font-bold px-1.5 py-0.5 rounded"
-                        style={{ color: "var(--blood)", background: "rgba(230,57,70,0.10)" }}>{g}</span>
+                        style={{ color: "var(--blood)", background: "rgba(206,51,65,0.10)" }}>{g}</span>
                 </th>
               ))}
               <th className="px-3 py-3 text-center">
@@ -65,7 +65,7 @@ export default function InventoryTable({ inventory }: Props) {
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
               >
-                <td className="px-4 py-3 syne font-semibold text-sm" style={{ color: "var(--txt)" }}>{h.nom}</td>
+                <td className="px-4 py-3 font-semibold text-sm" style={{ color: "var(--txt)" }}>{h.nom}</td>
                 <td className="px-4 py-3 mono text-[11px]" style={{ color: "var(--txt-mute)" }}>{h.localisation}</td>
                 {BLOOD_GROUPS.map((g) => {
                   const q = quantiteFor(h, g);

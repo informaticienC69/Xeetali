@@ -23,6 +23,7 @@ from app.routers import (
     appointments,
     auth,
     collection_points,
+    configuration,
     donors,
     inventory,
     pouches,
@@ -40,7 +41,6 @@ from app.services.exceptions import (
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("xeetali")
 
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.app_name,
@@ -69,6 +69,7 @@ for r in (
     donors.router,
     appointments.router,
     alerts.router,
+    configuration.router,
     admin.router,
 ):
     app.include_router(r)

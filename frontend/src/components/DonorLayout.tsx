@@ -32,56 +32,36 @@ export default function DonorLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen justify-center" style={{ background: "var(--bg-2)" }}>
       <div
-        className="relative flex w-full max-w-md flex-col"
+        className="relative flex w-full flex-col"
         style={{ background: "var(--bg)", minHeight: "100svh" }}
       >
-        {/* ── Effets "Waouhh" Command Center ── */}
-        <div className="absolute inset-0 pointer-events-none scanlines opacity-30 z-0" />
-        <div className="absolute inset-0 pointer-events-none gridlines opacity-50 z-0" />
-        <div className="absolute inset-0 pointer-events-none holo-shimmer opacity-10 z-0" />
-        
-        {/* Particules d'ambiance */}
-        <div className="absolute top-[15%] left-[5%] w-2 h-2 rounded-full bg-red-500 particle pointer-events-none z-0" style={{ "--dur": "6s", "--delay": "0s" } as any} />
-        <div className="absolute top-[40%] right-[10%] w-3 h-3 rounded-full bg-blue-500 particle pointer-events-none z-0" style={{ "--dur": "8s", "--delay": "1.5s" } as any} />
-        <div className="absolute bottom-[20%] left-[25%] w-1.5 h-1.5 rounded-full bg-teal-400 particle pointer-events-none z-0" style={{ "--dur": "5s", "--delay": "0.5s" } as any} />
-        <div className="absolute top-[60%] right-[30%] w-2.5 h-2.5 rounded-full bg-purple-500 particle pointer-events-none z-0" style={{ "--dur": "7s", "--delay": "2s" } as any} />
+        {/* ── Effets Command Center supprimés ── */}
 
         {/* ── App Bar ── */}
-        <header
-          className="relative px-5 pb-4 pt-6 overflow-hidden"
-          style={{ background: "transparent" }}
-        >
-          {/* Lumière rouge diffuse en haut (Néon) */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-16 pointer-events-none"
-               style={{ background: "radial-gradient(ellipse at top, rgba(230,57,70,0.12) 0%, transparent 70%)", filter: "blur(20px)" }} />
-
-          <div className="flex items-center justify-between relative z-10">
+        <header className="relative px-5 pb-4 pt-6" style={{ background: "transparent" }}>
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3.5">
-              {/* Avatar Glassmorphic */}
-              <div className="relative shrink-0 group cursor-pointer transition-all duration-300 hover:shadow-[0_0_20px_rgba(230,57,70,0.3)] hover:scale-105 rounded-full">
-                <div 
-                  className="relative flex items-center justify-center w-[46px] h-[46px] rounded-full syne font-extrabold text-[13px] tracking-wider backdrop-blur-md" 
-                  style={{ 
-                    background: "linear-gradient(135deg, rgba(230,57,70,0.15) 0%, rgba(230,57,70,0.02) 100%)",
-                    boxShadow: "inset 0 1px 1px rgba(255,255,255,0.15)",
-                    border: "1px solid rgba(230,57,70,0.3)",
-                    color: "var(--blood)",
-                    textShadow: "0 0 12px rgba(230,57,70,0.5)"
-                  }}
-                >
-                  {prenom ? prenom.substring(0, 2).toUpperCase() : "DO"}
-                </div>
+              {/* Avatar — pastille sobre */}
+              <div
+                className="flex items-center justify-center w-[46px] h-[46px] rounded-full font-bold text-[13px] shrink-0"
+                style={{
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--line)",
+                  color: "var(--txt-dim)",
+                }}
+              >
+                {prenom ? prenom.substring(0, 2).toUpperCase() : "DO"}
               </div>
 
               {/* Texte Identité */}
               <div>
-                <h1 className="syne font-extrabold text-[20px] leading-tight flex items-center gap-1.5" style={{ color: "var(--txt)" }}>
-                  {prenom || "Donneur"} <Hand size={16} style={{ color: "#f59e0b" }} className="animate-[wiggle_1s_ease-in-out_infinite] origin-bottom-right" />
+                <h1 className="font-bold text-[20px] leading-tight flex items-center gap-1.5" style={{ color: "var(--txt)", letterSpacing: "-0.01em" }}>
+                  {prenom || "Donneur"} <Hand size={16} style={{ color: "var(--warn)" }} />
                 </h1>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <Sparkles size={10} style={{ color: "var(--blood)" }} />
-                  <p className="mono text-[10px] italic" style={{ color: "var(--txt-dim)" }}>
-                    "Joxal sa dërew, mu jox aye dund"
+                  <Sparkles size={10} style={{ color: "var(--txt-mute)" }} />
+                  <p className="text-[11px] italic" style={{ color: "var(--txt-dim)" }}>
+                    « Joxal sa dërew, mu jox aye dund »
                   </p>
                 </div>
               </div>
@@ -91,27 +71,30 @@ export default function DonorLayout({ children }: { children: ReactNode }) {
               {/* Thème */}
               <button
                 onClick={cycle}
-                className="flex h-10 w-10 items-center justify-center rounded-full transition-all hover:bg-white/10 active:scale-95"
+                className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:scale-95"
                 style={{ color: "var(--txt-mute)" }}
                 aria-label="Changer de thème"
               >
                 <ThemeIcon size={18} />
               </button>
-              {/* Bell avec pastille rouge */}
+              {/* Bell + indicateur de notification */}
               <NavLink
                 to="/donor/alerts"
-                className="relative flex h-10 w-10 items-center justify-center rounded-full transition-all hover:bg-white/10 active:scale-95"
+                className="relative flex h-10 w-10 items-center justify-center rounded-full transition-colors active:scale-95"
                 style={{ color: "var(--txt-mute)" }}
+                aria-label="Alertes"
               >
                 <Bell size={18} />
-                <span className="absolute top-[10px] right-[10px] w-[6px] h-[6px] rounded-full animate-pulse" style={{ background: "var(--blood)", boxShadow: "0 0 6px var(--blood-glow)" }} />
+                <span className="absolute top-[10px] right-[10px] w-[6px] h-[6px] rounded-full" style={{ background: "var(--crit)" }} />
               </NavLink>
               {/* Logout */}
               <button
                 onClick={() => { logout(); navigate("/login"); }}
-                className="flex h-10 w-10 items-center justify-center rounded-full transition-all hover:bg-red-500/10 hover:text-red-500 active:scale-95"
+                className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:scale-95"
                 style={{ color: "var(--txt-mute)" }}
                 aria-label="Se déconnecter"
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--crit)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--txt-mute)"; }}
               >
                 <LogOut size={18} />
               </button>
@@ -134,11 +117,9 @@ export default function DonorLayout({ children }: { children: ReactNode }) {
         <nav
           className="fixed bottom-6 left-1/2 z-30 w-[92%] max-w-[400px] -translate-x-1/2 rounded-full"
           style={{
-            background: "color-mix(in srgb, var(--surface) 70%, transparent)",
-            backdropFilter: "blur(24px) saturate(1.5)",
-            WebkitBackdropFilter: "blur(24px) saturate(1.5)",
-            border: "1px solid color-mix(in srgb, var(--line) 50%, rgba(255,255,255,0.1))",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.15), 0 12px 40px rgba(0,0,0,0.2)",
+            background: "var(--surface)",
+            border: "1px solid var(--line)",
+            boxShadow: "var(--shadow-lg)",
             padding: "8px 12px"
           }}
         >
@@ -150,20 +131,20 @@ export default function DonorLayout({ children }: { children: ReactNode }) {
                   key={to}
                   to={to}
                   end={to === "/donor"}
-                  className="flex flex-col items-center justify-center gap-1.5 transition-all duration-300 active:scale-95 flex-1 h-14 rounded-full"
+                  className="flex flex-col items-center justify-center gap-1.5 transition-colors active:scale-95 flex-1 h-14 rounded-full"
                   style={{
-                    color: active ? "var(--blood)" : "var(--txt-mute)",
+                    color: active ? "var(--clinic)" : "var(--txt-mute)",
                   }}
                 >
                   <div className="relative">
-                    <Icon size={22} strokeWidth={active ? 2.5 : 1.5} className="transition-all duration-300" style={{ filter: active ? "drop-shadow(0 2px 8px var(--blood-glow))" : "none" }} />
+                    <Icon size={22} strokeWidth={active ? 2.4 : 1.7} />
                     {active && (
-                      <div className="absolute -bottom-2 left-1/2 w-1 h-1 rounded-full -translate-x-1/2 transition-all" style={{ background: "var(--blood)", boxShadow: "0 0 8px var(--blood)" }} />
+                      <div className="absolute -bottom-2 left-1/2 w-1 h-1 rounded-full -translate-x-1/2" style={{ background: "var(--clinic)" }} />
                     )}
                   </div>
-                  <span 
-                    className="syne text-[10px] font-semibold transition-all duration-300"
-                    style={{ opacity: active ? 1 : 0.7 }}
+                  <span
+                    className="text-[10px] font-semibold"
+                    style={{ opacity: active ? 1 : 0.75 }}
                   >
                     {label}
                   </span>

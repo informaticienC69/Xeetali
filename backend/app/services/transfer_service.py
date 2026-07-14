@@ -10,7 +10,8 @@ from __future__ import annotations
 import logging
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.models.hospital import Hospital
 from app.models.pouch import BloodPouch
@@ -22,14 +23,14 @@ from app.services.exceptions import HospitalNotFoundError, InsufficientStockErro
 logger = logging.getLogger("xeetali.transfer")
 
 
-def _get_hospital(db: Session, hospital_id: int) -> Hospital:
-    hospital = db.get(Hospital, hospital_id)
+async def _get_hospital(db: AsyncSession, hospital_id: int) -> Hospital:
+    hospital = await db.get(Hospital, hospital_id)
     if hospital is None:
         raise HospitalNotFoundError(f"Hôpital {hospital_id} introuvable.")
     return hospital
 
 
-def execute_transfer(db: Session, payload: TransferCreate, user_id: int) -> TransferOrder:
+async def execute_transfer(db: AsyncSession, payload: TransferCreate, user_id: int) -> TransferOrder:
     """Réaffecte N poches source→cible de façon atomique (UC-04).
 
     Insuffisant → ``InsufficientStockError`` (409) sans aucune modification.
@@ -40,18 +41,18 @@ def execute_transfer(db: Session, payload: TransferCreate, user_id: int) -> Tran
         _get_hospital(db, payload.target_hospital_id)
 
         # Poches disponibles à la source, FIFO par péremption (plus proche d'abord).
-        pouches = list(
-            db.scalars(
-                select(BloodPouch)
-                .where(
-                    BloodPouch.hospital_id == payload.source_hospital_id,
-                    BloodPouch.groupe_sanguin == groupe,
-                    BloodPouch.statut == PouchStatus.DISPONIBLE.value,
-                )
-                .order_by(BloodPouch.date_peremption)
-                .limit(payload.quantite)
-            ).all()
+        result = await db.scalars(
+            select(BloodPouch)
+            .where(
+                BloodPouch.hospital_id == payload.source_hospital_id,
+                BloodPouch.groupe_sanguin == groupe,
+                BloodPouch.statut == PouchStatus.DISPONIBLE.value,
+            )
+            .with_for_update(skip_locked=True)
+            .order_by(BloodPouch.date_peremption)
+            .limit(payload.quantite)
         )
+        pouches = list(result.all())
         if len(pouches) < payload.quantite:
             raise InsufficientStockError(
                 f"Stock insuffisant à la source pour {groupe} "
@@ -71,10 +72,10 @@ def execute_transfer(db: Session, payload: TransferCreate, user_id: int) -> Tran
             created_by=user_id,
         )
         db.add(order)
-        db.commit()
-        db.refresh(order)
+        await db.commit()
+        await db.refresh(order)
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise
 
     logger.info(

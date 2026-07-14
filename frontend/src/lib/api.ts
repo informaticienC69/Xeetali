@@ -199,6 +199,11 @@ export interface Analytics {
   dons_par_mois: TimePoint[];
 }
 
+export interface PublicConfig {
+  ideal_stock: number;
+  low_stock_threshold: number;
+}
+
 const TOKEN_KEY = "xeetali_token";
 export const tokenStore = {
   get: () => localStorage.getItem(TOKEN_KEY),
@@ -289,6 +294,7 @@ export const api = {
     quantite: number;
     urgence: string;
   }) => request<BloodRequest>("POST", "/api/requests", payload),
+  updateRequest: (id: number, payload: Partial<BloodRequest>) => request<BloodRequest>("PUT", `/api/requests/${id}`, payload),
   listRequests: () => request<BloodRequest[]>("GET", "/api/requests"),
 
   myProfile: () => request<DonorProfile>("GET", "/api/donors/me/profile"),
@@ -324,6 +330,7 @@ export const api = {
 
   dashboard: () => request<DashboardStats>("GET", "/api/admin/dashboard"),
   analytics: () => request<Analytics>("GET", "/api/admin/analytics"),
+  publicConfig: () => request<PublicConfig>("GET", "/api/config/public"),
   listUsers: () => request<User[]>("GET", "/api/admin/users"),
   createUser: (payload: { nom: string; email: string; password: string; role: Role; hospital_id?: number | null }) =>
     request<User>("POST", "/api/admin/users", payload),

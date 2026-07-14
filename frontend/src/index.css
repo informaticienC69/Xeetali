@@ -1,763 +1,355 @@
 /* ═══════════════════════════════════════════════════════════════
-   XÉÉTALI — Design System "Command Center"
-   Inspiré de maquette.html · Light + Dark · Syne + DM Mono
+   XÉÉTALI — Design System « Clinique clair »
+   Calme, lisible, sûr. Un seul accent (rouge sang) réservé à l'urgence ;
+   statuts via palette sémantique distincte ; mouvement quasi-nul.
+   Polices self-hostées via @fontsource (voir src/main.tsx) — plus de CDN.
+   Thème : tokens sur :root (clair) surchargés sous .dark (classe posée sur <html>).
    ═══════════════════════════════════════════════════════════════ */
-
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
 
 @import "tailwindcss";
 
-/* ── Tokens : mode LIGHT (défaut) ─────────────────────────────── */
+/* ── Tokens : mode CLAIR (défaut) ─────────────────────────────── */
 :root {
-  --bg:           #f0f2f8;
-  --bg-2:         #e8ecf6;
+  --bg:           #f7f9fb;
+  --bg-2:         #f1f5f8;
   --surface:      #ffffff;
-  --surface-2:    #e8edf8;
-  --line:         #d1d9ee;
-  --line-2:       #bcc8e8;
-  --blood:        #E63946;
-  --blood-dim:    #c1232f;
-  --blood-glow:   rgba(230, 57, 70, 0.25);
-  --ok:           #16a34a;
-  --warn:         #d97706;
-  --crit:         #E63946;
-  --txt:          #0f1629;
-  --txt-dim:      #4a5578;
-  --txt-mute:     #8a96b8;
-  --phosphor:     #39FF14;
-  --phosphor-dim: rgba(57, 255, 20, 0.35);
+  --surface-2:    #f1f5f8;
+  --line:         #e4eaef;
+  --line-2:       #d3dce4;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 4px rgba(15, 22, 41, 0.08);
-  --shadow-md: 0 4px 16px rgba(15, 22, 41, 0.10);
-  --shadow-lg: 0 8px 32px rgba(15, 22, 41, 0.12);
+  /* Accent unique — rouge sang maîtrisé (rare = signal d'urgence) */
+  --blood:        #ce3341;
+  --blood-dim:    #a61f2b;
+  --blood-glow:   rgba(206, 51, 65, 0.14);
+  --blood-tint:   #fbeaec;
+
+  /* Bleu clinique — action normale, liens, sélection */
+  --clinic:       #2e6fb0;
+  --clinic-dim:   #245c93;
+  --clinic-tint:  #e8f0f8;
+
+  /* Sémantique de statut (distincte de l'accent) */
+  --ok:           #1f9d63;  --ok-tint:   #e7f4ee;
+  --warn:         #b0710f;  --warn-tint: #f7eedc;
+  --crit:         #c42b39;  --crit-tint: #fbeaec;
+  --info:         #2e6fb0;  --info-tint: #e8f0f8;
+
+  /* Alias legacy (composants existants) → repointés sur le calme */
+  --txt:          #121b2a;
+  --txt-dim:      #55627a;
+  --txt-mute:     #8996a8;
+  --phosphor:     #1f9d63;
+  --phosphor-dim: rgba(31, 157, 99, 0.20);
+  --neon-blood:      var(--blood);
+  --neon-gold:       var(--warn);
+  --neon-blood-glow: var(--blood-glow);
+  --neon-gold-glow:  rgba(176, 113, 15, 0.16);
+
+  /* Élévation : ombres neutres douces (aucun glow coloré) */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 2px 8px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 6px 20px rgba(16, 24, 40, 0.08), 0 2px 6px rgba(16, 24, 40, 0.05);
+
+  --radius:    12px;
+  --radius-sm: 8px;
+
+  --glass-bg:     var(--surface);
+  --glass-border: var(--line);
+  --glass-shadow: var(--shadow-md);
 }
 
-/* ── Tokens : mode DARK (maquette fidèle) ─────────────────────── */
+/* ── Tokens : mode SOMBRE (ardoise profonde, reposant, non néon) ── */
 .dark {
-  --bg:           #0A0F1E;
-  --bg-2:         #0e1428;
-  --surface:      #131a31;
-  --surface-2:    #1D3557;
-  --line:         #1f2a4a;
-  --line-2:       #2a3863;
-  --blood:        #E63946;
-  --blood-dim:    #b02a36;
-  --blood-glow:   rgba(230, 57, 70, 0.55);
-  --ok:           #4ade80;
-  --warn:         #f59e0b;
-  --crit:         #E63946;
-  --txt:          #E6ECF5;
-  --txt-dim:      #93a0bf;
-  --txt-mute:     #5b6685;
+  --bg:           #0e1420;
+  --bg-2:         #0b111b;
+  --surface:      #161e2c;
+  --surface-2:    #1b2536;
+  --line:         #243044;
+  --line-2:       #2e3b52;
 
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --blood:        #e4606f;
+  --blood-dim:    #c24250;
+  --blood-glow:   rgba(228, 96, 111, 0.18);
+  --blood-tint:   rgba(228, 96, 111, 0.15);
 
-  /* ── Neon dark-mode accents (refonte Home) */
-  --neon-blood:     #ff2d3d;
-  --neon-gold:      #fbbf24;
-  --neon-blood-glow: rgba(255, 45, 61, 0.7);
-  --neon-gold-glow:  rgba(251, 191, 36, 0.6);
-}
+  --clinic:       #5b9bd8;
+  --clinic-dim:   #7db0e2;
+  --clinic-tint:  rgba(91, 155, 216, 0.14);
 
-/* ── Glass tokens (light + dark) ──────────────────────────────── */
-:root {
-  --glass-bg:      rgba(255, 255, 255, 0.70);
-  --glass-border:  rgba(255, 255, 255, 0.50);
-  --glass-shadow:  0 8px 32px rgba(15, 22, 41, 0.10);
-  --neon-blood:     #E63946;
-  --neon-gold:      #d97706;
-  --neon-blood-glow: rgba(230, 57, 70, 0.35);
-  --neon-gold-glow:  rgba(217, 119, 6, 0.40);
-}
-.dark {
-  --glass-bg:      rgba(13, 20, 45, 0.75);
-  --glass-border:  rgba(255, 255, 255, 0.08);
-  --glass-shadow:  0 8px 32px rgba(0, 0, 0, 0.50);
+  --ok:           #3fb884;  --ok-tint:   rgba(63, 184, 132, 0.14);
+  --warn:         #d69a3b;  --warn-tint: rgba(214, 154, 59, 0.14);
+  --crit:         #e4606f;  --crit-tint: rgba(228, 96, 111, 0.15);
+  --info:         #5b9bd8;  --info-tint: rgba(91, 155, 216, 0.14);
+
+  --txt:          #e7ecf3;
+  --txt-dim:      #9ba8bc;
+  --txt-mute:     #66728a;
+  --phosphor:     #3fb884;
+  --phosphor-dim: rgba(63, 184, 132, 0.22);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.30);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.50), 0 2px 6px rgba(0, 0, 0, 0.35);
+
+  --glass-bg:     var(--surface);
+  --glass-border: var(--line);
+  --glass-shadow: var(--shadow-md);
 }
 
 /* ── Reset global ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
-html, body, #root {
-  height: 100%;
-  margin: 0;
-}
+html, body, #root { height: 100%; margin: 0; }
 
 body {
   background: var(--bg);
   color: var(--txt);
-  font-family: 'Syne', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
+  /* Sécurité de lecture (appli critique) : chiffres tabulaires (alignement des
+     quantités/stocks) + zéro barré (0 vs O sur les IDs de poche). */
+  font-feature-settings: "tnum" 1, "zero" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* Focus visible cohérent partout (accessibilité clavier). */
+:focus-visible {
+  outline: 2px solid var(--clinic);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
 /* ── Typographie utilitaires ───────────────────────────────────── */
-.font-syne { font-family: 'Syne', system-ui, sans-serif !important; }
-.font-mono { font-family: 'DM Mono', ui-monospace, monospace !important; }
+.font-syne { font-family: 'Syne', system-ui, sans-serif; } /* réservé au branding */
+.font-mono { font-family: 'DM Mono', ui-monospace, monospace; }
 .syne      { font-family: 'Syne', system-ui, sans-serif; }
 .mono      { font-family: 'DM Mono', ui-monospace, monospace; }
+.inter     { font-family: 'Inter', system-ui, sans-serif; }
+.num       { font-family: 'DM Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
 
 /* ── Surfaces (mode-aware) ────────────────────────────────────── */
 .surface {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--radius);
 }
-
 .surface-2 {
   background: var(--surface-2);
-  border: 1px solid var(--line-2);
-  border-radius: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
 }
 
-.dark .surface-2 {
-  background: linear-gradient(180deg, #16203d 0%, #111a36 100%);
+/* ── Boutons ──────────────────────────────────────────────────── */
+/* Primaire calme = bleu clinique (action courante). */
+.btn-clinic {
+  background: var(--clinic); color: #fff;
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm);
+  transition: background-color 0.15s ease;
 }
+.btn-clinic:hover  { background: var(--clinic-dim); }
+.btn-clinic:disabled { opacity: 0.55; cursor: not-allowed; }
 
-/* ── Glows ────────────────────────────────────────────────────── */
-.glow-blood {
-  box-shadow: 0 0 0 1px rgba(230,57,70,0.25), 0 0 16px rgba(230,57,70,0.15);
-}
-.glow-blood-strong {
-  box-shadow: 0 0 0 1px rgba(230,57,70,0.45), 0 0 24px rgba(230,57,70,0.25), inset 0 0 16px rgba(230,57,70,0.06);
-}
-.dark .glow-blood {
-  box-shadow: 0 0 0 1px rgba(230,57,70,0.4), 0 0 24px rgba(230,57,70,0.35);
-}
-.dark .glow-blood-strong {
-  box-shadow: 0 0 0 1px rgba(230,57,70,0.6), 0 0 36px rgba(230,57,70,0.55), inset 0 0 24px rgba(230,57,70,0.12);
-}
-
-.glow-ok {
-  box-shadow: 0 0 0 1px rgba(74,222,128,0.25), 0 0 12px rgba(74,222,128,0.15);
-}
-
-/* ── Bouton "blood" ───────────────────────────────────────────── */
+/* « blood » = action à forte charge (urgence, don). Solide, sobre, sans glow. */
 .btn-blood {
-  background: linear-gradient(180deg, #ef3a48 0%, #c1232f 100%);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 10px;
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 16px rgba(230,57,70,0.30);
+  background: var(--blood); color: #fff;
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  font-family: 'Inter', system-ui, sans-serif; font-weight: 600; letter-spacing: 0;
+  cursor: pointer; box-shadow: var(--shadow-sm);
+  transition: background-color 0.15s ease;
 }
-.btn-blood:hover  { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(230,57,70,0.40); }
-.btn-blood:active { transform: translateY(0); }
-.btn-blood:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.btn-blood:hover    { background: var(--blood-dim); box-shadow: var(--shadow-sm); }
+.btn-blood:active   { transform: none; }
+.btn-blood:disabled { opacity: 0.55; cursor: not-allowed; }
 
-/* ── Animations ───────────────────────────────────────────────── */
-
-/* Glow concentrique rouge urgence */
-@keyframes bloodPulse {
-  0%, 100% { box-shadow: 0 0 0 0 var(--blood-glow), 0 0 24px var(--blood-glow); }
-  50%       { box-shadow: 0 0 0 14px rgba(230,57,70,0), 0 0 36px var(--blood-glow); }
-}
-.pulse-blood { animation: bloodPulse 1.8s ease-in-out infinite; }
-
-/* Clignotement texte rouge */
-@keyframes textPulse {
-  0%, 100% { opacity: 1; text-shadow: 0 0 10px var(--blood-glow); }
-  50%       { opacity: 0.55; text-shadow: 0 0 22px var(--blood-glow); }
-}
-.pulse-text { animation: textPulse 1.4s ease-in-out infinite; }
-
-/* Opacity soft */
-@keyframes softPulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.45; }
-}
-.pulse-soft { animation: softPulse 2s ease-in-out infinite; }
-
-/* Curseur clignotant */
-@keyframes blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
-}
-.blink { animation: blink 1s steps(1) infinite; }
-
-/* Stroke dasharray animé (SVG) */
-@keyframes dash {
-  to { stroke-dashoffset: -24; }
-}
-.dash-anim { stroke-dasharray: 4 4; animation: dash 1.2s linear infinite; }
-
-/* Ticker marquee */
-@keyframes tickerScroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-.ticker-track {
-  display: inline-flex;
-  gap: 48px;
-  animation: tickerScroll 60s linear infinite;
-  white-space: nowrap;
-}
-
-/* Entrée de carte */
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.card-in { animation: cardIn 0.3s ease both; }
-
-/* Transition de vue */
-@keyframes viewFade {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.view-fade { animation: viewFade 0.35s ease both; }
-
-/* Scale bounce badge */
-@keyframes scaleBounce {
-  0%   { transform: scale(0.8); }
-  60%  { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-.scale-bounce { animation: scaleBounce 0.4s ease both; }
-
-/* Progress fill */
-@keyframes progressFill {
-  from { width: 0%; }
-  to   { width: var(--target-width, 100%); }
-}
-.progress-fill { animation: progressFill 1s ease-out both; }
-
-/* ── Shimmer (skeleton premium) ───────────────────────────────── */
-@keyframes shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
-}
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--surface-2) 0%,
-    var(--line) 40%,
-    var(--surface-2) 100%
-  );
-  background-size: 800px 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
-}
-
-/* ── Bar rise (barres graphiques) ─────────────────────────────── */
-@keyframes barRise {
-  from { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
-  to   { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
-}
-.bar-rise { animation: barRise 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-
-/* ── Bell shake (alerte nationale) ───────────────────────────── */
-@keyframes bellShake {
-  0%, 100% { transform: rotate(0deg);   }
-  10%       { transform: rotate(-12deg); }
-  20%       { transform: rotate(10deg);  }
-  30%       { transform: rotate(-8deg);  }
-  40%       { transform: rotate(7deg);   }
-  50%       { transform: rotate(-4deg);  }
-  60%       { transform: rotate(3deg);   }
-  70%       { transform: rotate(-2deg);  }
-  80%       { transform: rotate(1deg);   }
-}
-.bell-shake { animation: bellShake 0.9s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite; }
-
-/* ── Accent pulse (top bar KPI) ───────────────────────────────── */
-@keyframes accentPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-.accent-pulse { animation: accentPulse 2s ease-in-out infinite; }
-
-/* ── Dropdown animation ───────────────────────────────────────── */
-@keyframes dropdownPop {
-  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-.dropdown-pop {
-  animation: dropdownPop 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  transform-origin: top center;
-}
-
-.chevron-rotate {
-  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.chevron-rotate.open {
-  transform: rotate(180deg);
-}
-
-/* ── Chart fade up (graphiques) ───────────────────────────────── */
-@keyframes chartFadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.chart-fade-up { animation: chartFadeUp 0.5s ease both; }
-
-/* ── Rank badge ───────────────────────────────────────────────── */
-@keyframes rankIn {
-  from { opacity: 0; transform: scale(0.6); }
-  to   { opacity: 1; transform: scale(1); }
-}
-.rank-in { animation: rankIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-
-/* ── Hover élévation (cartes graphiques) ─────────────────────── */
-.chart-card-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-.chart-card-hover:hover {
-  transform: translateY(-2px);
-}
-
-/* ── Alert item hover ─────────────────────────────────────────── */
-.alert-item {
-  transition: background 0.15s ease, transform 0.15s ease;
-}
-.alert-item:hover {
-  transform: translateX(2px);
-}
-
-/* ── Scanlines CRT (dark mode uniquement) ─────────────────────── */
-.scanlines::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,0.018) 0px,
-    rgba(255,255,255,0.018) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  z-index: 9998;
-  mix-blend-mode: overlay;
-}
-.scanlines::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
-  z-index: 9997;
-}
-
-/* ── Gridlines (fond de page) ─────────────────────────────────── */
-.gridlines {
-  background-image:
-    linear-gradient(to right, rgba(29, 53, 87, 0.10) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(29, 53, 87, 0.10) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-.dark .gridlines {
-  background-image:
-    linear-gradient(to right, rgba(29, 53, 87, 0.18) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(29, 53, 87, 0.18) 1px, transparent 1px);
-}
-
-/* ── Phosphor USSD ────────────────────────────────────────────── */
-.phosphor {
-  background: #02100a;
-  color: var(--phosphor);
-  font-family: 'DM Mono', ui-monospace, monospace;
-  text-shadow: 0 0 6px var(--phosphor-dim), 0 0 14px var(--phosphor-dim);
-  line-height: 1.15;
-}
-.phosphor::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(57,255,20,0.04) 0px,
-    rgba(57,255,20,0.04) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-}
-
-/* ── Scrollbar cachée ─────────────────────────────────────────── */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { scrollbar-width: none; }
-
-/* ── Tooltip Command Center ───────────────────────────────────── */
-.cc-tooltip {
-  position: absolute;
-  pointer-events: none;
-  background: var(--bg-2);
-  border: 1px solid var(--line-2);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 12px;
-  font-family: 'DM Mono', monospace;
-  z-index: 50;
-  min-width: 160px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-
-/* ── StatusDot ────────────────────────────────────────────────── */
-.status-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 9999px;
-  flex-shrink: 0;
-}
-
-/* ── Region hover (SVG carte) ─────────────────────────────────── */
-.map-region {
-  transition: filter .15s ease, transform .15s ease;
-  cursor: pointer;
-  transform-origin: center;
-  transform-box: fill-box;
-}
-.map-region:hover {
-  filter: brightness(1.5) drop-shadow(0 0 8px currentColor);
-}
-
-/* ── Recharts overrides ───────────────────────────────────────── */
-.recharts-cartesian-axis-tick-value {
-  font-family: 'DM Mono', monospace !important;
-  font-size: 11px !important;
-}
-
-/* ── Inputs Command Center ────────────────────────────────────── */
+/* ── Inputs ───────────────────────────────────────────────────── */
 .cc-input {
   width: 100%;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm);
   padding: 10px 14px;
   font-size: 14px;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Inter', system-ui, sans-serif;
   color: var(--txt);
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .cc-input::placeholder { color: var(--txt-mute); }
 .cc-input:focus {
-  border-color: var(--blood);
-  box-shadow: 0 0 0 3px rgba(230,57,70,0.15);
+  border-color: var(--clinic);
+  box-shadow: 0 0 0 3px var(--clinic-tint);
 }
 
-/* ── Stagger delays ───────────────────────────────────────────── */
-.delay-0   { animation-delay: 0ms; }
-.delay-60  { animation-delay: 60ms; }
-.delay-120 { animation-delay: 120ms; }
-.delay-180 { animation-delay: 180ms; }
-.delay-240 { animation-delay: 240ms; }
-.delay-300 { animation-delay: 300ms; }
-.delay-360 { animation-delay: 360ms; }
-.delay-420 { animation-delay: 420ms; }
-
-/* ══════════════════════════════════════════════════════════════
-   CARTE DU SÉNÉGAL — Animations premium
-   ══════════════════════════════════════════════════════════════ */
-
-/* Anneaux pulsants sur régions critiques */
-@keyframes mapPulseRing1 {
-  0%   { r: 28; opacity: 0.75; stroke-width: 1.5; }
-  100% { r: 58; opacity: 0;    stroke-width: 0.3; }
-}
-@keyframes mapPulseRing2 {
-  0%   { r: 18; opacity: 0.55; stroke-width: 1; }
-  100% { r: 44; opacity: 0;    stroke-width: 0.2; }
-}
-.map-pulse-ring-1 {
-  animation: mapPulseRing1 2.4s ease-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-.map-pulse-ring-2 {
-  animation: mapPulseRing2 2.4s ease-out 0.8s infinite;
-  transform-box: fill-box;
-  transform-origin: center;
+/* ── Indicateurs de statut ────────────────────────────────────── */
+.status-dot {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 9999px; flex-shrink: 0;
 }
 
-/* Routes approvisionnement — flux de pointillés */
-@keyframes supplyFlow {
-  from { stroke-dashoffset: 0; }
-  to   { stroke-dashoffset: -34; }
+/* Pastilles sémantiques (toujours point + texte, jamais couleur seule). */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; padding: 3px 9px;
+  border-radius: 999px; white-space: nowrap;
 }
-.supply-route {
-  animation: supplyFlow 1.6s linear infinite;
+.pill .status-dot { width: 7px; height: 7px; }
+.pill-ok   { background: var(--ok-tint);     color: var(--ok); }
+.pill-warn { background: var(--warn-tint);   color: var(--warn); }
+.pill-crit { background: var(--crit-tint);   color: var(--crit); }
+.pill-info { background: var(--clinic-tint);  color: var(--clinic-dim); }
+
+/* ── Élévation / anciennes classes « glow » → ombres neutres ──── */
+.glow-blood,
+.glow-blood-strong,
+.glow-ok { box-shadow: var(--shadow-md); }
+
+/* Glass : surface pleine (plus de flou/backdrop). */
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-md);
 }
 
-/* Scrollbar masquée (detail panel) */
-.no-scrollbar { scrollbar-width: none; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
+/* Auras podium : simple anneau coloré, sans halo. */
+.aura-gold   { box-shadow: 0 0 0 2px color-mix(in srgb, var(--warn)  55%, transparent); }
+.aura-silver { box-shadow: 0 0 0 2px color-mix(in srgb, var(--txt-mute) 55%, transparent); }
+.aura-bronze { box-shadow: 0 0 0 2px color-mix(in srgb, #b45309 55%, transparent); }
 
-/* ── Container Carte (Light/Dark) ─────────────────────────────── */
-.map-bg {
-  background: #ffffff;
-}
-.dark .map-bg {
-  background: linear-gradient(135deg, #061020 0%, #0c1e3a 50%, #071428 100%);
+/* Titre : plus de text-shadow. */
+.page-title-glow { text-shadow: none; }
+
+/* Néon (legacy) → texte plein sur l'accent, sans lueur. */
+.neon-blood { color: var(--blood); }
+.neon-gold  { color: var(--warn); }
+
+/* USSD (hors MVP) : écran sobre, sans scanlines ni text-shadow. */
+.phosphor {
+  background: #0b1f16; color: var(--phosphor);
+  font-family: 'DM Mono', ui-monospace, monospace; line-height: 1.15;
 }
 
-/* ── UI Refactor Animations ───────────────────────────────────── */
-
-/* Lignes de tableau */
-@keyframes rowFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.row-fade-in { animation: rowFadeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-
-/* Entrée Modale */
-@keyframes modalPop {
-  from { opacity: 0; transform: scale(0.92); }
-  to   { opacity: 1; transform: scale(1); }
-}
-.modal-pop { animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-
-/* DataTable Hover Row Glow */
-.dt-row {
-  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-}
+/* ── DataTable : survol sobre ─────────────────────────────────── */
+.dt-row { transition: background-color 0.15s ease; }
 .dt-row:hover {
   background: var(--surface-2);
-  box-shadow: inset 4px 0 0 var(--blood);
-  transform: translateX(2px);
-}
-.dark .dt-row:hover {
-  background: rgba(230, 57, 70, 0.04);
-  box-shadow: inset 4px 0 0 var(--blood);
+  box-shadow: inset 3px 0 0 var(--clinic);
 }
 
-/* Page Header Title Glow */
-.page-title-glow {
-  text-shadow: 0 0 20px rgba(0,0,0,0.1);
+/* Carte graphique : liseré au survol, sans halo. */
+.chart-card-hover { transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+.chart-card-hover:hover { border-color: var(--line-2); }
+
+.alert-item { transition: background 0.15s ease; }
+
+/* Région carte : éclaircissement léger, sans drop-shadow lumineux. */
+.map-region {
+  transition: filter 0.15s ease;
+  cursor: pointer; transform-origin: center; transform-box: fill-box;
 }
-.dark .page-title-glow {
-  text-shadow: 0 0 20px rgba(255,255,255,0.15);
+.map-region:hover { filter: brightness(1.08); }
+
+.map-bg { background: var(--surface); }
+
+/* Badge verrouillé : dé-saturation sobre. */
+.badge-locked { filter: grayscale(0.9) opacity(0.5); transition: filter 0.2s ease; }
+.badge-locked:hover { filter: grayscale(0.5) opacity(0.75); }
+
+/* Volume 3D neutralisé (plus d'inclinaison). */
+.perspective-container { perspective: none; }
+.tilt-card { transform: none !important; transform-style: flat; }
+
+/* ── Scrollbars ───────────────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--txt-mute); }
+
+/* ── Tooltip ──────────────────────────────────────────────────── */
+.cc-tooltip {
+  position: absolute; pointer-events: none;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  font-size: 12px; font-family: 'Inter', system-ui, sans-serif;
+  color: var(--txt); z-index: 50; min-width: 160px;
+  box-shadow: var(--shadow-lg);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   REFONTE HOME "HORS NORME" — Animations & Utilitaires
-   ══════════════════════════════════════════════════════════════ */
-
-/* ── Heartbeat (bouton CTA principal) ─────────────────────────── */
-@keyframes heartbeat {
-  0%,100% { transform: scale(1);    box-shadow: 0 0 0 0 var(--blood-glow), 0 6px 20px rgba(230,57,70,0.35); }
-  14%      { transform: scale(1.06); box-shadow: 0 0 0 6px rgba(230,57,70,0), 0 8px 28px rgba(230,57,70,0.55); }
-  28%      { transform: scale(1);    box-shadow: 0 0 0 0 rgba(230,57,70,0), 0 6px 20px rgba(230,57,70,0.35); }
-  42%      { transform: scale(1.04); box-shadow: 0 0 0 4px rgba(230,57,70,0), 0 8px 24px rgba(230,57,70,0.45); }
-}
-.heartbeat { animation: heartbeat 1.6s ease-in-out infinite; }
-
-/* ── Ring expand (ondes concentriques éligibilité) ────────────── */
-@keyframes ringExpand {
-  0%   { transform: scale(1);   opacity: 0.8; }
-  100% { transform: scale(2.6); opacity: 0;   }
-}
-.ring-expand-1 { animation: ringExpand 2.4s ease-out infinite; }
-.ring-expand-2 { animation: ringExpand 2.4s ease-out 0.8s infinite; }
-.ring-expand-3 { animation: ringExpand 2.4s ease-out 1.6s infinite; }
-
-/* ── Particle float (ambiance héros requis) ───────────────────── */
-@keyframes particleFloat {
-  0%   { transform: translateY(0px) translateX(0px) scale(1);  opacity: 0.7; }
-  33%  { transform: translateY(-18px) translateX(6px) scale(1.2); opacity: 1; }
-  66%  { transform: translateY(-30px) translateX(-4px) scale(0.8); opacity: 0.5; }
-  100% { transform: translateY(-48px) translateX(2px) scale(0.4); opacity: 0; }
-}
-.particle { animation: particleFloat var(--dur, 3s) ease-out var(--delay, 0s) infinite; }
-
-/* ── Holographic shimmer (HeroCard) ──────────────────────────── */
-@keyframes holographicShift {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-.holo-shimmer {
-  background: linear-gradient(
-    125deg,
-    transparent 20%,
-    rgba(255,255,255,0.08) 30%,
-    rgba(230,57,70,0.06) 40%,
-    rgba(251,191,36,0.06) 50%,
-    rgba(139,92,246,0.06) 60%,
-    rgba(255,255,255,0.08) 70%,
-    transparent 80%
-  );
-  background-size: 300% 300%;
-  animation: holographicShift 5s linear infinite;
-  pointer-events: none;
-}
-.dark .holo-shimmer {
-  background: linear-gradient(
-    125deg,
-    transparent 20%,
-    rgba(255,255,255,0.04) 30%,
-    rgba(230,57,70,0.10) 40%,
-    rgba(251,191,36,0.08) 50%,
-    rgba(139,92,246,0.08) 60%,
-    rgba(255,255,255,0.04) 70%,
-    transparent 80%
-  );
-  background-size: 300% 300%;
-  animation: holographicShift 5s linear infinite;
+/* Axes Recharts (data → mono tabulaire). */
+.recharts-cartesian-axis-tick-value {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 11px !important;
 }
 
-/* ── Drop fill (goutte de sang) ───────────────────────────────── */
-@keyframes dropFill {
-  from { transform: scaleY(0); transform-origin: bottom; opacity: 0.6; }
-  to   { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
-}
-.drop-fill { animation: dropFill 1.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* ═══════════════════════════════════════════════════════════════
+   MOUVEMENT — quasi-nul.
+   On garde uniquement des entrées douces (fondu/translation courte,
+   one-shot). Toutes les boucles infinies (pulsation, clignotement,
+   ticker, néon, halos, holographique…) sont neutralisées.
+   ═══════════════════════════════════════════════════════════════ */
 
-/* ── Neon flicker (badges obtenus) ───────────────────────────── */
-@keyframes neonFlicker {
-  0%,90%,100% { opacity: 1; }
-  92%          { opacity: 0.7; }
-  96%          { opacity: 1; }
-  98%          { opacity: 0.85; }
-}
-.neon-flicker { animation: neonFlicker 4s ease-in-out infinite; }
+/* Entrées douces (one-shot) — conservées, easings sobres. */
+@keyframes cardIn   { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes viewFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes rowFadeIn{ from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes modalPop { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes dropdownPop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleXIn  { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes progressFill { from { width: 0; } to { width: var(--target-width, 100%); } }
 
-/* ── Trophy glow (top 3 leaderboard) ─────────────────────────── */
-@keyframes trophyGlow {
-  0%,100% { filter: drop-shadow(0 0 4px currentColor); }
-  50%      { filter: drop-shadow(0 0 12px currentColor) drop-shadow(0 0 20px currentColor); }
-}
-.trophy-glow { animation: trophyGlow 2.5s ease-in-out infinite; }
+.card-in       { animation: cardIn 0.28s ease both; }
+.view-fade     { animation: viewFade 0.28s ease both; }
+.row-fade-in   { animation: rowFadeIn 0.24s ease both; }
+.chart-fade-up { animation: viewFade 0.32s ease both; }
+.modal-pop     { animation: modalPop 0.18s ease both; }
+.dropdown-pop  { animation: dropdownPop 0.14s ease both; transform-origin: top center; }
+.rank-in       { animation: fadeIn 0.28s ease both; }
+.bar-rise      { animation: fadeIn 0.3s ease both; }
+.drop-fill     { animation: fadeIn 0.3s ease both; }
+.scale-x-in    { transform-origin: left; animation: scaleXIn 0.5s ease both; }
+.slide-in-bottom { animation: viewFade 0.3s ease both; }
+.bounce-in-scale { animation: fadeIn 0.3s ease both; }
+.scale-bounce  { animation: fadeIn 0.24s ease both; }
+.progress-fill { animation: progressFill 0.8s ease-out both; }
+.challenge-fill{ width: var(--challenge-pct, 70%); }
 
-/* ── Badge shine (badges obtenus) ────────────────────────────── */
-@keyframes badgeShine {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-.badge-shine {
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%);
-  background-size: 200% auto;
-  animation: badgeShine 3s linear infinite;
-}
+.chevron-rotate { transition: transform 0.2s ease; }
+.chevron-rotate.open { transform: rotate(180deg); }
 
-/* ── Float up gentle (floating CTA) ──────────────────────────── */
-@keyframes floatUp {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-4px); }
-}
-.float-up { animation: floatUp 3s ease-in-out infinite; }
+/* Skeleton : pulsation d'opacité très douce (feedback de chargement). */
+@keyframes skeletonPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+.shimmer { background: var(--surface-2); animation: skeletonPulse 1.5s ease-in-out infinite; }
 
-/* ── Glassmorphism ────────────────────────────────────────────── */
-.glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-}
+/* Délais de cascade (conservés, inoffensifs). */
+.delay-0 { animation-delay: 0ms; } .delay-60 { animation-delay: 60ms; }
+.delay-120 { animation-delay: 120ms; } .delay-180 { animation-delay: 180ms; }
+.delay-240 { animation-delay: 240ms; } .delay-300 { animation-delay: 300ms; }
+.delay-360 { animation-delay: 360ms; } .delay-420 { animation-delay: 420ms; }
 
-/* ── Perspective container (HeroCard tilt) ────────────────────── */
-.perspective-container {
-  perspective: 800px;
+/* Boucles infinies « command center / gaming » → neutralisées (statique). */
+.pulse-blood, .pulse-text, .pulse-soft, .blink, .accent-pulse,
+.heartbeat, .float-up, .neon-flicker, .trophy-glow, .badge-shine,
+.holo-shimmer, .streak-bar,
+.ring-expand-1, .ring-expand-2, .ring-expand-3,
+.map-pulse-ring-1, .map-pulse-ring-2, .supply-route, .dash-anim {
+  animation: none !important;
 }
-.tilt-card {
-  transform-style: preserve-3d;
-  transition: transform 0.12s ease-out;
-  will-change: transform;
-}
+/* Anciens fonds animés (dégradés mobiles) → fonds sobres pleins. */
+.holo-shimmer, .badge-shine { background: transparent !important; }
+.streak-bar { background: var(--blood) !important; }
+/* Ticker : plus de défilement, contenu statique. */
+.ticker-track { display: inline-flex; gap: 48px; white-space: nowrap; }
 
-/* ── Neon text (dark mode accent) ────────────────────────────── */
-.dark .neon-blood-text {
-  color: var(--neon-blood);
-  text-shadow: 0 0 8px var(--neon-blood-glow), 0 0 20px var(--neon-blood-glow);
-}
-.dark .neon-gold-text {
-  color: var(--neon-gold);
-  text-shadow: 0 0 8px var(--neon-gold-glow), 0 0 16px var(--neon-gold-glow);
-}
-
-/* ── Glow rings (auras leaderboard) ──────────────────────────── */
-.aura-gold   { box-shadow: 0 0 0 2px rgba(234,179,8,0.5), 0 0 16px rgba(234,179,8,0.35); }
-.aura-silver { box-shadow: 0 0 0 2px rgba(148,163,184,0.5), 0 0 12px rgba(148,163,184,0.30); }
-.aura-bronze { box-shadow: 0 0 0 2px rgba(180,83,9,0.5), 0 0 12px rgba(180,83,9,0.30); }
-.dark .aura-gold   { box-shadow: 0 0 0 2px rgba(251,191,36,0.7), 0 0 20px rgba(251,191,36,0.55); }
-.dark .aura-silver { box-shadow: 0 0 0 2px rgba(148,163,184,0.6), 0 0 16px rgba(148,163,184,0.40); }
-.dark .aura-bronze { box-shadow: 0 0 0 2px rgba(180,83,9,0.7), 0 0 16px rgba(180,83,9,0.45); }
-
-/* ── Locked badge blur ────────────────────────────────────────── */
-.badge-locked {
-  filter: blur(2px) grayscale(0.9) brightness(0.6);
-  transition: filter 0.3s ease;
-}
-.badge-locked:hover {
-  filter: blur(0.5px) grayscale(0.5) brightness(0.8);
-}
-
-/* ── Slide in from bottom (FloatingCTA) ───────────────────────── */
-@keyframes slideInBottom {
-  from { transform: translateY(80px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-.slide-in-bottom { animation: slideInBottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-
-/* ── Bounce in scale (hero mode badge) ───────────────────────── */
-@keyframes bounceInScale {
-  0%   { transform: scale(0.3); opacity: 0; }
-  50%  { transform: scale(1.08); opacity: 1; }
-  70%  { transform: scale(0.95); }
-  100% { transform: scale(1); }
-}
-.bounce-in-scale { animation: bounceInScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-
-/* ── Shimmer streak bar ───────────────────────────────────────── */
-@keyframes streakShimmer {
-  0%   { background-position: -100% 0; }
-  100% { background-position: 200% 0; }
-}
-.streak-bar {
-  background: linear-gradient(90deg, #ef3a48 0%, #f97316 30%, #eab308 60%, #ef3a48 100%);
-  background-size: 200% auto;
-  animation: streakShimmer 2.5s linear infinite;
-}
-
-/* ── Community challenge bar ─────────────────────────────────── */
-@keyframes challengeProgress {
-  from { width: 0%; }
-  to   { width: var(--challenge-pct, 70%); }
-}
-.challenge-fill {
-  animation: challengeProgress 1.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 0.5s;
-}
-
-/* ── Bar fill scale X ─────────────────────────────────────────── */
-@keyframes scaleXIn {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
-}
-.scale-x-in {
-  transform-origin: left;
-  animation: scaleXIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* ── Reduced motion safety ────────────────────────────────────── */
+/* ── Sécurité mouvement réduit ────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .heartbeat,
-  .ring-expand-1, .ring-expand-2, .ring-expand-3,
-  .particle,
-  .holo-shimmer,
-  .drop-fill,
-  .neon-flicker,
-  .trophy-glow,
-  .badge-shine,
-  .float-up,
-  .streak-bar,
-  .challenge-fill,
-  .bounce-in-scale,
-  .slide-in-bottom,
-  .scale-x-in,
-  .progress-fill {
-    animation: none !important;
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
-  .tilt-card { transform: none !important; }
 }
-

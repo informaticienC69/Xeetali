@@ -101,29 +101,22 @@ export default function Validity() {
       {result && (
         <Card title="Résultat">
           <div
-            className="card-in rounded-xl overflow-hidden"
-            style={{
-              border: `1px solid ${result.valide ? "rgba(22,163,74,0.35)" : "rgba(230,57,70,0.35)"}`,
-            }}
+            className="rounded-xl overflow-hidden"
+            style={{ border: "1px solid var(--line)" }}
           >
             {/* Bandeau de statut */}
             <div
               className="px-5 py-4 flex items-center gap-3"
-              style={{
-                background: result.valide
-                  ? "rgba(22,163,74,0.10)"
-                  : "rgba(230,57,70,0.10)",
-                borderBottom: `1px solid ${result.valide ? "rgba(22,163,74,0.20)" : "rgba(230,57,70,0.20)"}`,
-              }}
+              style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--line)" }}
             >
               {result.valide ? (
                 <CheckCircle2 size={24} style={{ color: "var(--ok)" }} />
               ) : (
-                <XCircle size={24} className="pulse-soft" style={{ color: "var(--blood)" }} />
+                <XCircle size={24} style={{ color: "var(--blood)" }} />
               )}
               <div>
                 <div
-                  className="syne font-bold text-lg"
+                  className="font-bold text-lg"
                   style={{ color: result.valide ? "var(--ok)" : "var(--blood)" }}
                 >
                   {result.valide ? "Poche valide et disponible" : "Poche non utilisable"}
@@ -143,7 +136,7 @@ export default function Validity() {
                 </div>
                 <div>
                   <dt className="mono text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "var(--txt-mute)" }}>En base</dt>
-                  <dd className="syne font-bold text-sm" style={{ color: result.existe ? "var(--ok)" : "var(--blood)" }}>
+                  <dd className="font-bold text-sm" style={{ color: result.existe ? "var(--ok)" : "var(--blood)" }}>
                     {result.existe ? "Oui" : "Non"}
                   </dd>
                 </div>
@@ -180,8 +173,8 @@ export default function Validity() {
                   border: "1px solid var(--line)",
                 }}
                 onMouseEnter={(e) => { 
-                  (e.currentTarget as HTMLElement).style.borderColor = h.valide ? "rgba(22,163,74,0.4)" : "rgba(230,57,70,0.4)";
-                  (e.currentTarget as HTMLElement).style.background = h.valide ? "rgba(22,163,74,0.05)" : "rgba(230,57,70,0.05)";
+                  (e.currentTarget as HTMLElement).style.borderColor = h.valide ? "rgba(22,163,74,0.4)" : "rgba(206,51,65,0.4)";
+                  (e.currentTarget as HTMLElement).style.background = h.valide ? "rgba(22,163,74,0.05)" : "rgba(206,51,65,0.05)";
                 }}
                 onMouseLeave={(e) => { 
                   (e.currentTarget as HTMLElement).style.borderColor = "var(--line)";
@@ -189,7 +182,7 @@ export default function Validity() {
                 }}
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: h.valide ? "rgba(22,163,74,0.12)" : "rgba(230,57,70,0.12)" }}>
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: h.valide ? "rgba(22,163,74,0.12)" : "rgba(206,51,65,0.12)" }}>
                     {h.valide
                       ? <CheckCircle2 size={16} style={{ color: "var(--ok)" }} />
                       : <XCircle size={16} style={{ color: "var(--blood)" }} />
@@ -199,7 +192,7 @@ export default function Validity() {
                     <span className="mono text-[12px] font-bold tracking-wider" style={{ color: "var(--txt)" }}>
                       {h.uid}
                     </span>
-                    <span className="syne font-semibold text-[11px] mt-0.5" style={{ color: h.valide ? "var(--ok)" : "var(--blood)" }}>
+                    <span className="font-semibold text-[11px] mt-0.5" style={{ color: h.valide ? "var(--ok)" : "var(--blood)" }}>
                       {h.valide ? "Valide & Utilisable" : "Poche Invalide"}
                     </span>
                   </div>

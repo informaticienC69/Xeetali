@@ -33,10 +33,10 @@ export function GroupBadge({ groupe }: { groupe: string }) {
 
 // ── StatusBadge ───────────────────────────────────────────────────
 const STATUS_STYLES: Record<string, { bg: string; color: string; border: string; label: string }> = {
-  DISPONIBLE: { bg: "var(--surface-2)",          color: "var(--txt-dim)",  border: "var(--line)",                label: "Disponible" },
-  RESERVEE:   { bg: "rgba(217,119,6,0.08)",      color: "var(--warn)",    border: "rgba(217,119,6,0.3)",        label: "Réservée"   },
-  UTILISEE:   { bg: "var(--surface-2)",          color: "var(--txt-mute)", border: "var(--line)",               label: "Utilisée"   },
-  PERIMEE:    { bg: "rgba(230,57,70,0.10)",      color: "var(--blood)",   border: "rgba(230,57,70,0.35)",       label: "Périmée"    },
+  DISPONIBLE: { bg: "var(--ok-tint)",   color: "var(--ok)",       border: "transparent", label: "Disponible" },
+  RESERVEE:   { bg: "var(--warn-tint)", color: "var(--warn)",     border: "transparent", label: "Réservée"   },
+  UTILISEE:   { bg: "var(--surface-2)", color: "var(--txt-mute)", border: "var(--line)", label: "Utilisée"   },
+  PERIMEE:    { bg: "var(--crit-tint)", color: "var(--crit)",     border: "transparent", label: "Périmée"    },
 };
 
 export function StatusBadge({ statut }: { statut: string }) {
@@ -54,9 +54,9 @@ export function StatusBadge({ statut }: { statut: string }) {
 
 // ── UrgencyBadge ─────────────────────────────────────────────────
 const URGENCY_STYLES: Record<string, { bg: string; color: string; border: string }> = {
-  NORMALE:   { bg: "rgba(90,96,120,0.10)",   color: "var(--txt-mute)", border: "var(--line)"                  },
-  URGENTE:   { bg: "rgba(217,119,6,0.10)",   color: "var(--warn)",    border: "rgba(217,119,6,0.35)"          },
-  CRITIQUE:  { bg: "rgba(230,57,70,0.10)",   color: "var(--blood)",   border: "rgba(230,57,70,0.35)"          },
+  NORMALE:   { bg: "var(--surface-2)", color: "var(--txt-mute)", border: "var(--line)"  },
+  URGENTE:   { bg: "var(--warn-tint)", color: "var(--warn)",     border: "transparent"  },
+  CRITIQUE:  { bg: "var(--crit-tint)", color: "var(--crit)",     border: "transparent"  },
 };
 
 export function UrgencyBadge({ urgence }: { urgence: string }) {
