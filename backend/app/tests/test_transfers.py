@@ -13,9 +13,9 @@ from app.models.transfer import TransferOrder
 from app.schemas.enums import PouchStatus
 
 
-def _available(db: AsyncSession, hospital_id: int, groupe: str) -> int:
+async def _available(db: AsyncSession, hospital_id: int, groupe: str) -> int:
     return int(
-        db.scalar(
+        await db.scalar(
             select(func.count(BloodPouch.id)).where(
                 BloodPouch.hospital_id == hospital_id,
                 BloodPouch.groupe_sanguin == groupe,
@@ -37,9 +37,10 @@ async def test_transfer_insufficient_stock_409_no_change(
     assert resp.status_code == 409
 
     # Aucune poche déplacée, aucun ordre créé.
-    assert _available(db_session, src, "O+") == 5
-    assert _available(db_session, tgt, "O+") == 0
-    assert db_session.scalars(select(TransferOrder)).all() == []
+    assert await _available(db_session, src, "O+") == 5
+    assert await _available(db_session, tgt, "O+") == 0
+    orders = (await db_session.scalars(select(TransferOrder))).all()
+    assert orders == []
 
 
 @pytest.mark.asyncio
@@ -54,10 +55,10 @@ async def test_transfer_success_moves_pouches(
     assert resp.json()["statut"] == "COMPLETED"
 
     db_session.expire_all()
-    assert _available(db_session, src, "O+") == 2   # 5 - 3
-    assert _available(db_session, tgt, "O+") == 3   # 0 + 3
+    assert await _available(db_session, src, "O+") == 2   # 5 - 3
+    assert await _available(db_session, tgt, "O+") == 3   # 0 + 3
 
-    orders = db_session.scalars(select(TransferOrder)).all()
+    orders = (await db_session.scalars(select(TransferOrder))).all()
     assert len(orders) == 1 and orders[0].quantite == 3
 
 
@@ -71,7 +72,8 @@ async def test_transfer_same_source_target_422(
         "groupe_sanguin": "O+",
         "quantite": 1,
     }
-    assert await client.post("/api/transfers", json=payload, headers=await auth("admin@cnts.sn")).status_code == 422
+    resp = await client.post("/api/transfers", json=payload, headers=await auth("admin@cnts.sn"))
+    assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
@@ -84,7 +86,8 @@ async def test_transfer_nonexistent_hospital_404(
         "groupe_sanguin": "O+",
         "quantite": 1,
     }
-    assert await client.post("/api/transfers", json=payload, headers=await auth("admin@cnts.sn")).status_code == 404
+    resp = await client.post("/api/transfers", json=payload, headers=await auth("admin@cnts.sn"))
+    assert resp.status_code == 404
 
 
 @pytest.mark.asyncio

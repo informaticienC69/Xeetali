@@ -29,8 +29,10 @@ async def test_dashboard_aggregates(
 async def test_dashboard_forbidden_for_non_admin(
     client: AsyncClient, seeded: dict[str, int], auth: Callable[[str], dict[str, str]]
 ) -> None:
-    assert await client.get("/api/admin/dashboard", headers=await auth("medic@cnts.sn")).status_code == 403
-    assert await client.get("/api/admin/dashboard", headers=await auth("donor@cnts.sn")).status_code == 403
+    medic_resp = await client.get("/api/admin/dashboard", headers=await auth("medic@cnts.sn"))
+    assert medic_resp.status_code == 403
+    donor_resp = await client.get("/api/admin/dashboard", headers=await auth("donor@cnts.sn"))
+    assert donor_resp.status_code == 403
 
 
 @pytest.mark.asyncio
@@ -49,7 +51,8 @@ async def test_admin_user_crud(
     updated = await client.patch(f"/api/admin/users/{uid}", json={"nom": "Renommé"}, headers=h)
     assert updated.status_code == 200 and updated.json()["nom"] == "Renommé"
 
-    assert await client.delete(f"/api/admin/users/{uid}", headers=h).status_code == 204
+    deleted = await client.delete(f"/api/admin/users/{uid}", headers=h)
+    assert deleted.status_code == 204
 
 
 @pytest.mark.asyncio
@@ -147,7 +150,8 @@ async def test_analytics_stock_par_hopital_limited_to_top_8(
 async def test_analytics_forbidden_for_non_admin(
     client: AsyncClient, seeded: dict[str, int], auth: Callable[[str], dict[str, str]]
 ) -> None:
-    assert await client.get("/api/admin/analytics", headers=await auth("donor@cnts.sn")).status_code == 403
+    resp = await client.get("/api/admin/analytics", headers=await auth("donor@cnts.sn"))
+    assert resp.status_code == 403
 
 
 @pytest.mark.asyncio

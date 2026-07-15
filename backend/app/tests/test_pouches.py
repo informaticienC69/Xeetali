@@ -37,10 +37,10 @@ async def test_register_pouch_uid_is_unique(
     client: AsyncClient, seeded: dict[str, int], auth: Callable[[str], dict[str, str]]
 ) -> None:
     h = await auth("medic@cnts.sn")
-    uids = {
-        await client.post("/api/pouches", json=_register_payload(seeded["source_id"]), headers=h).json()["uid"]
-        for _ in range(5)
-    }
+    uids = set()
+    for _ in range(5):
+        resp = await client.post("/api/pouches", json=_register_payload(seeded["source_id"]), headers=h)
+        uids.add(resp.json()["uid"])
     assert len(uids) == 5  # tous distincts
 
 
@@ -88,14 +88,17 @@ async def test_validity_known_unknown_and_expired(
     client: AsyncClient, seeded: dict[str, int], auth: Callable[[str], dict[str, str]]
 ) -> None:
     h = await auth("medic@cnts.sn")
-    known = await client.get("/api/pouches/SEED-OP-1/validity", headers=h).json()
+    known_resp = await client.get("/api/pouches/SEED-OP-1/validity", headers=h)
+    known = known_resp.json()
     assert known["existe"] is True and known["valide"] is True
 
-    unknown = await client.get("/api/pouches/INCONNU-XYZ/validity", headers=h).json()
+    unknown_resp = await client.get("/api/pouches/INCONNU-XYZ/validity", headers=h)
+    unknown = unknown_resp.json()
     assert unknown["existe"] is False and unknown["valide"] is False
 
     # Créer une poche déjà périmée n'est pas permis via l'API (dates cohérentes) ;
     # on marque une poche PERIMEE pour vérifier le signalement.
     await client.patch("/api/pouches/SEED-OP-2/status", json={"statut": "PERIMEE"}, headers=h)
-    expired = await client.get("/api/pouches/SEED-OP-2/validity", headers=h).json()
+    expired_resp = await client.get("/api/pouches/SEED-OP-2/validity", headers=h)
+    expired = expired_resp.json()
     assert expired["valide"] is False and expired["perimee"] is True

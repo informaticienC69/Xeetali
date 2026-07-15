@@ -7,13 +7,17 @@ from app.schemas.enums import UserRole
 
 
 class RegisterRequest(BaseModel):
-    """Inscription d'un utilisateur."""
+    """Inscription publique d'un donneur.
+
+    Aucun champ ``role`` : l'auto-inscription publique ne peut créer que des
+    comptes ``DONNEUR``. Les comptes ``PERSONNEL_MEDICAL``/``ADMIN_CNTS`` sont
+    exclusivement provisionnés par un administrateur via ``/api/admin/users``
+    (cf. CLAUDE.md, RBAC via ``core/deps.require_role``).
+    """
 
     nom: str = Field(min_length=1, max_length=200)
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
-    role: UserRole
-    hospital_id: int | None = None
 
 
 class LoginRequest(BaseModel):

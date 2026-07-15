@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.pool import StaticPool
 
 from app.core.constants import SENEGAL_REGIONS
+from app.core.limiter import limiter
 from app.core.security import hash_password
 from app.db.base import Base
 from app.db.session import get_db
@@ -27,6 +28,16 @@ from app.models.pouch import BloodPouch
 from app.models.region import Region
 from app.models.user import User
 from app.schemas.enums import BloodGroup, PouchStatus, UserRole
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limiter() -> None:
+    """Le limiteur (5/min sur /api/auth/login) est un état process-global partagé par
+    tous les tests d'une même session pytest ; sans reset, les logins cumulés d'un
+    test à l'autre finissent par dépasser le seuil et font échouer des tests sans
+    rapport avec le rate limiting (429 au lieu de 200/401 attendu).
+    """
+    limiter.reset()
 
 
 @pytest_asyncio.fixture()

@@ -20,6 +20,19 @@ async def test_register_returns_token(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_register_ignores_client_supplied_role(client: AsyncClient) -> None:
+    """Régression : l'auto-inscription publique ne doit jamais créer un compte privilégié,
+    même si le client envoie un champ ``role`` (ex. ``ADMIN_CNTS``) dans la requête.
+    """
+    resp = await client.post(
+        "/api/auth/register",
+        json={"nom": "Attaquant", "email": "attaquant@cnts.sn", "password": "Password123!", "role": "ADMIN_CNTS"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["role"] == "DONNEUR"
+
+
+@pytest.mark.asyncio
 async def test_register_duplicate_email_conflict(client: AsyncClient, seeded: dict[str, int]) -> None:
     resp = await client.post(
         "/api/auth/register",
@@ -47,7 +60,8 @@ async def test_login_success_and_wrong_password(client: AsyncClient, seeded: dic
 
 @pytest.mark.asyncio
 async def test_protected_route_requires_auth(client: AsyncClient, seeded: dict[str, int]) -> None:
-    assert await client.get("/api/inventory").status_code == 401
+    resp = await client.get("/api/inventory")
+    assert resp.status_code == 401
 
 
 @pytest.mark.asyncio

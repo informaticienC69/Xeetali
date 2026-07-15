@@ -28,8 +28,10 @@ async def test_collection_points_filter_by_locality(
     client: AsyncClient, seeded: dict[str, int], auth: Callable[[str], dict[str, str]]
 ) -> None:
     h = await auth("donor@cnts.sn")
-    assert len(await client.get("/api/collection-points?localisation=Dakar", headers=h).json()) == 1
-    assert await client.get("/api/collection-points?localisation=Ziguinchor", headers=h).json() == []
+    dakar = await client.get("/api/collection-points?localisation=Dakar", headers=h)
+    assert len(dakar.json()) == 1
+    ziguinchor = await client.get("/api/collection-points?localisation=Ziguinchor", headers=h)
+    assert ziguinchor.json() == []
 
 
 @pytest.mark.asyncio
@@ -100,10 +102,11 @@ async def test_alert_masks_phone_numbers(
 async def test_donor_responds_to_alert(
     client: AsyncClient, seeded: dict[str, int], auth: Callable[[str], dict[str, str]]
 ) -> None:
-    alert = await client.post(
+    alert_resp = await client.post(
         "/api/alerts", json={"groupe_sanguin": "O-", "localisation": "Dakar"},
         headers=await auth("admin@cnts.sn"),
-    ).json()
+    )
+    alert = alert_resp.json()
     resp = await client.post(
         f"/api/alerts/{alert['alert_id']}/respond",
         json={"disponible": True},
@@ -132,7 +135,8 @@ async def test_donor_stats_zero_then_gamified(
     from app.models.donation import Donation
 
     # Sans don : niveau initial, éligible, badges non obtenus.
-    s0 = await client.get("/api/donors/me/stats", headers=await auth("donor@cnts.sn")).json()
+    s0_resp = await client.get("/api/donors/me/stats", headers=await auth("donor@cnts.sn"))
+    s0 = s0_resp.json()
     assert s0["nb_dons"] == 0
     assert s0["niveau"] == "Nouveau donneur"
     assert s0["eligible_maintenant"] is True
@@ -146,7 +150,8 @@ async def test_donor_stats_zero_then_gamified(
         ))
     await db_session.commit()
 
-    s1 = await client.get("/api/donors/me/stats", headers=await auth("donor@cnts.sn")).json()
+    s1_resp = await client.get("/api/donors/me/stats", headers=await auth("donor@cnts.sn"))
+    s1 = s1_resp.json()
     assert s1["nb_dons"] == 3
     assert s1["niveau"] == "Argent"
     assert s1["vies_potentielles"] == 9
@@ -160,7 +165,8 @@ async def test_donor_stats_zero_then_gamified(
 async def test_leaderboard_includes_me(
     client: AsyncClient, seeded: dict[str, int], auth: Callable[[str], dict[str, str]]
 ) -> None:
-    board = await client.get("/api/donors/leaderboard", headers=await auth("donor@cnts.sn")).json()
+    board_resp = await client.get("/api/donors/leaderboard", headers=await auth("donor@cnts.sn"))
+    board = board_resp.json()
     assert len(board) >= 1
     assert any(e["is_me"] for e in board)
     # Nom abrégé (confidentialité) : pas de nom complet en clair.

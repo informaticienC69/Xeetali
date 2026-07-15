@@ -5,10 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.core.security import create_access_token, hash_password, verify_password
-from app.models.hospital import Hospital
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
-from app.services.exceptions import ConflictError, HospitalNotFoundError, UnauthorizedError
+from app.schemas.enums import UserRole
+from app.services.exceptions import ConflictError, UnauthorizedError
 
 
 def _token_for(user: User) -> TokenResponse:
@@ -23,19 +23,21 @@ def _token_for(user: User) -> TokenResponse:
 
 
 async def register(db: AsyncSession, payload: RegisterRequest) -> TokenResponse:
-    """Crée un utilisateur (email unique) et renvoie un jeton."""
+    """Auto-inscription publique — crée un compte ``DONNEUR`` (email unique) et renvoie un jeton.
+
+    Les rôles ``PERSONNEL_MEDICAL``/``ADMIN_CNTS`` ne sont jamais assignables ici :
+    provisionnement exclusif par un administrateur via ``/api/admin/users``.
+    """
     try:
         if await db.scalar(select(User).where(User.email == payload.email)) is not None:
             raise ConflictError("Un compte existe déjà avec cet email.")
-        if payload.hospital_id is not None and await db.get(Hospital, payload.hospital_id) is None:
-            raise HospitalNotFoundError(f"Hôpital {payload.hospital_id} introuvable.")
 
         user = User(
             nom=payload.nom,
             email=payload.email,
             password_hash=hash_password(payload.password),
-            role=payload.role.value,
-            hospital_id=payload.hospital_id,
+            role=UserRole.DONNEUR.value,
+            hospital_id=None,
         )
         db.add(user)
         await db.commit()

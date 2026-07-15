@@ -20,24 +20,32 @@ DEFAULT_CONFIGS = {
         "description": "Seil de stock faible (alerte)",
         "category": "stock",
     },
+    # Alignés sur core/gamification.py::DEFAULT_LEVELS (seule référence des noms de
+    # palier) — un écart entre les deux tables change silencieusement le niveau
+    # affiché à chaque donneur sans qu'aucune erreur ne se déclenche.
     "gamification.level_1_threshold": {
         "value": 1,
-        "description": "Seuil pour le niveau Novice",
+        "description": "Seuil pour le niveau Bronze",
         "category": "gamification",
     },
     "gamification.level_2_threshold": {
-        "value": 5,
-        "description": "Seuil pour le niveau Donneur",
+        "value": 3,
+        "description": "Seuil pour le niveau Argent",
         "category": "gamification",
     },
     "gamification.level_3_threshold": {
-        "value": 12,
-        "description": "Seuil pour le niveau Héros",
+        "value": 5,
+        "description": "Seuil pour le niveau Or",
         "category": "gamification",
     },
     "gamification.level_4_threshold": {
-        "value": 25,
-        "description": "Seuil pour le niveau Légende",
+        "value": 10,
+        "description": "Seuil pour le niveau Platine",
+        "category": "gamification",
+    },
+    "gamification.level_5_threshold": {
+        "value": 20,
+        "description": "Seuil pour le niveau Diamant",
         "category": "gamification",
     },
 }
@@ -70,30 +78,45 @@ async def list_configs(db: AsyncSession, category: str | None = None) -> list[Co
 
 
 async def create_config(db: AsyncSession, payload: ConfigurationCreate) -> Configuration:
-    """Crée une nouvelle configuration."""
-    config = Configuration(**payload.model_dump())
-    db.add(config)
-    await db.flush()
+    """Crée une nouvelle configuration (atomique)."""
+    try:
+        config = Configuration(**payload.model_dump())
+        db.add(config)
+        await db.commit()
+        await db.refresh(config)
+    except Exception:
+        await db.rollback()
+        raise
     return config
 
 
 async def update_config(db: AsyncSession, key: str, payload: ConfigurationUpdate) -> Configuration | None:
-    """Met à jour une configuration existante."""
+    """Met à jour une configuration existante (atomique)."""
     config = await get_config(db, key)
     if config is None:
         return None
-    for field, value in payload.model_dump(exclude_unset=True).items():
-        setattr(config, field, value)
-    await db.flush()
+    try:
+        for field, value in payload.model_dump(exclude_unset=True).items():
+            setattr(config, field, value)
+        await db.commit()
+        await db.refresh(config)
+    except Exception:
+        await db.rollback()
+        raise
     return config
 
 
 async def delete_config(db: AsyncSession, key: str) -> bool:
-    """Supprime une configuration."""
+    """Supprime une configuration (atomique)."""
     config = await get_config(db, key)
     if config is None:
         return False
-    await db.delete(config)
+    try:
+        await db.delete(config)
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        raise
     return True
 
 
