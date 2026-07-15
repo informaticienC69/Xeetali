@@ -5,7 +5,6 @@ from datetime import date, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 from app.core.gamification import (
     DELAI_ELIGIBILITE_JOURS,

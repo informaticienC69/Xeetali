@@ -5,7 +5,7 @@ import pytest
 from collections.abc import Callable
 from datetime import date, timedelta
 
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.hospital import Hospital

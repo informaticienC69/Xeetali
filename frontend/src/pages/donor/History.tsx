@@ -1,10 +1,10 @@
 // History.tsx — Donor
 import { Droplet, HeartPulse } from "lucide-react";
-import { api } from "../../lib/api";
+import { api, type Donation } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { EmptyState, GroupBadge, Skeleton, PageHeader } from "../../components/ui";
 
-function GlobalImpact({ donations }: { donations: any[] }) {
+function GlobalImpact({ donations }: { donations: Donation[] }) {
   const totalVolume = donations.reduce((acc, d) => acc + d.volume, 0);
   const livesSaved = donations.length * 3;
 

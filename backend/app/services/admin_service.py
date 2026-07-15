@@ -6,7 +6,6 @@ from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 from app.core.security import hash_password
 from app.models.alert import Alert
@@ -156,7 +155,7 @@ async def analytics(db: AsyncSession) -> AnalyticsResponse:
     ]
 
     # Indicateurs clés ----------------------------------------------------------
-    total_dispo = sum(l.value for l in stock_par_groupe)
+    total_dispo = sum(line.value for line in stock_par_groupe)
     expirant_7j = int(
         await db.scalar(
             select(func.count(BloodPouch.id)).where(

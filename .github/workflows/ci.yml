@@ -9,49 +9,49 @@ on:
 jobs:
   test-backend:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python 3.13
       uses: actions/setup-python@v5
       with:
         python-version: "3.13"
-        
+        cache: "pip"
+        cache-dependency-path: backend/requirements.txt
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        cd backend
-        pip install -r requirements.txt
-        
-    - name: Lint with Ruff (Backend)
-      run: |
-        pip install ruff
-        cd backend
-        ruff check .
-        
-    - name: Test with pytest
-      env:
-        DATABASE_URL: sqlite:///:memory: # Test en mémoire pour CI rapide
-      run: |
-        cd backend
-        pytest -v
+        pip install -r requirements.txt ruff
 
-  build-frontend:
+    # Base SQLite en mémoire, créée par chaque test (app/tests/conftest.py) —
+    # indépendante de DATABASE_URL, aucune base externe requise ici.
+    - name: Lint with Ruff
+      run: ruff check .
+
+    - name: Run backend test suite (pytest)
+      run: pytest -v
+
+  test-frontend:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Setup Node.js 18
+
+    - name: Setup Node.js 22
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
-        
+        node-version: "22"
+        cache: "npm"
+        cache-dependency-path: frontend/package-lock.json
+
     - name: Install dependencies
-      run: |
-        cd frontend
-        npm ci
-        
-    - name: Type checking and Linting
-      run: |
-        cd frontend
-        npm run build # Le build vérifie tsc
+      run: npm ci
+
+    - name: Type-check & build (tsc -b && vite build)
+      run: npm run build

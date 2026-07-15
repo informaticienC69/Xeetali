@@ -4,7 +4,6 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 from app.core.deps import get_current_user
 from app.db.session import get_db

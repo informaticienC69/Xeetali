@@ -23,7 +23,6 @@ export function KpiTile({
   sub,
   tone = "normal",
   pulse = false,
-  delay = 0,
 }: {
   icon: ComponentType<LucideProps>;
   label: string;
@@ -31,7 +30,6 @@ export function KpiTile({
   sub?: string;
   tone?: KpiTone;
   pulse?: boolean;
-  delay?: number;
 }) {
   void pulse; // conservé pour compat d'API ; plus de pulsation (contexte médical)
   const animated = typeof value === "number" ? value : 0;

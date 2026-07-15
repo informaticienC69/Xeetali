@@ -5,7 +5,7 @@ import pytest
 from collections.abc import Callable
 from datetime import date, timedelta
 
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 
 
 def _register_payload(hospital_id: int, groupe: str = "O+") -> dict:

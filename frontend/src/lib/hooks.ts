@@ -16,7 +16,7 @@ export function useMediaQuery(query: string): boolean {
   return matches;
 }
 
-interface AsyncState<T> {
+export interface AsyncState<T> {
   data: T | null;
   loading: boolean;
   error: string | null;

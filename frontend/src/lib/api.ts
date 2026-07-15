@@ -15,7 +15,7 @@ export interface TokenResponse {
   hospital_id: number | null;
 }
 
-export interface StockLine {
+interface StockLine {
   groupe_sanguin: BloodGroup;
   quantite: number;
 }
@@ -213,7 +213,7 @@ export interface PublicConfig {
   low_stock_threshold: number;
 }
 
-export interface RegionBloodGroupStock {
+interface RegionBloodGroupStock {
   groupe_sanguin: BloodGroup;
   quantite: number;
   cible: number;

@@ -1,6 +1,6 @@
 // MedicalDashboard.tsx — Tableau de bord Personnel Médical "World-Class"
 // Landing page /medical — Vision en temps réel de l'hôpital
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -11,7 +11,6 @@ import {
   Droplet,
   ShieldCheck,
   Syringe,
-  ChevronRight,
   Zap,
 } from "lucide-react";
 import { api, BLOOD_GROUPS, type BloodGroup, type HospitalInventory } from "../../lib/api";
@@ -175,19 +174,13 @@ export default function MedicalDashboard() {
 
   // Stock par groupe pour cet hôpital
   const stockByGroup = useMemo(() => {
-    const map: Record<BloodGroup, number> = {} as any;
+    const map = {} as Record<BloodGroup, number>;
     BLOOD_GROUPS.forEach((g) => (map[g] = 0));
     if (myHospital) {
       myHospital.stocks.forEach((s) => { map[s.groupe_sanguin as BloodGroup] = s.quantite; });
     }
     return map;
   }, [myHospital]);
-
-  const maxStock = useMemo(
-    // 50 poches = objectif de stock idéal. La barre sera calculée par rapport à ça (ou plus si surplus).
-    () => Math.max(...Object.values(stockByGroup), 50),
-    [stockByGroup],
-  );
 
   const totalDispo = useMemo(
     () => Object.values(stockByGroup).reduce((a, b) => a + b, 0),
@@ -309,14 +302,14 @@ export default function MedicalDashboard() {
           sub="hôpital"
           tone={totalDispo === 0 ? "crit" : totalDispo <= lowThreshold * 2 ? "warn" : "ok"}
           pulse={totalDispo <= lowThreshold}
-          delay={0}
+         
         />
         <KpiTile
           icon={ClipboardList}
           label="Demandes ouvertes"
           value={openReqs}
           tone={openReqs > 0 ? "warn" : "normal"}
-          delay={60}
+         
         />
         <KpiTile
           icon={Activity}
@@ -324,7 +317,7 @@ export default function MedicalDashboard() {
           value={criticalReqs}
           tone={criticalReqs > 0 ? "crit" : "normal"}
           pulse={criticalReqs > 0}
-          delay={120}
+         
         />
         <KpiTile
           icon={Clock}
@@ -333,7 +326,7 @@ export default function MedicalDashboard() {
           sub={groupsAlerts.length > 0 ? groupsAlerts.join(", ") : ""}
           tone={groupsAlerts.length > 0 ? "crit" : "normal"}
           pulse={groupsAlerts.length > 0}
-          delay={180}
+         
         />
       </div>
 
@@ -475,9 +468,8 @@ export default function MedicalDashboard() {
               </div>
             ) : (
               <div className="space-y-2">
-                {recentRequests.map((r, i) => {
+                {recentRequests.map((r) => {
                   const isCrit = r.urgence === "CRITIQUE";
-                  const isUrg  = r.urgence === "URGENTE";
                   return (
                     <div
                       key={r.id}
