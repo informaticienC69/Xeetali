@@ -1,10 +1,9 @@
 // Dashboard.tsx — Command Center Admin XÉÉTALI
 // Inspiré fidèlement de maquette.html · Logic inchangée
-import { useEffect, useState } from "react";
 import {
   ArrowLeftRight, Bell, Building2,
   Droplet, HeartPulse, Inbox,
-  Thermometer, Users, Check, X
+  Thermometer, Users,
 } from "lucide-react";
 import { api } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
@@ -20,122 +19,6 @@ import {
 const fmtDay   = (d: string) => { const [, m, day] = d.split("-"); return `${day}/${m}`; };
 const MONTHS = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
 const fmtMonth = (d: string) => { const [, m] = d.split("-"); return MONTHS[Number(m) - 1] ?? d; };
-
-// ── StatusDot ─────────────────────────────────────────────────
-function StatusDot({ color, pulse = false }: { color: string; pulse?: boolean }) {
-  return (
-    <span
-      className={pulse ? "pulse-soft" : ""}
-      style={{
-        display: "inline-block", width: 8, height: 8,
-        borderRadius: 9999, background: color,
-        boxShadow: `0 0 8px ${color}`, flexShrink: 0,
-      }}
-    />
-  );
-}
-
-// ── AlertCenter ─────────────────────────────────────────────────────
-function useElapsed(since: string) {
-  const [elapsed, setElapsed] = useState(Date.now() - new Date(since).getTime());
-  useEffect(() => {
-    const t = setInterval(() => setElapsed(Date.now() - new Date(since).getTime()), 10000);
-    return () => clearInterval(t);
-  }, [since]);
-  const mins = Math.floor(elapsed / 60000);
-  return mins < 1 ? "à l'instant" : `il y a ${mins} min`;
-}
-
-function AlertRow({ a, onRouted }: { a: any, onRouted: () => void }) {
-  const when = useElapsed(a.created_at);
-  const isCrit = a.urgence === "CRITIQUE";
-  const [routed, setRouted] = useState(false);
-  
-  async function handleRoute() {
-    try {
-      setRouted(true);
-      await api.updateRequest(a.id, { statut: "EN_COURS" });
-      onRouted();
-    } catch (err) {
-      setRouted(false);
-      console.error(err);
-    }
-  }
-
-  return (
-    <div
-      className="alert-item px-4 py-3 flex items-center gap-4 rounded-xl mx-0 cursor-default mb-2"
-      style={{
-        border: "1px solid var(--line)",
-        background: isCrit ? "rgba(206,51,65,0.03)" : "var(--surface)",
-      }}
-    >
-      {/* Indicateur urgence */}
-      <div
-        className={`w-1 self-stretch rounded-full shrink-0 ${isCrit ? "pulse-soft" : ""}`}
-        style={{ background: isCrit ? "var(--blood)" : "var(--warn)", minHeight: 40 }}
-      />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm truncate" style={{ color: "var(--txt)" }}>{a.nom_hopital || "Hôpital inconnu"}</span>
-          {/* Badge groupe + urgence */}
-          <span
-            className="mono text-[10px] px-1.5 py-0.5 rounded-md border shrink-0"
-            style={{
-              background: isCrit ? "rgba(206,51,65,0.12)" : "rgba(245,158,11,0.10)",
-              color: isCrit ? "var(--blood)" : "var(--warn)",
-              borderColor: isCrit ? "rgba(206,51,65,0.4)" : "rgba(245,158,11,0.35)",
-            }}
-          >
-            {a.groupe_sanguin}
-          </span>
-          <span
-            className="mono text-[9px] px-1.5 py-0.5 rounded-md shrink-0"
-            style={{
-              background: isCrit ? "rgba(206,51,65,0.08)" : "rgba(245,158,11,0.08)",
-              color: isCrit ? "var(--blood)" : "var(--warn)",
-            }}
-          >
-            {isCrit ? "CRITIQUE" : "HAUTE"}
-          </span>
-        </div>
-        <div className="mono text-[10px] mt-0.5" style={{ color: "var(--txt-mute)" }}>
-          {when} · besoin : <strong style={{ color: "var(--txt-dim)" }}>{a.quantite} poche{a.quantite > 1 ? "s" : ""}</strong>
-        </div>
-      </div>
-      <button
-        onClick={handleRoute}
-        disabled={routed}
-        className="mono text-[10px] uppercase tracking-wider px-4 py-2 rounded-lg border transition-all duration-150 shrink-0 cursor-pointer hover:shadow-sm"
-        style={{
-          borderColor: routed ? "var(--ok)" : isCrit ? "rgba(206,51,65,0.5)" : "var(--line)",
-          color: routed ? "var(--ok)" : isCrit ? "var(--blood)" : "var(--txt)",
-          background: routed ? "rgba(74,222,128,0.08)" : isCrit ? "rgba(206,51,65,0.06)" : "var(--surface-2)",
-        }}
-      >
-        {routed ? <><Check size={12} className="mr-1 inline-block" /> Routé</> : "Router →"}
-      </button>
-    </div>
-  );
-}
-
-function AlertCenter({ alertCount }: { alertCount: number }) {
-  const [launched, setLaunched] = useState(false);
-  const hasAlerts = alertCount > 0;
-  const requests = useApi(() => api.listRequests(), []);
-  
-  const incoming = (requests.data || []).filter((r: any) => r.statut === "OUVERTE").sort((a: any, b: any) => {
-    const pA = a.urgence === "CRITIQUE" ? 0 : a.urgence === "URGENTE" ? 1 : 2;
-    const pB = b.urgence === "CRITIQUE" ? 0 : b.urgence === "URGENTE" ? 1 : 2;
-    return pA - pB;
-  }).slice(0, 5);
-
-  return (
-    <div>
-      
-    </div>
-  );
-}
 
 // Tonalité d'une métrique « à surveiller » : reflète le compte réel plutôt
 // qu'une valeur figée — sans ça, une tuile peut afficher « critique » avec
@@ -184,14 +67,14 @@ export default function Dashboard() {
             <>
               {/* Row 1 — 4 KPIs principaux */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {kpis.slice(0, 4).map((k, i) => (
-                  <KpiTile key={k.label} icon={k.icon} label={k.label} value={k.value} tone={k.tone} pulse={k.pulse} delay={i * 80} />
+                {kpis.slice(0, 4).map((k) => (
+                  <KpiTile key={k.label} icon={k.icon} label={k.label} value={k.value} tone={k.tone} pulse={k.pulse} />
                 ))}
               </div>
               {/* Row 2 — 4 KPIs secondaires */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {kpis.slice(4).map((k, i) => (
-                  <KpiTile key={k.label} icon={k.icon} label={k.label} value={k.value} tone={k.tone} pulse={k.pulse} delay={(i + 4) * 80} />
+                {kpis.slice(4).map((k) => (
+                  <KpiTile key={k.label} icon={k.icon} label={k.label} value={k.value} tone={k.tone} pulse={k.pulse} />
                 ))}
               </div>
             </>
@@ -203,9 +86,6 @@ export default function Dashboard() {
             totalPoches={data?.total_poches_disponibles ?? 1947}
             nbHopitaux={data?.nb_hopitaux ?? 28}
           />
-
-          {/* Centre d'alertes */}
-          <AlertCenter alertCount={data?.alertes_actives ?? 0} />
 
           {/* Charts row 1 */}
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">

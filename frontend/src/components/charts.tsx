@@ -210,7 +210,7 @@ export function VBarChart({ data, color, unit, height = 240 }: { data: LabeledCo
             />
           )}
           <Bar dataKey="value" radius={[8, 8, 0, 0]} maxBarSize={44}>
-            {data.map((d, i) => (
+            {data.map((_, i) => (
               <Cell
                 key={i}
                 fill={`url(#vbar-${color.replace("#","")}-${i})`}

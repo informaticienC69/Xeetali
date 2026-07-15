@@ -14,8 +14,8 @@ import {
 // élément (Input/Select) — un <label> et son champ simplement voisins dans
 // le DOM ne sont PAS liés pour un lecteur d'écran, contrairement à un <label
 // for="…">. Repli silencieux (comportement identique à avant) si l'enfant
-// n'est pas un élément unique clonable (ex. BloodGroupSelector, groupe de
-// boutons — ceux-là relèvent plutôt d'un <fieldset>/<legend>).
+// n'est pas un élément unique clonable (ex. un groupe de boutons — ceux-là
+// relèvent plutôt d'un <fieldset>/<legend>).
 export function Field({ label, children, className = "" }: { label: string; children: ReactNode; className?: string }) {
   const generatedId = useId();
   const only = Children.count(children) === 1 && isValidElement(children) ? (children as ReactElement<any>) : null;

@@ -5,7 +5,7 @@ import pytest
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 
 
 @pytest.mark.asyncio

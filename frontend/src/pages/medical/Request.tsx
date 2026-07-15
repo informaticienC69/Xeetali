@@ -132,11 +132,6 @@ export default function Request() {
     [requests.data],
   );
 
-  const openCount = useMemo(
-    () => (requests.data ?? []).filter((r) => r.statut === "OUVERTE").length,
-    [requests.data],
-  );
-
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (hospital === "") return toast.error("Sélectionnez un hôpital.");

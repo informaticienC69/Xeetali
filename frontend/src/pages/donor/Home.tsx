@@ -6,9 +6,9 @@ import {
   HeartPulse, Lock, Medal, QrCode, Star, Trophy, Zap,
   Globe2, Gem, Activity, Share2
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { api, type BadgeStatus, type DonorStats, type LeaderboardEntry } from "../../lib/api";
-import { useApi } from "../../lib/hooks";
+import { useApi, type AsyncState } from "../../lib/hooks";
 import { useAuth } from "../../lib/auth";
 import { CountUp, GroupBadge, Skeleton, Modal } from "../../components/ui";
 import QRCode from "react-qr-code";
@@ -684,7 +684,7 @@ function HomeSkeleton() {
 }
 
 /* ─── Home Page ──────────────────────────────────────────────── */
-function MobileDashboard({ s, board }: { s: DonorStats, board: any }) {
+function MobileDashboard({ s, board }: { s: DonorStats, board: AsyncState<LeaderboardEntry[]> }) {
   const [activeTab, setActiveTab] = useState<'impact' | 'badges' | 'leaderboard'>('impact');
 
   return (

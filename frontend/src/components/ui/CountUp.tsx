@@ -7,7 +7,7 @@ function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 }
 
-export function useCountUp(target: number, duration = 1200, delay = 0): number {
+function useCountUp(target: number, duration = 1200, delay = 0): number {
   const [val, setVal] = useState(0);
   const raf = useRef<number>(0);
   useEffect(() => {

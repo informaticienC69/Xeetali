@@ -6,7 +6,14 @@ import { useToast } from "../../lib/toast";
 import { useAuth } from "../../lib/auth";
 import { Button, Skeleton, PageHeader } from "../../components/ui";
 
-function HolographicID({ form }: { form: any }) {
+interface ProfileForm {
+  groupe_sanguin: BloodGroup;
+  telephone: string;
+  localisation: string;
+  date_dernier_don: string;
+}
+
+function HolographicID({ form }: { form: ProfileForm }) {
   const { nom, userId } = useAuth();
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 });

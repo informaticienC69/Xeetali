@@ -11,7 +11,6 @@ import logging
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 from app.models.hospital import Hospital
 from app.models.pouch import BloodPouch

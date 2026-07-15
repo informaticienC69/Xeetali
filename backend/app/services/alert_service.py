@@ -9,7 +9,6 @@ import logging
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 from app.core.constants import compatible_donor_groups
 from app.models.alert import Alert, AlertResponse

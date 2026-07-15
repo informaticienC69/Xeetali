@@ -4,7 +4,7 @@ import pytest
 
 from collections.abc import Callable
 
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 
 
 @pytest.mark.asyncio

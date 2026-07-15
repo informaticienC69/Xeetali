@@ -1,68 +1,6 @@
 import { type ReactNode } from "react";
-import { Check } from "lucide-react";
-import { BLOOD_GROUPS as BG_LIST, type BloodGroup as BG } from "../../lib/api";
 
 import { Select } from "./Forms";
-// ── BloodGroupSelector ────────────────────────────────────────────
-// Grille 4×2. La sélection est une simple mise en avant (bleu clinique),
-// pas une urgence — donc pas de rouge.
-export function BloodGroupSelector({
-  value,
-  onChange,
-}: {
-  value: BG;
-  onChange: (g: BG) => void;
-}) {
-  return (
-    <div className="grid grid-cols-4 gap-2">
-      {BG_LIST.map((g) => {
-        const isSelected = g === value;
-        const isNeg = g.includes("-");
-        return (
-          <button
-            key={g}
-            type="button"
-            onClick={() => onChange(g)}
-            className="relative flex flex-col items-center justify-center rounded-xl transition-colors duration-150 cursor-pointer"
-            style={{
-              padding: "10px 6px",
-              background: isSelected ? "var(--clinic-tint)" : "var(--surface-2)",
-              border: `2px solid ${isSelected ? "var(--clinic)" : "var(--line)"}`,
-            }}
-            onMouseEnter={(e) => {
-              if (!isSelected) (e.currentTarget as HTMLElement).style.borderColor = "var(--line-2)";
-            }}
-            onMouseLeave={(e) => {
-              if (!isSelected) (e.currentTarget as HTMLElement).style.borderColor = "var(--line)";
-            }}
-          >
-            <span
-              className="mono text-[8px] font-bold mb-0.5 uppercase tracking-wider"
-              style={{ color: isNeg ? "var(--warn)" : "var(--ok)" }}
-            >
-              {isNeg ? "RH−" : "RH+"}
-            </span>
-            <span
-              className="num font-bold text-base leading-none"
-              style={{ color: isSelected ? "var(--clinic-dim)" : "var(--txt)" }}
-            >
-              {g.replace(/[+-]/, "")}
-            </span>
-            {isSelected && (
-              <span
-                className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full"
-                style={{ background: "var(--clinic)" }}
-              >
-                <Check size={9} className="text-white" />
-              </span>
-            )}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 
 // ── UrgencySelector ────────────────────────────────────────────────
 // Ici le rouge est légitime : CRITIQUE = urgence réelle. Sobre (teinte + bord).

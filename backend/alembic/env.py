@@ -5,7 +5,7 @@ from alembic import context
 
 from app.core.config import settings
 from app.db.base import Base
-import app.models  # importe les modèles pour que les métadonnées soient remplies
+import app.models  # noqa: F401 — importe les modèles pour que les métadonnées soient remplies
 
 config = context.config
 
