@@ -22,13 +22,16 @@ export default function CollectionPoints() {
       />
 
       <div className="relative group mt-4 mb-8">
+        <label htmlFor="collection-points-search" className="sr-only">Rechercher une localité ou un hôpital</label>
         <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
           <Search size={20} style={{ color: "var(--txt-mute)" }} className="transition-colors group-focus-within:text-(--blood)" />
         </div>
-        <input 
-          placeholder="Rechercher une localité, un hôpital..." 
-          value={q} 
-          onChange={(e) => setQ(e.target.value)} 
+        <input
+          id="collection-points-search"
+          type="search"
+          placeholder="Rechercher une localité, un hôpital..."
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
           className="w-full h-16 pl-14 pr-6 rounded-[24px] text-lg transition-all duration-300 focus:outline-none"
           style={{ 
             background: "linear-gradient(145deg, var(--surface) 0%, var(--bg) 100%)", 

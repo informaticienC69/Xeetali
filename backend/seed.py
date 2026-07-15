@@ -14,9 +14,13 @@ from __future__ import annotations
 import random
 from datetime import date, datetime, timedelta, timezone
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from app.core.config import settings
+from app.core.constants import SENEGAL_REGIONS
 from app.core.security import hash_password
 from app.db.base import Base
-from app.db.session import SessionLocal, engine
 import app.models  # noqa: F401
 from app.models.alert import Alert, AlertResponse
 from app.models.appointment import Appointment
@@ -26,6 +30,7 @@ from app.models.donation import Donation
 from app.models.donor_profile import DonorProfile
 from app.models.hospital import Hospital
 from app.models.pouch import BloodPouch
+from app.models.region import Region
 from app.models.request import BloodRequest
 from app.models.transfer import TransferOrder
 from app.models.user import User
@@ -40,24 +45,86 @@ from app.schemas.enums import (
     Urgence,
 )
 
+# Moteur synchrone dédié : l'appli sert des requêtes async (app/db/session.py),
+# mais ce script est un one-shot exécuté hors requête HTTP (docker-compose
+# ``db_setup``) — inutile d'introduire une boucle asyncio pour un seed.
+_url = settings.database_url
+if _url.startswith("sqlite://"):
+    _connect_args = {"check_same_thread": False}
+elif _url.startswith("postgresql://"):
+    _url = _url.replace("postgresql://", "postgresql+psycopg://", 1)
+    _connect_args = {}
+else:
+    _connect_args = {}
+
+engine = create_engine(_url, connect_args=_connect_args, future=True)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
+
 PASSWORD = "Password123!"
 
+# Un établissement par région administrative (Dakar en a 3, comme dans la
+# réalité du réseau CNTS) — couvre les 14 régions pour que la carte nationale
+# ait des données partout plutôt que la plupart en « hors réseau ».
 HOSPITALS = [
     ("CNTS Dakar", "Dakar", "Centre National"),
     ("Hôpital Principal de Dakar", "Dakar", "Hôpital"),
     ("Hôpital Aristide Le Dantec", "Dakar", "Hôpital"),
     ("CHR de Thiès", "Thiès", "CHR"),
     ("CHR de Saint-Louis", "Saint-Louis", "CHR"),
+    ("CHR de Diourbel", "Diourbel", "CHR"),
+    ("CHR de Fatick", "Fatick", "CHR"),
+    ("CHR de Kaffrine", "Kaffrine", "CHR"),
+    ("CHR de Kaolack", "Kaolack", "CHR"),
+    ("CHR de Kédougou", "Kédougou", "CHR"),
+    ("CHR de Kolda", "Kolda", "CHR"),
+    ("CHR de Louga", "Louga", "CHR"),
+    ("CHR de Matam", "Matam", "CHR"),
+    ("CHR de Sédhiou", "Sédhiou", "CHR"),
+    ("CHR de Tambacounda", "Tambacounda", "CHR"),
+    ("CHR de Ziguinchor", "Ziguinchor", "CHR"),
 ]
 
-# Stock initial (nb de poches DISPONIBLE) par hôpital et groupe.
+# Stock initial (nb de poches DISPONIBLE) par hôpital et groupe. Le stock
+# national par région (services/admin_service.stock_by_region) compare ce total
+# à une cible de ``stock.ideal`` (config, 50 par défaut) par groupe ET par
+# hôpital — donc pour qu'une région sorte du rouge il faut couvrir les 8
+# groupes, pas seulement O+/A+. Volumes volontairement inégaux (quelques
+# hôpitaux bien fournis, d'autres en tension ou en rupture) pour que le
+# dashboard et la carte reflètent une vraie disparité plutôt qu'un réseau
+# uniformément critique ou uniformément optimal.
 STOCKS = {
-    "CNTS Dakar": {BloodGroup.O_NEG: 12, BloodGroup.O_POS: 40, BloodGroup.A_POS: 30,
-                   BloodGroup.A_NEG: 6, BloodGroup.B_POS: 18, BloodGroup.AB_POS: 5},
-    "Hôpital Principal de Dakar": {BloodGroup.O_POS: 15, BloodGroup.A_POS: 10, BloodGroup.B_POS: 6},
-    "Hôpital Aristide Le Dantec": {BloodGroup.O_POS: 8, BloodGroup.A_POS: 5, BloodGroup.O_NEG: 2},
-    "CHR de Thiès": {BloodGroup.O_POS: 10, BloodGroup.A_POS: 7, BloodGroup.B_POS: 3},
-    "CHR de Saint-Louis": {BloodGroup.O_POS: 6, BloodGroup.A_POS: 4, BloodGroup.AB_POS: 1},
+    "CNTS Dakar": {BloodGroup.O_POS: 60, BloodGroup.O_NEG: 15, BloodGroup.A_POS: 45, BloodGroup.A_NEG: 10,
+                   BloodGroup.B_POS: 25, BloodGroup.B_NEG: 6, BloodGroup.AB_POS: 8, BloodGroup.AB_NEG: 3},
+    "Hôpital Principal de Dakar": {BloodGroup.O_POS: 25, BloodGroup.O_NEG: 5, BloodGroup.A_POS: 18, BloodGroup.A_NEG: 4,
+                                    BloodGroup.B_POS: 10, BloodGroup.B_NEG: 2, BloodGroup.AB_POS: 3, BloodGroup.AB_NEG: 1},
+    "Hôpital Aristide Le Dantec": {BloodGroup.O_POS: 15, BloodGroup.O_NEG: 3, BloodGroup.A_POS: 10, BloodGroup.A_NEG: 2,
+                                    BloodGroup.B_POS: 6, BloodGroup.B_NEG: 1, BloodGroup.AB_POS: 2, BloodGroup.AB_NEG: 1},
+    "CHR de Thiès": {BloodGroup.O_POS: 30, BloodGroup.O_NEG: 6, BloodGroup.A_POS: 22, BloodGroup.A_NEG: 5,
+                      BloodGroup.B_POS: 12, BloodGroup.B_NEG: 3, BloodGroup.AB_POS: 4, BloodGroup.AB_NEG: 1},
+    "CHR de Saint-Louis": {BloodGroup.O_POS: 20, BloodGroup.O_NEG: 3, BloodGroup.A_POS: 15, BloodGroup.A_NEG: 3,
+                            BloodGroup.B_POS: 8, BloodGroup.B_NEG: 2, BloodGroup.AB_POS: 2, BloodGroup.AB_NEG: 1},
+    "CHR de Diourbel": {BloodGroup.O_POS: 45, BloodGroup.O_NEG: 10, BloodGroup.A_POS: 32, BloodGroup.A_NEG: 7,
+                         BloodGroup.B_POS: 18, BloodGroup.B_NEG: 4, BloodGroup.AB_POS: 5, BloodGroup.AB_NEG: 2},
+    "CHR de Fatick": {BloodGroup.O_POS: 38, BloodGroup.O_NEG: 8, BloodGroup.A_POS: 28, BloodGroup.A_NEG: 6,
+                       BloodGroup.B_POS: 16, BloodGroup.B_NEG: 3, BloodGroup.AB_POS: 4, BloodGroup.AB_NEG: 2},
+    "CHR de Kaffrine": {BloodGroup.O_POS: 50, BloodGroup.O_NEG: 11, BloodGroup.A_POS: 36, BloodGroup.A_NEG: 8,
+                         BloodGroup.B_POS: 20, BloodGroup.B_NEG: 5, BloodGroup.AB_POS: 6, BloodGroup.AB_NEG: 2},
+    "CHR de Kaolack": {BloodGroup.O_POS: 22, BloodGroup.O_NEG: 4, BloodGroup.A_POS: 16, BloodGroup.A_NEG: 3,
+                        BloodGroup.B_POS: 9, BloodGroup.B_NEG: 2, BloodGroup.AB_POS: 3, BloodGroup.AB_NEG: 1},
+    "CHR de Kédougou": {BloodGroup.O_POS: 10, BloodGroup.O_NEG: 2, BloodGroup.A_POS: 7, BloodGroup.A_NEG: 1,
+                         BloodGroup.B_POS: 4, BloodGroup.B_NEG: 1, BloodGroup.AB_POS: 1},
+    "CHR de Kolda": {BloodGroup.O_POS: 55, BloodGroup.O_NEG: 12, BloodGroup.A_POS: 40, BloodGroup.A_NEG: 9,
+                      BloodGroup.B_POS: 22, BloodGroup.B_NEG: 5, BloodGroup.AB_POS: 6, BloodGroup.AB_NEG: 3},
+    "CHR de Louga": {BloodGroup.O_POS: 105, BloodGroup.O_NEG: 24, BloodGroup.A_POS: 78, BloodGroup.A_NEG: 18,
+                      BloodGroup.B_POS: 42, BloodGroup.B_NEG: 11, BloodGroup.AB_POS: 13, BloodGroup.AB_NEG: 6},
+    "CHR de Matam": {BloodGroup.O_POS: 8, BloodGroup.O_NEG: 1, BloodGroup.A_POS: 6, BloodGroup.A_NEG: 1,
+                      BloodGroup.B_POS: 3, BloodGroup.AB_POS: 1},
+    "CHR de Sédhiou": {BloodGroup.O_POS: 18, BloodGroup.O_NEG: 3, BloodGroup.A_POS: 12, BloodGroup.A_NEG: 2,
+                        BloodGroup.B_POS: 7, BloodGroup.B_NEG: 1, BloodGroup.AB_POS: 2, BloodGroup.AB_NEG: 1},
+    "CHR de Tambacounda": {BloodGroup.O_POS: 12, BloodGroup.O_NEG: 2, BloodGroup.A_POS: 9, BloodGroup.A_NEG: 2,
+                            BloodGroup.B_POS: 5, BloodGroup.B_NEG: 1, BloodGroup.AB_POS: 1},
+    "CHR de Ziguinchor": {BloodGroup.O_POS: 80, BloodGroup.O_NEG: 18, BloodGroup.A_POS: 58, BloodGroup.A_NEG: 13,
+                           BloodGroup.B_POS: 32, BloodGroup.B_NEG: 8, BloodGroup.AB_POS: 10, BloodGroup.AB_NEG: 5},
 }
 
 DONORS = [
@@ -65,22 +132,47 @@ DONORS = [
     ("Modou Fall", "modou@donneur.sn", BloodGroup.O_POS, "772223399", "Dakar"),
     ("Fatou Sarr", "fatou@donneur.sn", BloodGroup.A_POS, "773334477", "Thiès"),
     ("Ibrahima Ba", "ibrahima@donneur.sn", BloodGroup.B_POS, "774445566", "Saint-Louis"),
+    ("Aissatou Diallo", "aissatou@donneur.sn", BloodGroup.O_POS, "775556677", "Kaolack"),
+    ("Cheikh Gueye", "cheikh@donneur.sn", BloodGroup.AB_POS, "776667788", "Louga"),
+    ("Ndeye Sow", "ndeye@donneur.sn", BloodGroup.A_NEG, "777778899", "Ziguinchor"),
 ]
 
 
-def seed() -> None:
+def seed(force: bool = False) -> None:
+    """Peuple la base — no-op si déjà peuplée, sauf ``force=True``.
+
+    ``db_setup`` relance ce script à chaque ``docker compose up`` : sans ce
+    garde-fou, toute donnée réelle créée depuis (transferts, nouvelles poches,
+    comptes...) serait effacée et réinitialisée au jeu de démo à chaque
+    redémarrage — pas seulement lors d'un ``down -v``.
+    """
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
-        # Réinitialisation idempotente (ordre respectant les FK).
+        if not force and db.query(Hospital).count() > 0:
+            print("Base déjà peuplée — seed ignoré (utiliser --force pour réinitialiser).")
+            return
+
+        # Réinitialisation (ordre respectant les FK) avant réinsertion du jeu de démo.
+        # Region est supprimée après Hospital (qui la référence via region_id).
         for model in (AlertResponse, Alert, TransferOrder, BloodRequest, Donation,
-                      Appointment, BloodPouch, CollectionPoint, DonorProfile, User, Hospital, Configuration):
+                      Appointment, BloodPouch, CollectionPoint, DonorProfile, User, Hospital,
+                      Region, Configuration):
             db.query(model).delete()
         db.commit()
 
+        # Régions administratives (référence géographique de la carte nationale).
+        regions: dict[str, Region] = {}
+        for r in SENEGAL_REGIONS:
+            region = Region(nom=r["name"], capitale=r["capital"], population=r["population"],
+                             longitude=r["coords"][0], latitude=r["coords"][1])
+            db.add(region)
+            regions[r["name"]] = region
+        db.flush()
+
         hospitals: dict[str, Hospital] = {}
         for nom, loc, typ in HOSPITALS:
-            h = Hospital(nom=nom, localisation=loc, type=typ)
+            h = Hospital(nom=nom, region_id=regions[loc].id, type=typ)
             db.add(h)
             hospitals[nom] = h
         db.flush()
@@ -164,6 +256,9 @@ def seed() -> None:
             "modou@donneur.sn": (9, 55),
             "fatou@donneur.sn": (6, 150),
             "ibrahima@donneur.sn": (3, 210),
+            "aissatou@donneur.sn": (5, 45),
+            "cheikh@donneur.sn": (2, 300),
+            "ndeye@donneur.sn": (8, 20),
         }
         profiles_by_email = {
             u.email: p
@@ -238,4 +333,5 @@ def seed() -> None:
 
 
 if __name__ == "__main__":
-    seed()
+    import sys
+    seed(force="--force" in sys.argv)

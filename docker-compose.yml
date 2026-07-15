@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
@@ -13,19 +11,25 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U xeetali -d xeetali_db"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
 
   db_setup:
-    build: 
+    build:
       context: ./backend
     container_name: xeetali_db_setup
     environment:
       - DATABASE_URL=postgresql://xeetali:xeetali_password@db:5432/xeetali_db
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     command: sh -c "alembic upgrade head && python seed.py"
 
   backend:
-    build: 
+    build:
       context: ./backend
     container_name: xeetali_backend
     restart: always
@@ -34,6 +38,15 @@ services:
     environment:
       - DATABASE_URL=postgresql://xeetali:xeetali_password@db:5432/xeetali_db
       - JWT_SECRET=prod-secret-change-me-in-production
+    # Montage du code source en direct + --reload : modifier un fichier sur
+    # l'hôte redémarre l'appli dans le conteneur toute seule, plus besoin de
+    # relancer `docker compose`. (`requirements.txt` reste hors montage —
+    # un ajout de dépendance nécessite toujours `docker compose up --build`.)
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic
+      - ./backend/seed.py:/app/seed.py
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       db_setup:
         condition: service_completed_successfully
@@ -41,12 +54,35 @@ services:
   frontend:
     build:
       context: ./frontend
+      target: builder # étape intermédiaire (Node + source) — pas l'image nginx finale
     container_name: xeetali_frontend
     restart: always
     ports:
-      - "5173:80" # Nginx sert sur le port 80 dans le container
+      - "5173:5173" # Vite en dev sert directement sur 5173 (plus de Nginx en dev)
+    environment:
+      # Depuis le conteneur, "backend" est résolu par le réseau Docker interne
+      # (127.0.0.1 y désignerait le conteneur frontend lui-même).
+      - VITE_API_PROXY_TARGET=http://backend:8000
+      # Les événements de watch ne remontent pas toujours fiablement à travers
+      # un bind mount Windows → conteneur Linux : le polling est plus lent
+      # mais fiable à 100 %.
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+    command: npm run dev -- --host 0.0.0.0 --port 5173
     depends_on:
       - backend
 
 volumes:
+  # ``external: true`` : ce volume n'appartient pas au cycle de vie du projet
+  # Compose — ``docker compose down -v`` ne le supprime jamais (Compose ignore
+  # explicitement les volumes externes lors du nettoyage). Pour repartir d'une
+  # base réellement vide, il faut le supprimer soi-même :
+  #   docker compose down -v && docker volume rm xeetali_postgres_data
   postgres_data:
+    external: true
+    name: xeetali_postgres_data

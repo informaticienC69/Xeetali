@@ -1,11 +1,20 @@
 // DonorLayout.tsx — App Mobile "Command Center" XÉÉTALI
 // Inspiré de la maquette.html mobile screen · Light + Dark
+//
+// < lg (1024px) : chrome mobile dédié (app bar + nav flottante en bas) —
+// inchangé, c'est la référence UX du rôle donneur.
+// ≥ lg : réutilise directement <Layout> (même sidebar que Admin/Médical,
+// alimentée via NAV_BY_ROLE.DONNEUR) plutôt que de dupliquer sa structure —
+// garantit une vraie cohérence visuelle, pas une simple resemblance, et reste
+// synchronisé si Layout évolue plus tard.
 import { type ComponentType, type ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Bell, CalendarDays, Home, LogOut, ScrollText, User, type LucideProps } from "lucide-react";
 import { useAuth } from "../lib/auth";
-import { useTheme } from "../lib/theme";
+import { useMediaQuery } from "../lib/hooks";
+import { NEXT_THEME_LABEL, useTheme } from "../lib/theme";
 import { Monitor, Moon, Sun, Hand, Sparkles } from "lucide-react";
+import Layout from "./Layout";
 
 type LucideIcon = ComponentType<LucideProps>;
 
@@ -27,12 +36,16 @@ export default function DonorLayout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const prenom = (nom ?? "").split(" ")[0];
   const ThemeIcon = mode === "light" ? Sun : mode === "dark" ? Moon : Monitor;
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
+  if (isDesktop) {
+    return <Layout>{children}</Layout>;
+  }
 
   return (
     <div className="flex min-h-screen justify-center" style={{ background: "var(--bg-2)" }}>
       <div
-        className="relative flex w-full flex-col"
+        className="donor-shell relative flex w-full flex-col"
         style={{ background: "var(--bg)", minHeight: "100svh" }}
       >
         {/* ── Effets Command Center supprimés ── */}
@@ -73,7 +86,8 @@ export default function DonorLayout({ children }: { children: ReactNode }) {
                 onClick={cycle}
                 className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:scale-95"
                 style={{ color: "var(--txt-mute)" }}
-                aria-label="Changer de thème"
+                aria-label={NEXT_THEME_LABEL[mode]}
+                title={NEXT_THEME_LABEL[mode]}
               >
                 <ThemeIcon size={18} />
               </button>

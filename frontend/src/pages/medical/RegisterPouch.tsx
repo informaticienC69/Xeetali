@@ -156,6 +156,7 @@ export default function RegisterPouch() {
                 <div className="relative">
                   <Calendar size={14} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--txt-mute)" }} />
                   <input
+                    id="date-prelevement"
                     type="date"
                     value={prelevement}
                     onChange={(e) => setPrelevement(e.target.value)}
@@ -164,15 +165,16 @@ export default function RegisterPouch() {
                     onFocus={(e) => (e.currentTarget.style.borderColor = "var(--txt-mute)")}
                     onBlur={(e) => (e.currentTarget.style.borderColor = "var(--line)")}
                   />
-                  <div className="absolute top-[-8px] left-4 px-2 mono text-[9px] font-bold uppercase tracking-widest rounded-sm" style={{ color: "var(--txt-dim)", background: "var(--surface)" }}>
+                  <label htmlFor="date-prelevement" className="absolute top-[-8px] left-4 px-2 mono text-[9px] font-bold uppercase tracking-widest rounded-sm" style={{ color: "var(--txt-dim)", background: "var(--surface)" }}>
                     Prélèvement
-                  </div>
+                  </label>
                 </div>
 
                 {/* Date Péremption */}
                 <div className="relative">
                   <Calendar size={14} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: expiryTone }} />
                   <input
+                    id="date-peremption"
                     type="date"
                     value={peremption}
                     onChange={(e) => setPeremption(e.target.value)}
@@ -181,9 +183,9 @@ export default function RegisterPouch() {
                     onFocus={(e) => (e.currentTarget.style.borderColor = "var(--txt-mute)")}
                     onBlur={(e) => (e.currentTarget.style.borderColor = "var(--line)")}
                   />
-                  <div className="absolute top-[-8px] left-4 px-2 mono text-[9px] font-bold uppercase tracking-widest rounded-sm" style={{ color: dateError ? "var(--blood)" : expiryTone, background: "var(--surface)" }}>
+                  <label htmlFor="date-peremption" className="absolute top-[-8px] left-4 px-2 mono text-[9px] font-bold uppercase tracking-widest rounded-sm" style={{ color: dateError ? "var(--blood)" : expiryTone, background: "var(--surface)" }}>
                     Péremption
-                  </div>
+                  </label>
                 </div>
 
               </div>

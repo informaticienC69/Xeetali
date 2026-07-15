@@ -8,7 +8,14 @@ from app.db.base import Base
 import app.models  # importe les modèles pour que les métadonnées soient remplies
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.database_url)
+
+# Alembic exécute des migrations synchrones : réécrit le schéma d'URL comme
+# app/db/session.py (moteur async) pour cibler le driver psycopg (v3) installé
+# — sans ça SQLAlchemy retombe sur psycopg2 (absent de requirements.txt).
+_db_url = settings.database_url
+if _db_url.startswith("postgresql://"):
+    _db_url = _db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+config.set_main_option("sqlalchemy.url", _db_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

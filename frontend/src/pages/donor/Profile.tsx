@@ -1,7 +1,6 @@
 // Profile.tsx — Donor · UX Masterpiece
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { ShieldCheck, User, ChevronDown, XCircle, Check } from "lucide-react";
+import { ShieldCheck, User, ChevronDown } from "lucide-react";
 import { api, ApiError, BLOOD_GROUPS, type BloodGroup } from "../../lib/api";
 import { useToast } from "../../lib/toast";
 import { useAuth } from "../../lib/auth";
@@ -131,10 +130,20 @@ function HolographicID({ form }: { form: any }) {
   );
 }
 
-function FloatingInput({ value, onChange, label, type="text", required=false }: any) {
+function FloatingInput({
+  id, value, onChange, label, type = "text", required = false,
+}: {
+  id: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  label: string;
+  type?: string;
+  required?: boolean;
+}) {
   return (
     <div className="relative group mt-8">
-      <input 
+      <input
+         id={id}
          type={type}
          value={value}
          onChange={onChange}
@@ -143,173 +152,46 @@ function FloatingInput({ value, onChange, label, type="text", required=false }: 
          className="peer w-full bg-transparent border-b-2 border-transparent py-2 text-lg transition-colors focus:outline-none focus:border-(--blood)"
          style={{ color: "var(--txt)", borderBottomColor: "var(--line)" }}
       />
-      <label className="absolute left-0 top-3 text-(--txt-mute) mono text-sm transition-all pointer-events-none peer-focus:-top-4 peer-focus:text-[10px] peer-focus:text-(--blood) peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-(--txt-mute) peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-[10px] peer-not-placeholder-shown:text-(--txt-dim)">
+      <label htmlFor={id} className="absolute left-0 top-3 text-(--txt-mute) mono text-sm transition-all pointer-events-none peer-focus:-top-4 peer-focus:text-[10px] peer-focus:text-(--blood) peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-(--txt-mute) peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-[10px] peer-not-placeholder-shown:text-(--txt-dim)">
         {label}
       </label>
     </div>
   );
 }
 
-function FloatingCustomSelect({ value, onChange, label, options }: any) {
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
-
+// Select natif (même principe que components/ui/Forms.tsx#Select) : le style
+// « floating label » d'origine reposait sur un faux listbox en portail, non
+// accessible au clavier (div cliquable sans role/tabIndex) — remplacé par un
+// vrai <select>, label toujours relevé (un select a toujours une valeur).
+function FloatingSelect({
+  id, value, onChange, label, options,
+}: {
+  id: string;
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+  options: readonly string[];
+}) {
   return (
-    <>
-      <div className="relative group mt-8 cursor-pointer" onClick={() => setOpen(true)}>
-        <div 
-           className="peer w-full bg-transparent border-b-2 py-2 text-lg transition-colors flex items-center justify-between hover:border-(--blood)"
-           style={{ color: "var(--txt)", borderBottomColor: open ? "var(--blood)" : "var(--line)" }}
-        >
-          {value}
-          <ChevronDown
-            size={16}
-            className={`transition-transform duration-300 ${open ? "rotate-180" : ""}`}
-            style={{ color: open ? "var(--blood)" : "var(--txt-mute)" }}
-          />
-        </div>
-        <label className={`absolute left-0 transition-all pointer-events-none ${open ? "-top-4 text-[10px] text-(--blood)" : "-top-4 text-[10px] text-(--txt-dim) group-hover:text-(--blood)"}`}>
-          {label}
-        </label>
-      </div>
-
-      {open && createPortal(
-        <div
-          className="fixed inset-0 z-120 flex items-center justify-center p-6"
-          style={{ background: "rgba(0,0,0,0.72)", backdropFilter: "blur(8px)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
-        >
-          <div
-            className="modal-pop w-full overflow-hidden flex flex-col"
-            style={{
-              maxWidth: 360,
-              maxHeight: "75vh",
-              borderRadius: 20,
-              border: "1px solid var(--blood-glow)",
-              background: "var(--surface)",
-              boxShadow: "0 0 0 1px var(--line), 0 32px 64px rgba(0,0,0,0.35), 0 0 60px var(--blood-glow)",
-            }}
-          >
-            {/* Header */}
-            <div
-              className="relative px-5 pt-5 pb-4 flex items-center justify-between"
-              style={{ borderBottom: "1px solid var(--line)" }}
-            >
-              <div
-                className="absolute top-0 left-6 right-6 rounded-b-full"
-                style={{ height: 2, background: "linear-gradient(90deg, transparent, var(--blood) 40%, transparent)" }}
-              />
-              <div>
-                <div className="mono text-[9px] uppercase tracking-[0.2em] mb-0.5" style={{ color: "var(--blood)" }}>
-                  Sélection
-                </div>
-                <div className="font-bold text-[17px]" style={{ color: "var(--txt)" }}>
-                  Choisir une option
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-center w-8 h-8 rounded-full transition-all cursor-pointer"
-                style={{
-                  background: "var(--surface-2)",
-                  border: "1px solid var(--line)",
-                  color: "var(--txt-mute)",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(206,51,65,0.15)";
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(206,51,65,0.4)";
-                  (e.currentTarget as HTMLElement).style.color = "var(--blood)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
-                  (e.currentTarget as HTMLElement).style.borderColor = "var(--line)";
-                  (e.currentTarget as HTMLElement).style.color = "var(--txt-mute)";
-                }}
-              >
-                <XCircle size={16} />
-              </button>
-            </div>
-
-            {/* Options list */}
-            <div className="overflow-y-auto p-3" style={{ scrollbarWidth: "thin", scrollbarColor: "var(--line) transparent" }}>
-              {options.map((opt: string, i: number) => {
-                const isSelected = opt === value;
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => {
-                      if (onChange) onChange(opt);
-                      setOpen(false);
-                    }}
-                    className="group w-full text-left flex items-center justify-between gap-3 rounded-xl transition-all cursor-pointer mb-1"
-                    style={{
-                      padding: "11px 14px",
-                      background: isSelected
-                        ? "linear-gradient(90deg, rgba(206,51,65,0.15) 0%, rgba(206,51,65,0.05) 100%)"
-                        : "transparent",
-                      border: `1px solid ${isSelected ? "rgba(206,51,65,0.3)" : "transparent"}`,
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isSelected) {
-                        (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
-                        (e.currentTarget as HTMLElement).style.borderColor = "var(--line-2)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isSelected) {
-                        (e.currentTarget as HTMLElement).style.background = "transparent";
-                        (e.currentTarget as HTMLElement).style.borderColor = "transparent";
-                      }
-                    }}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className="shrink-0 rounded-full transition-all"
-                        style={{
-                          width: 6,
-                          height: 6,
-                          background: isSelected ? "var(--blood)" : "var(--txt-mute)",
-                          boxShadow: isSelected ? "0 0 8px var(--blood-glow)" : "none",
-                        }}
-                      />
-                      <span
-                        className="font-semibold text-[14px] truncate"
-                        style={{ color: isSelected ? "var(--txt)" : "var(--txt-dim)" }}
-                      >
-                        {opt}
-                      </span>
-                    </div>
-
-                    {isSelected && (
-                      <div
-                        className="shrink-0 flex items-center justify-center rounded-full"
-                        style={{
-                          width: 20,
-                          height: 20,
-                          background: "rgba(206,51,65,0.2)",
-                          border: "1px solid rgba(206,51,65,0.4)",
-                        }}
-                      >
-                        <Check size={11} style={{ color: "var(--blood)" }} />
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-    </>
+    <div className="relative group mt-8">
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="peer w-full bg-transparent border-b-2 py-2 pr-7 text-lg transition-colors appearance-none cursor-pointer focus:outline-none focus:border-(--blood)"
+        style={{ color: "var(--txt)", borderBottomColor: "var(--line)" }}
+      >
+        {options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+      </select>
+      <ChevronDown
+        size={16}
+        className="pointer-events-none absolute right-0 top-4 transition-colors peer-focus:text-(--blood)"
+        style={{ color: "var(--txt-mute)" }}
+      />
+      <label htmlFor={id} className="absolute left-0 -top-4 text-[10px] pointer-events-none transition-colors peer-focus:text-(--blood)" style={{ color: "var(--txt-dim)" }}>
+        {label}
+      </label>
+    </div>
   );
 }
 
@@ -361,14 +243,14 @@ export default function Profile() {
       <form onSubmit={submit} className="card-in relative px-6 py-8 rounded-3xl" style={{ background: "linear-gradient(145deg, var(--surface) 0%, var(--bg-2) 100%)", border: "1px solid var(--line)" }}>
         <h3 className="font-bold text-xl mb-6" style={{ color: "var(--txt)" }}>Mettre à jour</h3>
         
-        <div className="grid grid-cols-2 gap-4">
-          <FloatingCustomSelect label="GROUPE SANGUIN" value={form.groupe_sanguin} onChange={(v: any) => setForm({ ...form, groupe_sanguin: v as BloodGroup })} options={BLOOD_GROUPS} />
-          <FloatingInput label="TÉLÉPHONE" value={form.telephone} onChange={(e: any) => setForm({ ...form, telephone: e.target.value })} required />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FloatingSelect id="groupe_sanguin" label="GROUPE SANGUIN" value={form.groupe_sanguin} onChange={(v) => setForm({ ...form, groupe_sanguin: v as BloodGroup })} options={BLOOD_GROUPS} />
+          <FloatingInput id="telephone" label="TÉLÉPHONE" value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} required />
         </div>
-        
-        <FloatingInput label="VILLE / LOCALITÉ" value={form.localisation} onChange={(e: any) => setForm({ ...form, localisation: e.target.value })} required />
-        
-        <FloatingInput label="DATE DERNIER DON (OPTIONNEL)" type="date" value={form.date_dernier_don} onChange={(e: any) => setForm({ ...form, date_dernier_don: e.target.value })} />
+
+        <FloatingInput id="localisation" label="VILLE / LOCALITÉ" value={form.localisation} onChange={(e) => setForm({ ...form, localisation: e.target.value })} required />
+
+        <FloatingInput id="date_dernier_don" label="DATE DERNIER DON (OPTIONNEL)" type="date" value={form.date_dernier_don} onChange={(e) => setForm({ ...form, date_dernier_don: e.target.value })} />
         
         <Button type="submit" loading={saving} className="w-full mt-10 h-14 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
           Synchroniser l'Identité

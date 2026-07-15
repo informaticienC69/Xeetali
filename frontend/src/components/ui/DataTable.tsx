@@ -1,26 +1,16 @@
-import {
-  type ComponentType,
-  type InputHTMLAttributes,
-  type ReactNode,
-  type SelectHTMLAttributes,
-  useEffect,
-  useRef,
-  useState,
-  Children,
-  type ReactElement,
-} from "react";
-import { createPortal } from "react-dom";
-import type { LucideProps } from "lucide-react";
-import { CheckCircle, Info, XCircle, ChevronDown, Check } from "lucide-react";
-import { BLOOD_GROUPS as BG_LIST, type BloodGroup as BG } from "../../lib/api";
+import { type ReactNode } from "react";
 
 // ── DataTable ─────────────────────────────────────────────────────
+// caption (sr-only) donne un nom au tableau pour les lecteurs d'écran ;
+// scope="col" associe chaque en-tête à sa colonne (WCAG 1.3.1).
 export function DataTable<T>({
+  caption,
   columns,
   data,
   keyExtractor,
   renderRow,
 }: {
+  caption: string;
   columns: string[];
   data: T[];
   keyExtractor: (item: T) => string | number;
@@ -29,10 +19,11 @@ export function DataTable<T>({
   return (
     <div className="overflow-x-auto pb-2">
       <table className="w-full text-sm" style={{ borderCollapse: "collapse" }}>
+        <caption className="sr-only">{caption}</caption>
         <thead>
           <tr style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--line)" }}>
             {columns.map((h, i) => (
-              <th key={i} className="px-4 py-3 text-left" style={{ color: "var(--txt-mute)", fontWeight: 500 }}>
+              <th key={i} scope="col" className="px-4 py-3 text-left" style={{ color: "var(--txt-mute)", fontWeight: 500 }}>
                 <span className="mono text-[10px] uppercase tracking-[0.12em]">{h}</span>
               </th>
             ))}
@@ -56,5 +47,3 @@ export function DataTable<T>({
     </div>
   );
 }
-
-

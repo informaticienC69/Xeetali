@@ -195,10 +195,11 @@ export default function Appointments() {
               ) : (
                 <div className="flex overflow-x-auto gap-4 snap-x snap-mandatory no-scrollbar pb-6 -mx-4 px-4">
                   {displayPoints.map((p) => (
-                    <div 
+                    <button
                       key={p.id}
+                      type="button"
                       onClick={() => setPointId(p.id)}
-                      className="snap-center shrink-0 w-[260px] rounded-[24px] p-3 cursor-pointer transition-transform hover:scale-95 shadow-lg group border"
+                      className="snap-center shrink-0 w-[260px] rounded-[24px] p-3 cursor-pointer text-left transition-transform hover:scale-95 shadow-lg group border"
                       style={{ background: "var(--surface)", borderColor: "var(--line)" }}
                     >
                       <div className="h-28 rounded-[16px] mb-3 overflow-hidden relative border" style={{ borderColor: "var(--line)" }}>
@@ -214,11 +215,11 @@ export default function Appointments() {
                         <Clock size={10} /> {p.hours} <span style={{ color: "var(--ok)", fontWeight: "bold" }}>• {p.status}</span>
                       </p>
                       
-                      <button className="w-full py-3 rounded-xl font-bold text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
+                      <span className="w-full py-3 rounded-xl font-bold text-[11px] uppercase tracking-widest flex items-center justify-center gap-2"
                               style={{ background: "var(--bg)", color: "var(--txt)", border: "1px solid var(--line)" }}>
                         Y aller <ArrowRight size={14} />
-                      </button>
-                    </div>
+                      </span>
+                    </button>
                   ))}
                 </div>
               )}
@@ -254,11 +255,12 @@ export default function Appointments() {
               {/* Form Grid */}
               <div className="rounded-[20px] p-1.5 flex gap-1.5 mb-6 border shadow-inner" style={{ background: "var(--bg)", borderColor: "var(--line)" }}>
                  <div className="flex-1 rounded-[16px] p-3 border" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
-                   <div className="flex items-center gap-1.5 mb-1.5">
+                   <label htmlFor="appt-date" className="flex items-center gap-1.5 mb-1.5">
                      <CalendarDays size={12} style={{ color: "var(--blood)" }} />
                      <span className="mono text-[9px] uppercase tracking-widest font-bold" style={{ color: "var(--txt-mute)" }}>Date</span>
-                   </div>
-                   <input 
+                   </label>
+                   <input
+                      id="appt-date"
                       type="date" min={todayStr} value={dateStr} onChange={e => setDateStr(e.target.value)}
                       className="bg-transparent font-bold text-sm outline-none w-full appearance-none cursor-pointer"
                       style={{ color: "var(--txt)" }}
@@ -266,11 +268,12 @@ export default function Appointments() {
                  </div>
                  <div className="w-px my-2" style={{ background: "var(--line)" }} />
                  <div className="flex-1 rounded-[16px] p-3 border" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
-                   <div className="flex items-center gap-1.5 mb-1.5">
+                   <label htmlFor="appt-time" className="flex items-center gap-1.5 mb-1.5">
                      <Clock size={12} style={{ color: "var(--blood)" }} />
                      <span className="mono text-[9px] uppercase tracking-widest font-bold" style={{ color: "var(--txt-mute)" }}>Heure</span>
-                   </div>
-                   <input 
+                   </label>
+                   <input
+                      id="appt-time"
                       type="time" value={timeStr} onChange={e => setTimeStr(e.target.value)}
                       className="bg-transparent font-bold text-sm outline-none w-full appearance-none cursor-pointer"
                       style={{ color: "var(--txt)" }}

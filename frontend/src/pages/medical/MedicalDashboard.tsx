@@ -237,7 +237,7 @@ export default function MedicalDashboard() {
           </h1>
           {myHospital && (
             <div className="mono text-[11px] mt-0.5" style={{ color: "var(--txt-mute)" }}>
-              {myHospital.nom} · {myHospital.localisation}
+              {myHospital.nom} · {myHospital.region_nom}
             </div>
           )}
         </div>

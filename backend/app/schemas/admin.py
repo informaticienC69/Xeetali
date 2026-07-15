@@ -64,3 +64,29 @@ class AnalyticsResponse(BaseModel):
     # Séries temporelles
     transferts_par_jour: list[TimePoint]
     dons_par_mois: list[TimePoint]
+
+
+# --------------------------------------------------------------------------- #
+# Stock par région (carte nationale) — 100 % dérivé de la BD.
+# --------------------------------------------------------------------------- #
+class RegionBloodGroupStock(BaseModel):
+    """Stock disponible pour un groupe sanguin dans une région, vs. cible idéale."""
+
+    groupe_sanguin: BloodGroup
+    quantite: int
+    cible: int
+
+
+class RegionStock(BaseModel):
+    """Agrégat régional du stock (calculé depuis les hôpitaux localisés dans la région)."""
+
+    nom: str
+    capitale: str
+    population: int
+    coords: list[float]
+    nb_hopitaux: int
+    total_poches: int
+    stock_pct: float
+    statut: str
+    demandes_urgentes: int
+    groupes: list[RegionBloodGroupStock]

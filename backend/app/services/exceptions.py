@@ -18,6 +18,10 @@ class HospitalNotFoundError(NotFoundError):
     """Un hôpital référencé n'existe pas → 404."""
 
 
+class RegionNotFoundError(NotFoundError):
+    """Une région référencée n'existe pas → 404."""
+
+
 class ConflictError(ServiceError):
     """Conflit d'état (ex. email déjà pris, UID en double) → 409."""
 

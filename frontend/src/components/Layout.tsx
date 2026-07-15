@@ -1,17 +1,27 @@
 // Layout.tsx — Sidebar Admin "Command Center" XÉÉTALI
 // Inspiré de la maquette.html · Light + Dark · Syne + DM Mono
+//
+// Desktop (≥ lg) : sidebar fixe — inchangée, c'est la référence "bonne"
+// version pour Admin/Médical (et réutilisée telle quelle pour Donneur via
+// DonorLayout).
+// Mobile (< lg) : chrome inspiré de DonorLayout — app bar personnalisée +
+// navigation flottante en bas — remplace l'ancien tiroir hamburger.
 import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   ArrowLeftRight,
   Bell,
   Building2,
+  CalendarDays,
   Droplet,
+  Home,
   LayoutDashboard,
   LogOut,
   Monitor,
   Moon,
+  ScrollText,
   Sun,
+  User,
   Users,
   Activity,
   ClipboardList,
@@ -19,7 +29,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "../lib/auth";
-import { useTheme } from "../lib/theme";
+import { NEXT_THEME_LABEL, useTheme } from "../lib/theme";
 import type { Role } from "../lib/api";
 
 // ── Nav items par rôle ─────────────────────────────────────────
@@ -27,29 +37,39 @@ interface NavItem {
   to: string;
   label: string;
   sub?: string;
+  /** Libellé compact pour la nav flottante mobile (sinon `label` tel quel). */
+  tabLabel?: string;
   icon: LucideIcon;
 }
 
 const ADMIN_NAV: NavItem[] = [
-  { to: "/admin",           label: "Command Center",  sub: "Tableau de bord",      icon: LayoutDashboard },
+  { to: "/admin",           label: "Command Center",  sub: "Tableau de bord",      tabLabel: "Accueil", icon: LayoutDashboard },
   { to: "/admin/transfer",  label: "Transferts",      sub: "Routing poches",       icon: ArrowLeftRight  },
-  { to: "/admin/campaign",  label: "Alerte Nationale",sub: "SMS · Push",          icon: Bell            },
-  { to: "/admin/users",     label: "Utilisateurs",    sub: "Gestion des comptes",  icon: Users           },
-  { to: "/admin/hospitals", label: "Établissements",  sub: "Réseau hospitalier",   icon: Building2       },
+  { to: "/admin/campaign",  label: "Alerte Nationale",sub: "SMS · Push",          tabLabel: "Alertes", icon: Bell            },
+  { to: "/admin/users",     label: "Utilisateurs",    sub: "Gestion des comptes",  tabLabel: "Comptes", icon: Users           },
+  { to: "/admin/hospitals", label: "Établissements",  sub: "Réseau hospitalier",   tabLabel: "Hôpitaux",icon: Building2       },
 ];
 
 const MEDICAL_NAV: NavItem[] = [
-  { to: "/medical",           label: "Vue d'ensemble",  sub: "Dashboard hôpital",   icon: LayoutDashboard },
-  { to: "/medical/register",  label: "Enregistrement",  sub: "Nouvelle poche",      icon: Droplet         },
-  { to: "/medical/stock",     label: "Stock & Urgence", sub: "Recherche poches",    icon: ClipboardList   },
+  { to: "/medical",           label: "Vue d'ensemble",  sub: "Dashboard hôpital",   tabLabel: "Accueil", icon: LayoutDashboard },
+  { to: "/medical/register",  label: "Enregistrement",  sub: "Nouvelle poche",      tabLabel: "Nouveau", icon: Droplet         },
+  { to: "/medical/stock",     label: "Stock & Urgence", sub: "Recherche poches",    tabLabel: "Stock",   icon: ClipboardList   },
   { to: "/medical/validity",  label: "Contrôle",        sub: "Péremptions",         icon: FileCheck       },
   { to: "/medical/request",   label: "Demandes",        sub: "Besoins hospitaliers",icon: Activity        },
+];
+
+const DONOR_NAV: NavItem[] = [
+  { to: "/donor",              label: "Accueil",     sub: "Mon espace donneur",  icon: Home        },
+  { to: "/donor/alerts",       label: "Alertes",     sub: "Besoins en cours",    icon: Bell        },
+  { to: "/donor/appointments", label: "Rendez-vous", sub: "Prise de RDV",        icon: CalendarDays},
+  { to: "/donor/history",      label: "Mes dons",    sub: "Historique",          icon: ScrollText  },
+  { to: "/donor/profile",      label: "Profil",      sub: "Mes informations",    icon: User        },
 ];
 
 const NAV_BY_ROLE: Record<Role, NavItem[]> = {
   ADMIN_CNTS:        ADMIN_NAV,
   PERSONNEL_MEDICAL: MEDICAL_NAV,
-  DONNEUR:           [],
+  DONNEUR:           DONOR_NAV,
 };
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -78,7 +98,7 @@ function LiveClock() {
   );
 }
 
-// ── NavItem ────────────────────────────────────────────────────
+// ── NavItem (sidebar desktop) ────────────────────────────────────
 function SideNavItem({ item }: { item: NavItem }) {
   return (
     <NavLink
@@ -121,6 +141,32 @@ function SideNavItem({ item }: { item: NavItem }) {
   );
 }
 
+// ── Nav item (barre flottante mobile) — même pattern que DonorLayout ────
+function TabNavItem({ item }: { item: NavItem }) {
+  return (
+    <NavLink
+      to={item.to}
+      end={item.to.split("/").length === 2}
+      className="flex flex-col items-center justify-center gap-1.5 transition-colors active:scale-95 flex-1 h-14 rounded-full"
+      style={({ isActive }) => ({ color: isActive ? "var(--clinic)" : "var(--txt-mute)" })}
+    >
+      {({ isActive }) => (
+        <>
+          <div className="relative">
+            <item.icon size={22} strokeWidth={isActive ? 2.4 : 1.7} />
+            {isActive && (
+              <div className="absolute -bottom-2 left-1/2 w-1 h-1 rounded-full -translate-x-1/2" style={{ background: "var(--clinic)" }} />
+            )}
+          </div>
+          <span className="text-[10px] font-semibold" style={{ opacity: isActive ? 1 : 0.75 }}>
+            {item.tabLabel ?? item.label}
+          </span>
+        </>
+      )}
+    </NavLink>
+  );
+}
+
 // ── Sidebar ────────────────────────────────────────────────────
 export default function Layout({ children }: { children: ReactNode }) {
   const { nom, role, logout } = useAuth();
@@ -133,9 +179,9 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "var(--bg)" }}>
 
-      {/* ── Sidebar ── */}
+      {/* ── Sidebar desktop uniquement (≥ lg) ── */}
       <aside
-        className="flex w-64 shrink-0 flex-col"
+        className="hidden lg:flex lg:w-64 lg:shrink-0 lg:flex-col"
         style={{
           background: "var(--surface)",
           borderRight: "1px solid var(--line)",
@@ -151,7 +197,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             <Droplet size={22} strokeWidth={2} style={{ color: "#fff", fill: "rgba(255,255,255,0.25)" }} />
           </div>
 
-          <div className="flex flex-col justify-center">
+          <div className="flex flex-1 flex-col justify-center min-w-0">
             {/* Mot-marque : seule place où Syne est conservée (branding) */}
             <div className="font-bold tracking-[0.14em] text-[16px] leading-none">
               <span style={{ color: "var(--txt)" }}>X</span>
@@ -182,7 +228,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
 
         {/* Nav items */}
-        <nav className="flex-1 overflow-y-auto no-scrollbar px-2 py-1 space-y-0.5">
+        <nav aria-label="Navigation principale" className="flex-1 overflow-y-auto no-scrollbar px-2 py-1 space-y-0.5">
           {nav.map((item) => (
             <SideNavItem key={item.to} item={item} />
           ))}
@@ -190,8 +236,6 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         {/* Footer : utilisateur + thème + déconnexion */}
         <div style={{ borderTop: "1px solid var(--line)" }}>
-          {/* Statut LoRaWAN supprimé */}
-
           {/* Utilisateur */}
           <div className="flex items-center gap-2.5 px-4 py-3">
             {/* Avatar initiales */}
@@ -217,8 +261,8 @@ export default function Layout({ children }: { children: ReactNode }) {
             {/* Thème */}
             <button
               onClick={cycle}
-              title="Changer de thème"
-              aria-label="Changer de thème"
+              title={NEXT_THEME_LABEL[mode]}
+              aria-label={NEXT_THEME_LABEL[mode]}
               className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
               style={{ color: "var(--txt-mute)" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--txt)"; }}
@@ -244,15 +288,58 @@ export default function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* ── Contenu principal ── */}
-      <main
-        className="flex flex-1 flex-col overflow-hidden relative"
-        style={{ background: "var(--bg)" }}
-      >
-        {/* ── Effets Command Center supprimés ── */}
+      <div className="flex flex-1 flex-col overflow-hidden relative">
 
-        {/* Top bar */}
+        {/* App bar mobile uniquement (< lg) — inspirée de DonorLayout */}
+        <header className="lg:hidden relative px-5 pb-4 pt-6 shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3.5">
+              {/* Avatar initiales */}
+              <div
+                className="flex items-center justify-center w-[46px] h-[46px] rounded-full font-bold text-[13px] shrink-0"
+                style={{ background: "var(--surface-2)", border: "1px solid var(--line)", color: "var(--txt-dim)" }}
+              >
+                {role ? ROLE_ACRONYM[role] : "?"}
+              </div>
+              <div>
+                <h1 className="font-bold text-[20px] leading-tight" style={{ color: "var(--txt)", letterSpacing: "-0.01em" }}>
+                  {prenom || "Utilisateur"}
+                </h1>
+                <div className="mono text-[11px] uppercase tracking-wider mt-0.5" style={{ color: "var(--txt-mute)" }}>
+                  {role ? ROLE_LABEL[role] : "—"}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-0.5">
+              {/* Thème */}
+              <button
+                onClick={cycle}
+                className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:scale-95"
+                style={{ color: "var(--txt-mute)" }}
+                aria-label={NEXT_THEME_LABEL[mode]}
+                title={NEXT_THEME_LABEL[mode]}
+              >
+                <ThemeIcon size={18} />
+              </button>
+              {/* Déconnexion */}
+              <button
+                onClick={() => { logout(); navigate("/login"); }}
+                className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:scale-95"
+                style={{ color: "var(--txt-mute)" }}
+                aria-label="Se déconnecter"
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--crit)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--txt-mute)"; }}
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Top bar desktop uniquement (≥ lg) — inchangée */}
         <div
-          className="flex items-center justify-between px-6 py-3 shrink-0 relative z-10"
+          className="hidden lg:flex items-center justify-between px-4 sm:px-6 py-3 shrink-0 relative z-10"
           style={{ borderBottom: "1px solid var(--line)", background: "var(--surface)" }}
         >
           <div className="mono text-[11px] uppercase tracking-wider flex items-center gap-3" style={{ color: "var(--txt-mute)" }}>
@@ -260,7 +347,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             v1.4.0
           </div>
           <div className="flex items-center gap-3 mono text-[11px]" style={{ color: "var(--txt-mute)" }}>
-            <span className="hidden sm:block uppercase tracking-wider">
+            <span className="uppercase tracking-wider">
               {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long" })}
             </span>
             <LiveClock />
@@ -268,7 +355,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
 
         {/* Page scroll */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-6 py-6 view-fade relative z-10 flex flex-col">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-4 pb-28 lg:pb-6 sm:px-6 py-4 sm:py-6 view-fade relative z-10 flex flex-col">
           <div className="flex-1">
             {children}
           </div>
@@ -277,7 +364,25 @@ export default function Layout({ children }: { children: ReactNode }) {
             XÉÉTALI · CNTS Sénégal · Données hébergées à Diamniadio · Conforme CDP loi 2008-12
           </div>
         </div>
-      </main>
+      </div>
+
+      {/* ── Navigation flottante mobile uniquement (< lg) ── */}
+      <nav
+        aria-label="Navigation principale"
+        className="lg:hidden fixed bottom-6 left-1/2 z-30 w-[92%] max-w-[400px] -translate-x-1/2 rounded-full"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--line)",
+          boxShadow: "var(--shadow-lg)",
+          padding: "8px 12px",
+        }}
+      >
+        <div className="flex items-center justify-between">
+          {nav.map((item) => (
+            <TabNavItem key={item.to} item={item} />
+          ))}
+        </div>
+      </nav>
     </div>
   );
 }

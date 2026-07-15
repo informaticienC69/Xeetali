@@ -14,7 +14,7 @@ from app.services.exceptions import NotFoundError
 
 async def create_appointment(db: AsyncSession, user_id: int, payload: AppointmentCreate) -> Appointment:
     """Prend un rendez-vous pour le donneur courant (atomique)."""
-    profile = get_profile(db, user_id)
+    profile = await get_profile(db, user_id)
     if await db.get(CollectionPoint, payload.collection_point_id) is None:
         raise NotFoundError(f"Point de collecte {payload.collection_point_id} introuvable.")
     try:

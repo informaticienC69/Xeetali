@@ -17,7 +17,7 @@ export default function InventoryTable({ inventory }: Props) {
   const rows = useMemo(() => {
     const f = filter.trim().toLowerCase();
     const filtered = inventory.filter(
-      (h) => !f || h.nom.toLowerCase().includes(f) || h.localisation.toLowerCase().includes(f),
+      (h) => !f || h.nom.toLowerCase().includes(f) || h.region_nom.toLowerCase().includes(f),
     );
     return [...filtered].sort((a, b) => (sortAsc ? total(b) - total(a) : total(a) - total(b)));
   }, [inventory, filter, sortAsc]);
@@ -25,34 +25,37 @@ export default function InventoryTable({ inventory }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <Input placeholder="Filtrer par hôpital ou localité…" value={filter} onChange={(e) => setFilter(e.target.value)} className="max-w-xs" />
+        <label htmlFor="inventory-filter" className="sr-only">Filtrer par hôpital ou localité</label>
+        <Input id="inventory-filter" placeholder="Filtrer par hôpital ou localité…" value={filter} onChange={(e) => setFilter(e.target.value)} className="max-w-xs" />
         <button
           onClick={() => setSortAsc((s) => !s)}
+          aria-label={`Trier par stock total, ${sortAsc ? "décroissant" : "croissant"}`}
           className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 mono text-[11px] uppercase tracking-wider transition-colors"
           style={{ borderColor: "var(--line)", color: "var(--txt-mute)", background: "var(--surface-2)" }}
         >
-          <ArrowDownUp size={12} />
+          <ArrowDownUp size={12} aria-hidden="true" />
           Stock total {sortAsc ? "▼" : "▲"}
         </button>
       </div>
 
       <div className="overflow-x-auto rounded-xl" style={{ border: "1px solid var(--line)" }}>
         <table className="w-full text-sm">
+          <caption className="sr-only">Stock disponible par hôpital et groupe sanguin</caption>
           <thead>
             <tr style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--line)" }}>
-              <th className="px-4 py-3 text-left">
+              <th scope="col" className="px-4 py-3 text-left">
                 <span className="mono text-[10px] uppercase tracking-[0.12em]" style={{ color: "var(--txt-mute)" }}>Hôpital</span>
               </th>
-              <th className="px-4 py-3 text-left">
+              <th scope="col" className="px-4 py-3 text-left">
                 <span className="mono text-[10px] uppercase tracking-[0.12em]" style={{ color: "var(--txt-mute)" }}>Localité</span>
               </th>
               {BLOOD_GROUPS.map((g) => (
-                <th key={g} className="px-2 py-3 text-center">
+                <th key={g} scope="col" className="px-2 py-3 text-center">
                   <span className="mono text-[10px] font-bold px-1.5 py-0.5 rounded"
                         style={{ color: "var(--blood)", background: "rgba(206,51,65,0.10)" }}>{g}</span>
                 </th>
               ))}
-              <th className="px-3 py-3 text-center">
+              <th scope="col" aria-sort={sortAsc ? "descending" : "ascending"} className="px-3 py-3 text-center">
                 <span className="mono text-[10px] uppercase tracking-[0.12em]" style={{ color: "var(--txt-mute)" }}>Total</span>
               </th>
             </tr>
@@ -66,7 +69,7 @@ export default function InventoryTable({ inventory }: Props) {
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
               >
                 <td className="px-4 py-3 font-semibold text-sm" style={{ color: "var(--txt)" }}>{h.nom}</td>
-                <td className="px-4 py-3 mono text-[11px]" style={{ color: "var(--txt-mute)" }}>{h.localisation}</td>
+                <td className="px-4 py-3 mono text-[11px]" style={{ color: "var(--txt-mute)" }}>{h.region_nom}</td>
                 {BLOOD_GROUPS.map((g) => {
                   const q = quantiteFor(h, g);
                   return (

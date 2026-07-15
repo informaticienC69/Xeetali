@@ -51,7 +51,7 @@ async def get_profile_or_none(db: AsyncSession, user_id: int) -> DonorProfile | 
 async def upsert_profile(db: AsyncSession, user_id: int, payload: DonorProfileUpsert) -> DonorProfile:
     """Crée ou met à jour le profil donneur de l'utilisateur courant (atomique)."""
     try:
-        profile = get_profile_or_none(db, user_id)
+        profile = await get_profile_or_none(db, user_id)
         if profile is None:
             profile = DonorProfile(user_id=user_id)
             db.add(profile)
@@ -157,7 +157,11 @@ async def leaderboard(db: AsyncSession, user_id: int, limit: int = 10) -> list[L
         )
         .join(User, User.id == DonorProfile.user_id)
         .outerjoin(Donation, Donation.donor_id == DonorProfile.id)
-        .group_by(DonorProfile.id)
+        # SQLite tolère un GROUP BY partiel (colonnes hors clause/agrégat) ;
+        # Postgres l'exige strictement — d'où le 500 « GroupingError » qui ne
+        # se manifestait pas en dev SQLite. Toutes les colonnes non agrégées
+        # doivent apparaître ici.
+        .group_by(DonorProfile.id, DonorProfile.groupe_sanguin, User.nom)
         .order_by(func.count(Donation.id).desc(), DonorProfile.id)
         .limit(limit)
     )).all()

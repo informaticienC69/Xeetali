@@ -11,5 +11,4 @@ export * from "./Badges";
 export * from "./Forms";
 export * from "./Toolbar";
 export * from "./EmptyState";
-export * from "./Alerts";
 export * from "./Selectors";
