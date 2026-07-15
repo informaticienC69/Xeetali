@@ -5,7 +5,7 @@ import { api, ApiError, BLOOD_GROUPS, type BloodGroup, type BloodRequest } from 
 import { useApi } from "../../lib/hooks";
 import { useAuth } from "../../lib/auth";
 import { useToast } from "../../lib/toast";
-import { Button, DataTable, GroupBadge, PageHeader, Select, Skeleton, UrgencyBadge, EmptyState } from "../../components/ui";
+import { Button, DataTable, GroupBadge, PageHeader, Select, Skeleton, UrgencyBadge, UrgencySelector, EmptyState } from "../../components/ui";
 
 const URGENCES = ["NORMALE", "URGENTE", "CRITIQUE"] as const;
 const STATUTS  = ["OUVERTE", "SATISFAITE", "ANNULEE"] as const;
@@ -20,39 +20,6 @@ const COMPATIBILITY: Record<BloodGroup, string> = {
   "O+": "O+, O-",
   "O-": "O- (Donneur universel)",
 };
-
-const URGENCY_CONFIG = [
-  {
-    value: "NORMALE",
-    label: "Normale",
-    sub: "Délai standard",
-    color: "var(--txt-mute)",
-    bg: "var(--surface-2)",
-    bgActive: "rgba(34,197,94,0.12)",
-    borderActive: "rgba(34,197,94,0.5)",
-    colorActive: "#22c55e",
-  },
-  {
-    value: "URGENTE",
-    label: "Urgente",
-    sub: "Sous 24 heures",
-    color: "var(--warn)",
-    bg: "var(--surface-2)",
-    bgActive: "rgba(217,119,6,0.12)",
-    borderActive: "rgba(217,119,6,0.55)",
-    colorActive: "var(--warn)",
-  },
-  {
-    value: "CRITIQUE",
-    label: "Critique",
-    sub: "Intervention immédiate",
-    color: "var(--blood)",
-    bg: "var(--surface-2)",
-    bgActive: "rgba(206,51,65,0.12)",
-    borderActive: "rgba(206,51,65,0.55)",
-    colorActive: "var(--blood)",
-  },
-] as const;
 
 const STATUT_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   OUVERTE:    { label: "Ouverte",    color: "var(--warn)",  bg: "rgba(217,119,6,0.1)"    },
@@ -310,21 +277,23 @@ export default function Request() {
                       <button
                         type="button"
                         onClick={() => setQuantite(Math.max(1, quantite - 1))}
-                        className="h-full px-6 flex items-center justify-center transition-colors hover:bg-black/5"
+                        aria-label="Diminuer la quantité"
+                        className="tap-target h-full px-6 transition-colors hover:bg-black/5"
                         style={{ color: "var(--txt-mute)" }}
                       >
-                        <Minus size={18} />
+                        <Minus size={18} aria-hidden="true" />
                       </button>
-                      <div className="flex-1 text-center font-bold text-xl" style={{ color: "var(--txt)" }}>
+                      <div className="flex-1 text-center font-bold text-xl" style={{ color: "var(--txt)" }} aria-live="polite">
                         {quantite}
                       </div>
                       <button
                         type="button"
                         onClick={() => setQuantite(quantite + 1)}
-                        className="h-full px-6 flex items-center justify-center transition-colors hover:bg-black/5"
+                        aria-label="Augmenter la quantité"
+                        className="tap-target h-full px-6 transition-colors hover:bg-black/5"
                         style={{ color: "var(--txt-mute)" }}
                       >
-                        <Plus size={18} />
+                        <Plus size={18} aria-hidden="true" />
                       </button>
                     </div>
                   </div>
@@ -333,31 +302,7 @@ export default function Request() {
                     <label className="block mono text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--txt-dim)" }}>
                       Niveau d'urgence
                     </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {URGENCY_CONFIG.map((u) => {
-                        const isSelected = urgence === u.value;
-                        return (
-                          <button
-                            key={u.value}
-                            type="button"
-                            onClick={() => setUrgence(u.value)}
-                            className="flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl transition-all duration-200 h-14"
-                            style={{
-                              background: isSelected ? u.bgActive : "var(--surface-2)",
-                              border: `1px solid ${isSelected ? u.borderActive : "var(--line)"}`,
-                            }}
-                          >
-                            <div 
-                              className="w-2.5 h-2.5 rounded-full" 
-                              style={{ background: isSelected ? u.colorActive : "var(--txt-mute)" }} 
-                            />
-                            <span className="font-bold text-[11px]" style={{ color: isSelected ? u.colorActive : "var(--txt-dim)" }}>
-                              {u.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <UrgencySelector value={urgence} onChange={setUrgence} />
                   </div>
                 </div>
 
@@ -500,6 +445,7 @@ export default function Request() {
                 </div>
               ) : (
                 <DataTable
+                  caption="Liste des demandes de sang"
                   columns={["Groupe", "Hôpital", "Quantité", "Urgence", "Statut", "Date"]}
                   data={filtered}
                   keyExtractor={(r) => r.id}

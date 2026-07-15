@@ -8,10 +8,11 @@ from sqlalchemy import select
 from app.core.deps import require_role
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.admin import AnalyticsResponse, DashboardStats
+from app.schemas.admin import AnalyticsResponse, DashboardStats, RegionStock
 from app.schemas.alert import AlertCreate, AlertDispatchResult
 from app.schemas.enums import UserRole
 from app.schemas.hospital import HospitalCreate, HospitalRead, HospitalUpdate
+from app.schemas.region import RegionRead
 from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.services import admin_service, alert_service
 
@@ -30,6 +31,18 @@ async def dashboard(db: AsyncSession = Depends(get_db)) -> DashboardStats:
 async def analytics(db: AsyncSession = Depends(get_db)) -> AnalyticsResponse:
     """Agrégations complètes pour le dashboard graphique (100 % issues de la BD)."""
     return await admin_service.analytics(db)
+
+
+@router.get("/stock-by-region", response_model=list[RegionStock])
+async def stock_by_region(db: AsyncSession = Depends(get_db)) -> list[RegionStock]:
+    """Stock de poches disponibles agrégé par région (carte nationale)."""
+    return await admin_service.stock_by_region(db)
+
+
+@router.get("/regions", response_model=list[RegionRead])
+async def list_regions(db: AsyncSession = Depends(get_db)) -> list[RegionRead]:
+    """Les régions administratives (référence pour le formulaire établissement)."""
+    return [RegionRead.model_validate(r) for r in await admin_service.list_regions(db)]
 
 
 # --- Utilisateurs ---------------------------------------------------------- #

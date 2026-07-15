@@ -4,13 +4,14 @@ import { Building2, Plus, Trash2, MapPin, Activity } from "lucide-react";
 import { api, ApiError } from "../../lib/api";
 import { useApi } from "../../lib/hooks";
 import { useToast } from "../../lib/toast";
-import { Button, Card, EmptyState, Field, FilterSelect, Input, Modal, SearchInput, Skeleton, Toolbar, PageHeader, ConfirmModal } from "../../components/ui";
+import { Button, Card, EmptyState, Field, FilterSelect, Input, Modal, SearchInput, Select, Skeleton, Toolbar, PageHeader, ConfirmModal } from "../../components/ui";
 
 export default function Hospitals() {
   const toast = useToast();
   const hospitals = useApi(() => api.listHospitals(), []);
+  const regions = useApi(() => api.listRegions(), []);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ nom: "", localisation: "", type: "Hôpital" });
+  const [form, setForm] = useState({ nom: "", region_id: "", type: "Hôpital" });
   const [saving, setSaving] = useState(false);
   const [q, setQ] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -20,19 +21,20 @@ export default function Hospitals() {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     return (hospitals.data ?? []).filter(
-      (h) => (!term || h.nom.toLowerCase().includes(term) || h.localisation.toLowerCase().includes(term)) &&
+      (h) => (!term || h.nom.toLowerCase().includes(term) || h.region.nom.toLowerCase().includes(term)) &&
              (!typeFilter || h.type === typeFilter),
     );
   }, [hospitals.data, q, typeFilter]);
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
+    if (!form.region_id) return;
     setSaving(true);
     try {
-      await api.createHospital(form);
+      await api.createHospital({ nom: form.nom, region_id: Number(form.region_id), type: form.type });
       toast.success("Établissement créé.");
       setOpen(false);
-      setForm({ nom: "", localisation: "", type: "Hôpital" });
+      setForm({ nom: "", region_id: "", type: "Hôpital" });
       hospitals.reload();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Erreur.");
@@ -103,7 +105,7 @@ export default function Hospitals() {
                       </div>
                       <h3 className="font-bold text-[15px] tracking-wide leading-tight" style={{ color: "var(--txt)" }}>{h.nom}</h3>
                       <div className="flex items-center gap-1.5 mono text-[10px] mt-1.5 uppercase tracking-wider" style={{ color: "var(--txt-mute)" }}>
-                        <MapPin size={12} strokeWidth={1.5} className="opacity-70" /> {h.localisation}
+                        <MapPin size={12} strokeWidth={1.5} className="opacity-70" /> {h.region.nom}
                       </div>
                     </div>
                   </div>
@@ -144,7 +146,12 @@ export default function Hospitals() {
       <Modal open={open} title="Nouvel établissement" onClose={() => setOpen(false)}>
         <form onSubmit={create} className="space-y-4">
           <Field label="Nom"><Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} required /></Field>
-          <Field label="Localité"><Input value={form.localisation} onChange={(e) => setForm({ ...form, localisation: e.target.value })} required /></Field>
+          <Field label="Région">
+            <Select value={form.region_id} onChange={(e) => setForm({ ...form, region_id: e.target.value })} required>
+              <option value="" disabled>Sélectionner une région…</option>
+              {(regions.data ?? []).map((r) => <option key={r.id} value={String(r.id)}>{r.nom}</option>)}
+            </Select>
+          </Field>
           <Field label="Type"><Input value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} required /></Field>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="secondary" onClick={() => setOpen(false)}>Annuler</Button>

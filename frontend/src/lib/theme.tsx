@@ -62,3 +62,12 @@ export function useTheme(): ThemeContextValue {
   if (!ctx) throw new Error("useTheme doit être utilisé dans un ThemeProvider");
   return ctx;
 }
+
+// Libellé décrivant l'action du prochain clic (plus utile qu'un générique
+// « Changer de thème » pour un lecteur d'écran) — partagé par les 3 boutons
+// de bascule (Layout, DonorLayout, Login).
+export const NEXT_THEME_LABEL: Record<ThemeMode, string> = {
+  light:  "Passer en mode sombre",
+  dark:   "Passer en mode système",
+  system: "Passer en mode clair",
+};

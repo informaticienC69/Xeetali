@@ -45,7 +45,7 @@ async def inventory_by_hospital(db: AsyncSession, skip: int = 0, limit: int = 10
             InventoryByHospital(
                 hospital_id=hospital.id,
                 nom=hospital.nom,
-                localisation=hospital.localisation,
+                region_nom=hospital.region.nom,
                 type=hospital.type,
                 stocks=stocks,
             )

@@ -1,6 +1,20 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ApiError } from "./api";
+
+// Réévalue en direct au redimensionnement (pas seulement au montage) — sert
+// à basculer entre chrome mobile et desktop sans recharger la page.
+export function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = () => setMatches(mq.matches);
+    onChange();
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [query]);
+  return matches;
+}
 
 interface AsyncState<T> {
   data: T | null;

@@ -164,9 +164,11 @@ export default function Stock() {
 
         <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
           <div className="relative w-full md:w-64">
+            <label htmlFor="stock-uid-search" className="sr-only">Rechercher par UID de poche</label>
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--txt-mute)" }} />
             <input
-              type="text"
+              id="stock-uid-search"
+              type="search"
               value={uidQuery}
               onChange={(e) => setUidQuery(e.target.value.toUpperCase())}
               placeholder="Rechercher UID..."

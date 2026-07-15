@@ -1,9 +1,58 @@
 import {
   type ReactNode,
+  type RefObject,
   useEffect,
+  useId,
+  useRef,
 } from "react";
 import { createPortal } from "react-dom";
 import { XCircle } from "lucide-react";
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+// Piège de focus + focus initial + restauration à la fermeture — nécessaire
+// pour toute boîte de dialogue modale (WCAG 2.2 · 2.4.3 Ordre du focus).
+// Le focus initial va au premier élément focusable (pour ConfirmModal, c'est
+// le bouton « Annuler », qui précède « Confirmer » dans le DOM — un Entrée
+// accidentel juste après ouverture n'active donc jamais l'action destructrice).
+function useDialogA11y(open: boolean, containerRef: RefObject<HTMLElement | null>, onEscape: () => void) {
+  useEffect(() => {
+    if (!open) return;
+    const container = containerRef.current;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+
+    const focusables = () => Array.from(container?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR) ?? []);
+    focusables()[0]?.focus();
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onEscape();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const items = focusables();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+    // Écoute sur le conteneur (capture) plutôt que window : n'intercepte que
+    // les touches survenant réellement dans le dialogue.
+    container?.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      container?.removeEventListener("keydown", onKeyDown, true);
+      previouslyFocused?.focus();
+    };
+  }, [open, containerRef, onEscape]);
+}
 
 // ── Modal ─────────────────────────────────────────────────────────
 export function Modal({
@@ -19,12 +68,9 @@ export function Modal({
   onClose: () => void;
   children: ReactNode;
 }) {
-  useEffect(() => {
-    if (!open) return;
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  const titleId = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
+  useDialogA11y(open, containerRef, onClose);
 
   if (!open) return null;
 
@@ -35,17 +81,21 @@ export function Modal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         className="modal-pop surface w-full max-w-md relative flex flex-col"
         style={{ padding: 24, maxHeight: "85vh", borderRadius: "var(--radius)", boxShadow: "var(--shadow-lg)" }}
       >
         <div className="flex items-center justify-between mb-5 shrink-0">
           <div>
             {subtitle && <div className="mono text-[10px] uppercase tracking-[0.12em]" style={{ color: "var(--txt-mute)" }}>{subtitle}</div>}
-            <h2 className="font-semibold text-lg" style={{ color: "var(--txt)", letterSpacing: "-0.01em" }}>{title}</h2>
+            <h2 id={titleId} className="font-semibold text-lg" style={{ color: "var(--txt)", letterSpacing: "-0.01em" }}>{title}</h2>
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-lg transition-colors cursor-pointer"
+            className="tap-target rounded-lg text-lg transition-colors cursor-pointer"
             style={{ color: "var(--txt-mute)", background: "var(--surface-2)" }}
             aria-label="Fermer"
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--txt)"; }}
@@ -82,15 +132,9 @@ export function ConfirmModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
-  useEffect(() => {
-    if (!open) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onCancel();
-      if (e.key === "Enter") onConfirm();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onCancel, onConfirm]);
+  const titleId = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
+  useDialogA11y(open, containerRef, onCancel);
 
   if (!open) return null;
 
@@ -109,6 +153,10 @@ export function ConfirmModal({
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
       <div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         className="modal-pop surface w-full max-w-sm relative overflow-hidden"
         style={{ padding: 26, borderRadius: "var(--radius)", boxShadow: "var(--shadow-lg)" }}
       >
@@ -118,7 +166,7 @@ export function ConfirmModal({
         >
           <XCircle size={22} style={{ color: c.accent }} />
         </div>
-        <h2 className="font-semibold text-lg mb-2" style={{ color: "var(--txt)", letterSpacing: "-0.01em" }}>
+        <h2 id={titleId} className="font-semibold text-lg mb-2" style={{ color: "var(--txt)", letterSpacing: "-0.01em" }}>
           {title}
         </h2>
         {description && (
@@ -146,8 +194,8 @@ export function ConfirmModal({
         </div>
         <div className="mt-4 text-center">
           <span className="mono text-[10px]" style={{ color: "var(--txt-mute)" }}>
-            <kbd className="px-1 py-0.5 rounded text-[9px]" style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}>Entrée</kbd>
-            {" "}confirmer ·{" "}
+            <kbd className="px-1 py-0.5 rounded text-[9px]" style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}>Tab</kbd>
+            {" "}naviguer ·{" "}
             <kbd className="px-1 py-0.5 rounded text-[9px]" style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}>Échap</kbd>
             {" "}annuler
           </span>

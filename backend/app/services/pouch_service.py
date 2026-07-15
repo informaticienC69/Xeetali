@@ -25,12 +25,12 @@ from app.services.exceptions import HospitalNotFoundError, NotFoundError
 logger = logging.getLogger("xeetali.pouch")
 
 
-async def _generate_uid() -> str:
+def _generate_uid() -> str:
     """UID lisible et unique pour une poche."""
     return f"XEE-{uuid4().hex[:12].upper()}"
 
 
-async def _qr_data_uri(uid: str) -> str:
+def _qr_data_uri(uid: str) -> str:
     """Génère un QR Code encodant l'UID, en PNG base64 (data-URI)."""
     img = qrcode.make(uid)
     buffer = io.BytesIO()

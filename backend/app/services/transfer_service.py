@@ -37,8 +37,8 @@ async def execute_transfer(db: AsyncSession, payload: TransferCreate, user_id: i
     """
     groupe = payload.groupe_sanguin.value
     try:
-        _get_hospital(db, payload.source_hospital_id)
-        _get_hospital(db, payload.target_hospital_id)
+        await _get_hospital(db, payload.source_hospital_id)
+        await _get_hospital(db, payload.target_hospital_id)
 
         # Poches disponibles à la source, FIFO par péremption (plus proche d'abord).
         result = await db.scalars(

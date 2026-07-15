@@ -102,6 +102,7 @@ export default function Users() {
           <EmptyState message="Aucun utilisateur ne correspond." />
         ) : (
           <DataTable
+            caption="Liste des comptes utilisateurs"
             columns={["Nom", "Email", "Rôle", ""]}
             data={filtered}
             keyExtractor={(u) => u.id}

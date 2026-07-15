@@ -8,6 +8,14 @@
 
 @import "tailwindcss";
 
+/* Le variant Tailwind `dark:` répond par défaut à prefers-color-scheme —
+   mais le thème de l'appli est piloté manuellement (classe .dark posée sur
+   <html> par lib/theme.tsx, indépendante des préférences OS). Sans cette
+   ligne, tout `dark:*` utilisé dans le code (Request.tsx, Alerts.tsx,
+   Home.tsx, toast.tsx…) restait inerte dès que le choix in-app différait du
+   thème système. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ── Tokens : mode CLAIR (défaut) ─────────────────────────────── */
 :root {
   --bg:           #f7f9fb;
@@ -30,14 +38,14 @@
 
   /* Sémantique de statut (distincte de l'accent) */
   --ok:           #1f9d63;  --ok-tint:   #e7f4ee;
-  --warn:         #b0710f;  --warn-tint: #f7eedc;
+  --warn:         #8a5a0c;  --warn-tint: #f7eedc; /* assombri : #b0710f sur --warn-tint ne passait pas 4.5:1 (WCAG AA) */
   --crit:         #c42b39;  --crit-tint: #fbeaec;
   --info:         #2e6fb0;  --info-tint: #e8f0f8;
 
   /* Alias legacy (composants existants) → repointés sur le calme */
   --txt:          #121b2a;
   --txt-dim:      #55627a;
-  --txt-mute:     #8996a8;
+  --txt-mute:     #64748b; /* assombri (ex #8996a8, ~3.2:1) pour tenir 4.5:1 sur les libellés 9-11px */
   --phosphor:     #1f9d63;
   --phosphor-dim: rgba(31, 157, 99, 0.20);
   --neon-blood:      var(--blood);
@@ -83,7 +91,7 @@
 
   --txt:          #e7ecf3;
   --txt-dim:      #9ba8bc;
-  --txt-mute:     #66728a;
+  --txt-mute:     #94a3b8; /* assombri en clair / éclairci en sombre : ex #66728a (~3.3:1) ne tenait pas 4.5:1 */
   --phosphor:     #3fb884;
   --phosphor-dim: rgba(63, 184, 132, 0.22);
 
@@ -118,6 +126,17 @@ body {
   outline: 2px solid var(--clinic);
   outline-offset: 2px;
   border-radius: 3px;
+}
+
+/* Zone tactile minimale (WCAG 2.2 AA 2.5.8, 24×24 CSS px min — on vise le
+   confort mobile à 44×44) pour les boutons icône seule (fermer, filtrer,
+   trier…). À poser sur l'élément cliquable lui-même. */
+.tap-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ── Typographie utilitaires ───────────────────────────────────── */
@@ -178,6 +197,33 @@ body {
 }
 .cc-input::placeholder { color: var(--txt-mute); }
 .cc-input:focus {
+  border-color: var(--clinic);
+  box-shadow: 0 0 0 3px var(--clinic-tint);
+}
+
+/* Select natif stylé (remplace un ancien listbox maison inaccessible) :
+   même habillage que .cc-input + chevron en fond d'image, avec le picker
+   natif du système/mobile derrière (clavier, VoiceOver/TalkBack gratuits). */
+.cc-select {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm);
+  padding: 10px 38px 10px 14px;
+  font-size: 14px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--txt);
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  min-height: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238996a8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.cc-select:disabled { opacity: 0.55; cursor: not-allowed; }
+.cc-select:focus {
   border-color: var(--clinic);
   box-shadow: 0 0 0 3px var(--clinic-tint);
 }
@@ -259,6 +305,20 @@ body {
 /* Volume 3D neutralisé (plus d'inclinaison). */
 .perspective-container { perspective: none; }
 .tilt-card { transform: none !important; transform-style: flat; }
+
+/* ── Coquille donneur (mobile-first) ──────────────────────────── */
+/* < md : plein écran (app mobile). ≥ md : panneau centré, largeur de
+   lecture confortable, avec bordures pour se démarquer du fond — sinon
+   le contenu mobile-first s'étire bord à bord sur tablette/desktop. */
+@media (min-width: 768px) {
+  .donor-shell {
+    max-width: 480px;
+    min-height: 100svh;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    box-shadow: var(--shadow-lg);
+  }
+}
 
 /* ── Scrollbars ───────────────────────────────────────────────── */
 .no-scrollbar::-webkit-scrollbar { display: none; }

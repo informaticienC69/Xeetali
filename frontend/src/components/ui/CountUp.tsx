@@ -1,27 +1,21 @@
-import {
-  type ComponentType,
-  type InputHTMLAttributes,
-  type ReactNode,
-  type SelectHTMLAttributes,
-  useEffect,
-  useRef,
-  useState,
-  Children,
-  type ReactElement,
-} from "react";
-import { createPortal } from "react-dom";
-import type { LucideProps } from "lucide-react";
-import { CheckCircle, Info, XCircle, ChevronDown, Check } from "lucide-react";
-import { BLOOD_GROUPS as BG_LIST, type BloodGroup as BG } from "../../lib/api";
+import { useEffect, useRef, useState } from "react";
 
 // ── CountUp hook (requestAnimationFrame) ─────────────────────────
 function easeOut(t: number) { return 1 - Math.pow(1 - t, 3); }
+
+function prefersReducedMotion(): boolean {
+  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+}
 
 export function useCountUp(target: number, duration = 1200, delay = 0): number {
   const [val, setVal] = useState(0);
   const raf = useRef<number>(0);
   useEffect(() => {
     if (target === 0) { setVal(0); return; }
+    // La règle CSS globale (prefers-reduced-motion) ne couvre que les
+    // animations CSS — ce compteur tourne en JS (requestAnimationFrame) et
+    // doit donc vérifier la préférence lui-même pour la respecter.
+    if (prefersReducedMotion()) { setVal(target); return; }
     let start: number | null = null;
     const timeout = setTimeout(() => {
       function step(ts: number) {
@@ -43,5 +37,3 @@ export function CountUp({ value, duration, delay, className }: { value: number; 
   const v = useCountUp(value, duration, delay);
   return <span className={className}>{v.toLocaleString("fr-FR")}</span>;
 }
-
-

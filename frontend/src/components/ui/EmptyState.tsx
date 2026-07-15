@@ -1,26 +1,28 @@
-import {
-  type ComponentType,
-  type InputHTMLAttributes,
-  type ReactNode,
-  type SelectHTMLAttributes,
-  useEffect,
-  useRef,
-  useState,
-  Children,
-  type ReactElement,
-} from "react";
-import { createPortal } from "react-dom";
-import type { LucideProps } from "lucide-react";
-import { CheckCircle, Info, XCircle, ChevronDown, Check } from "lucide-react";
-import { BLOOD_GROUPS as BG_LIST, type BloodGroup as BG } from "../../lib/api";
+import { type ComponentType, type ReactNode } from "react";
+import { Inbox, type LucideProps } from "lucide-react";
 
 // ── EmptyState ────────────────────────────────────────────────────
-export function EmptyState({ message }: { message: string }) {
+// icon/action sont optionnels — les appels existants (message seul)
+// continuent de fonctionner à l'identique.
+export function EmptyState({
+  message,
+  icon: Icon = Inbox,
+  action,
+}: {
+  message: string;
+  icon?: ComponentType<LucideProps>;
+  action?: ReactNode;
+}) {
   return (
-    <div className="py-12 text-center">
-      <p className="mono text-[12px]" style={{ color: "var(--txt-mute)" }}>{message}</p>
+    <div className="flex flex-col items-center gap-3 py-12 px-4 text-center">
+      <div
+        className="flex h-12 w-12 items-center justify-center rounded-full"
+        style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}
+      >
+        <Icon size={20} style={{ color: "var(--txt-mute)" }} aria-hidden="true" />
+      </div>
+      <p className="mono text-[12px] max-w-xs" style={{ color: "var(--txt-mute)" }}>{message}</p>
+      {action && <div className="mt-1">{action}</div>}
     </div>
   );
 }
-
-

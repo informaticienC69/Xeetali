@@ -22,14 +22,23 @@ export interface StockLine {
 export interface HospitalInventory {
   hospital_id: number;
   nom: string;
-  localisation: string;
+  region_nom: string;
   type: string;
   stocks: StockLine[];
+}
+export interface Region {
+  id: number;
+  nom: string;
+  capitale: string;
+  population: number;
+  longitude: number;
+  latitude: number;
 }
 export interface Hospital {
   id: number;
   nom: string;
-  localisation: string;
+  region_id: number;
+  region: Region;
   type: string;
 }
 export interface Pouch {
@@ -204,6 +213,24 @@ export interface PublicConfig {
   low_stock_threshold: number;
 }
 
+export interface RegionBloodGroupStock {
+  groupe_sanguin: BloodGroup;
+  quantite: number;
+  cible: number;
+}
+export interface RegionStock {
+  nom: string;
+  capitale: string;
+  population: number;
+  coords: [number, number];
+  nb_hopitaux: number;
+  total_poches: number;
+  stock_pct: number;
+  statut: "optimal" | "tension" | "critique";
+  demandes_urgentes: number;
+  groupes: RegionBloodGroupStock[];
+}
+
 const TOKEN_KEY = "xeetali_token";
 export const tokenStore = {
   get: () => localStorage.getItem(TOKEN_KEY),
@@ -330,13 +357,15 @@ export const api = {
 
   dashboard: () => request<DashboardStats>("GET", "/api/admin/dashboard"),
   analytics: () => request<Analytics>("GET", "/api/admin/analytics"),
+  stockByRegion: () => request<RegionStock[]>("GET", "/api/admin/stock-by-region"),
+  listRegions: () => request<Region[]>("GET", "/api/admin/regions"),
   publicConfig: () => request<PublicConfig>("GET", "/api/config/public"),
   listUsers: () => request<User[]>("GET", "/api/admin/users"),
   createUser: (payload: { nom: string; email: string; password: string; role: Role; hospital_id?: number | null }) =>
     request<User>("POST", "/api/admin/users", payload),
   deleteUser: (id: number) => request<void>("DELETE", `/api/admin/users/${id}`),
   listHospitals: () => request<Hospital[]>("GET", "/api/admin/hospitals"),
-  createHospital: (payload: { nom: string; localisation: string; type: string }) =>
+  createHospital: (payload: { nom: string; region_id: number; type: string }) =>
     request<Hospital>("POST", "/api/admin/hospitals", payload),
   deleteHospital: (id: number) => request<void>("DELETE", `/api/admin/hospitals/${id}`),
   campaign: (payload: { groupe_sanguin: BloodGroup; canal?: string }) =>

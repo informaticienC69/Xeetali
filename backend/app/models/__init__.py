@@ -7,6 +7,7 @@ from app.models.donation import Donation
 from app.models.donor_profile import DonorProfile
 from app.models.hospital import Hospital
 from app.models.pouch import BloodPouch
+from app.models.region import Region
 from app.models.request import BloodRequest
 from app.models.transfer import TransferOrder
 from app.models.user import User
@@ -22,6 +23,7 @@ __all__ = [
     "Donation",
     "DonorProfile",
     "Hospital",
+    "Region",
     "TransferOrder",
     "User",
 ]

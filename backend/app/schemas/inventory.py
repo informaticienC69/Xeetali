@@ -18,6 +18,6 @@ class InventoryByHospital(BaseModel):
 
     hospital_id: int
     nom: str
-    localisation: str
+    region_nom: str
     type: str
     stocks: list[StockLine]

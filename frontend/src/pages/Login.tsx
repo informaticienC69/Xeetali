@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Droplet, Eye, EyeOff } from "lucide-react";
 import { ApiError, type Role } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { useTheme } from "../lib/theme";
+import { NEXT_THEME_LABEL, useTheme } from "../lib/theme";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { Spinner } from "../components/ui";
 
@@ -52,12 +52,13 @@ export default function Login() {
       className="relative flex min-h-screen items-center justify-center p-4 flex-col"
       style={{ background: "var(--bg)" }}
     >
-      {/* ThemeToggle */}
+      {/* Thème */}
       <button
         onClick={cycle}
-        className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-lg border transition-colors"
+        className="tap-target absolute right-4 top-4 z-10 rounded-lg border transition-colors"
         style={{ borderColor: "var(--line)", color: "var(--txt-mute)", background: "var(--surface)" }}
-        aria-label="Changer de thème"
+        aria-label={NEXT_THEME_LABEL[mode]}
+        title={NEXT_THEME_LABEL[mode]}
       >
         <ThemeIcon size={17} />
       </button>

@@ -137,20 +137,29 @@ function AlertCenter({ alertCount }: { alertCount: number }) {
   );
 }
 
+// Tonalité d'une métrique « à surveiller » : reflète le compte réel plutôt
+// qu'une valeur figée — sans ça, une tuile peut afficher « critique » avec
+// pulsation alors que le compte est à 0 (c'est le bug corrigé ici : Alertes
+// actives et Poches < 7 jours étaient toujours rouge/orange + pulsantes,
+// quelle que soit la valeur réelle).
+function concernTone(n: number): "ok" | "warn" {
+  return n > 0 ? "warn" : "ok";
+}
+
 // ── Dashboard ─────────────────────────────────────────────────
 export default function Dashboard() {
   const { data, loading, error } = useApi(() => api.analytics(), []);
   const { series, status, urgence } = useChartColors();
 
   const kpis = data ? [
-    { icon: Droplet,      label: "Poches disponibles",    value: data.total_poches_disponibles, sub: "/ pays",          tone: "normal" as const },
-    { icon: Bell,         label: "Alertes actives",       value: data.alertes_actives,          sub: "critiques",       tone: "crit"   as const, pulse: true },
-    { icon: Users,        label: "Donneurs inscrits",     value: data.nb_donneurs,              sub: "zone réseau",     tone: "ok"     as const },
-    { icon: Thermometer,  label: "Poches < 7 jours",      value: data.poches_expirant_7j,       sub: "seuil urgent",    tone: "warn"   as const, pulse: true },
-    { icon: ArrowLeftRight,label:"Transferts (total)",    value: data.total_transferts,         sub: undefined,         tone: "normal" as const },
-    { icon: Inbox,        label: "Demandes ouvertes",     value: data.demandes_ouvertes,        sub: undefined,         tone: data.demandes_ouvertes > 5 ? "warn" as const : "normal" as const },
-    { icon: HeartPulse,   label: "Dons (6 mois)",         value: data.dons_6_mois,             sub: undefined,         tone: "ok"     as const },
-    { icon: Building2,    label: "Établissements",        value: data.nb_hopitaux,              sub: undefined,         tone: "normal" as const },
+    { icon: Droplet,      label: "Poches disponibles",    value: data.total_poches_disponibles, tone: "normal" as const },
+    { icon: Bell,         label: "Alertes actives",       value: data.alertes_actives,          tone: concernTone(data.alertes_actives),       pulse: data.alertes_actives > 0 },
+    { icon: Users,        label: "Donneurs inscrits",     value: data.nb_donneurs,              tone: "ok"     as const },
+    { icon: Thermometer,  label: "Poches < 7 jours",      value: data.poches_expirant_7j,       tone: concernTone(data.poches_expirant_7j),    pulse: data.poches_expirant_7j > 0 },
+    { icon: ArrowLeftRight,label:"Transferts (total)",    value: data.total_transferts,         tone: "normal" as const },
+    { icon: Inbox,        label: "Demandes ouvertes",     value: data.demandes_ouvertes,        tone: data.demandes_ouvertes > 5 ? "warn" as const : "normal" as const, pulse: data.demandes_ouvertes > 5 },
+    { icon: HeartPulse,   label: "Dons (6 mois)",         value: data.dons_6_mois,              tone: "ok"     as const },
+    { icon: Building2,    label: "Établissements",        value: data.nb_hopitaux,              tone: "normal" as const },
   ] : [];
 
   return (
@@ -176,13 +185,13 @@ export default function Dashboard() {
               {/* Row 1 — 4 KPIs principaux */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 {kpis.slice(0, 4).map((k, i) => (
-                  <KpiTile key={k.label} icon={k.icon} label={k.label} value={k.value} sub={k.sub} tone={k.tone} pulse={k.pulse} delay={i * 80} />
+                  <KpiTile key={k.label} icon={k.icon} label={k.label} value={k.value} tone={k.tone} pulse={k.pulse} delay={i * 80} />
                 ))}
               </div>
               {/* Row 2 — 4 KPIs secondaires */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 {kpis.slice(4).map((k, i) => (
-                  <KpiTile key={k.label} icon={k.icon} label={k.label} value={k.value} sub={k.sub} tone={k.tone} delay={(i + 4) * 80} />
+                  <KpiTile key={k.label} icon={k.icon} label={k.label} value={k.value} tone={k.tone} pulse={k.pulse} delay={(i + 4) * 80} />
                 ))}
               </div>
             </>

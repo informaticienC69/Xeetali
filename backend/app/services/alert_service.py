@@ -26,7 +26,7 @@ from app.services.exceptions import NotFoundError
 logger = logging.getLogger("xeetali.alert")
 
 
-async def _mask_number(number: str) -> str:
+def _mask_number(number: str) -> str:
     """Masque un numéro : 2 chiffres de tête, 2 de fin (``77****89``)."""
     digits = "".join(ch for ch in number if ch.isdigit())
     if len(digits) <= 4:
@@ -54,7 +54,11 @@ async def dispatch_alert(db: AsyncSession, payload: AlertCreate, user_id: int) -
         f"Si vous êtes éligible, présentez-vous au centre de don le plus proche. Merci."
     )
     try:
-        donors = _select_target_donors(db, receiver, payload.localisation)
+        donors = await _select_target_donors(db, receiver, payload.localisation)
+        # Capturés avant le commit : celui-ci expire les objets ORM de la session
+        # (expire_on_commit par défaut), et un accès différé à d.telephone déclencherait
+        # un lazy-reload synchrone impossible en contexte async (MissingGreenlet).
+        numeros_masques = [_mask_number(d.telephone) for d in donors]
         alert = Alert(
             groupe_sanguin=receiver.value,
             message=message,
@@ -70,7 +74,6 @@ async def dispatch_alert(db: AsyncSession, payload: AlertCreate, user_id: int) -
         await db.rollback()
         raise
 
-    numeros_masques = [_mask_number(d.telephone) for d in donors]
     logger.info(
         "Alerte #%s %s : %d donneur(s) compatibles notifiés %s (aucun envoi réel).",
         alert.id, receiver.value, len(donors), numeros_masques,
@@ -92,7 +95,7 @@ async def respond_to_alert(
     db: AsyncSession, alert_id: int, user_id: int, disponible: bool
 ) -> AlertRespondResult:
     """Enregistre la réponse d'un donneur à une alerte (atomique)."""
-    profile = get_profile(db, user_id)
+    profile = await get_profile(db, user_id)
     alert = await db.get(Alert, alert_id)
     if alert is None:
         raise NotFoundError(f"Alerte {alert_id} introuvable.")
