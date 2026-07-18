@@ -10,6 +10,7 @@ __pycache__/
 # Environnement / secrets
 .env
 .env.*
+!.env.example
 
 # Node / Frontend
 node_modules/

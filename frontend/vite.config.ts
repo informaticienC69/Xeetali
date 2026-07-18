@@ -2,11 +2,9 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-// Le proxy dev évite tout problème CORS : /api est relayé vers le backend FastAPI.
-// Cible surchargeable via VITE_API_PROXY_TARGET (docker-compose.yml la fixe à
-// http://backend:8000 pour le conteneur dev — le nom de service Docker n'est
-// pas résoluble depuis l'hôte). Sans cette variable (dev local hors Docker),
-// comportement inchangé : proxy vers 127.0.0.1:8002.
+// En développement : le proxy Vite relaie /api vers le backend local (évite CORS).
+// En production (Vercel) : VITE_API_URL pointe directement vers le backend Render
+// (ex: https://xeetali-backend.onrender.com). Plus de proxy nécessaire.
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {

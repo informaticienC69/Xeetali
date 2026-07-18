@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 480  # 8 h
 
     # Origines autorisées pour le dashboard (dev Vite par défaut).
+    # En production, surcharger CORS_ORIGINS avec l'URL Vercel (virgule-séparées).
+    # Ex : CORS_ORIGINS=https://xeetali.vercel.app,https://xeetali-git-main.vercel.app
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
