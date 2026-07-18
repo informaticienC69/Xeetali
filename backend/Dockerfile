@@ -21,4 +21,7 @@ ENV JWT_SECRET="prod-secret-change-me-in-production"
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Rendre le script executable
+RUN chmod +x start.sh
+
+CMD ["./start.sh"]
