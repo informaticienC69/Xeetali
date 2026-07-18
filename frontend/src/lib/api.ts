@@ -259,8 +259,8 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   if (body !== undefined) headers["Content-Type"] = "application/json";
 
   // En production (Vercel), VITE_API_URL = URL complète du backend Render.
-  // En développement, la variable est vide → chemin relatif géré par le proxy Vite.
-  let apiBase = import.meta.env.VITE_API_URL ?? "";
+  // Fallback direct sur l'URL de production si la variable Vercel n'est pas lue correctement.
+  let apiBase = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "https://xeetali-backend.onrender.com" : "");
   if (apiBase.endsWith("/")) apiBase = apiBase.slice(0, -1);
   const url = `${apiBase}${path}`;
 
