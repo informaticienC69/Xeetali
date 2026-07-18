@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     # Accepte une chaîne virgule-séparée OU un tableau JSON :
     #   CORS_ORIGINS=https://xeetali.vercel.app,http://localhost:5173
     #   CORS_ORIGINS=["https://xeetali.vercel.app","http://localhost:5173"]
-    cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    cors_origins: str | list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
     @field_validator("cors_origins", mode="before")
     @classmethod
