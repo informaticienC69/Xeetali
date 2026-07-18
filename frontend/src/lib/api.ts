@@ -260,7 +260,8 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   // En production (Vercel), VITE_API_URL = URL complète du backend Render.
   // En développement, la variable est vide → chemin relatif géré par le proxy Vite.
-  const apiBase = import.meta.env.VITE_API_URL ?? "";
+  let apiBase = import.meta.env.VITE_API_URL ?? "";
+  if (apiBase.endsWith("/")) apiBase = apiBase.slice(0, -1);
   const url = `${apiBase}${path}`;
 
   const res = await fetch(url, {
